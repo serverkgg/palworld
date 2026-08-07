@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=./serverk.schema.json
+schemaVersion: serverk.gg/v1
+kind: GamePackage
+
+metadata:
+  id: palworld
+  name:
+    ar: بالورلد
+    en: Palworld
+  description:
+    ar: سيرفر بالورلد — عالم مفتوح، اصطياد Pals، بناء قواعد، وغارات مع أصدقائك. حتى 32 لاعب في نفس العالم.
+    en: Palworld dedicated servers — open-world survival, Pal catching, base building and raids with your friends. Up to 32 players in one world.
+  tagline:
+    ar: اصطد، ابنِ، وقاتل مع أصدقائك — سيرفرك جاهز خلال دقيقة
+    en: Catch, build and fight with your friends — your server, ready in a minute
+  category: survival
+  logo: assets/logo.webp
+  banner: assets/banner.webp
+
+resources:
+  minMemoryMb: 8192
+  recommendedMemoryMb: 16384
+  minDiskMb: 20480
+  playersPerMemoryGb: 2
+  maxRecommendedPlayers: 32
+
+container:
+  image: serverkgg/palworld
+  ports:
+    - key: game
+      containerPort: 8211
+      protocol: udp
+      hostRange:
+        default: 8211
+        min: 8211
+        max: 8310
+
+backup:
+  only:
+    - Pal/Saved/**
+    - Pal/Content/Paks/~mods/**
+  except:
+    - Pal/Saved/**/backup/**
+    - Pal/Saved/Logs/**
+    - Pal/Saved/Crashes/**
+
+reset:
+  keep:
+    - PalServer.sh
+    - Engine
+    - steamapps
+    - .steamcmd
+    - .steam
+
+files:
+  protected:
+    - .steamcmd
+    - .steam
+    - steamapps
+    - Engine
+    - .serverk-install.json
+
+guideTags:
+  - id: start
+    name:
+      ar: ابدأ من هنا
+      en: Start here
+
+guides:
+  - id: getting-started
+    title:
+      ar: البدء بسيرفرك
+      en: Getting started
+    summary:
+      ar: أنشئ سيرفر بالورلد وادخله مع أصدقائك خلال دقائق.
+      en: Create your Palworld server and join it with friends within minutes.
+    tags:
+      - start
+    surfaces:
+      - overview
+    bodyPath:
+      ar: guides/getting-started/ar.md
+      en: guides/getting-started/en.md
