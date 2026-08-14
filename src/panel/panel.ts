@@ -6,6 +6,7 @@ import {
 	BridgeIcon,
 	BridgeLayout,
 } from "@serverkgg/bridge";
+import { ANNOUNCE_MESSAGE_LENGTH } from "../shared";
 
 const settingsTab: Bridge.Tab = {
 	id: "settings",
@@ -254,9 +255,65 @@ const playersTab: Bridge.Tab = {
 	],
 };
 
+const controlsTab: Bridge.Tab = {
+	id: "controls",
+	title: {
+		ar: "التحكم",
+		en: "Controls",
+	},
+	icon: BridgeIcon.Command,
+	sections: [
+		{
+			layout: BridgeLayout.Actions,
+			id: "live",
+			title: {
+				ar: "أوامر سريعة",
+				en: "Quick actions",
+			},
+			help: {
+				ar: "تشتغل على طول على سيرفرك الشغّال.",
+				en: "These run on your server right away.",
+			},
+			module: "live",
+			actions: [
+				{
+					id: "announce",
+					label: {
+						ar: "رسالة للاعبين",
+						en: "Announce",
+					},
+					fields: [
+						{
+							key: "message",
+							control: BridgeControl.Text,
+							label: {
+								ar: "الرسالة",
+								en: "Message",
+							},
+							help: {
+								ar: "توصل لكل اللي داخلين الحين.",
+								en: "Reaches everyone who is on the server right now.",
+							},
+							maxLength: ANNOUNCE_MESSAGE_LENGTH,
+						},
+					],
+				},
+				{
+					id: "save",
+					label: {
+						ar: "احفظ العالم",
+						en: "Save the world",
+					},
+				},
+			],
+		},
+	],
+};
+
 export const panel: Bridge.Panel = {
 	tabs: [
 		settingsTab,
 		playersTab,
+		controlsTab,
 	],
 };

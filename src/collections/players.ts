@@ -1,53 +1,28 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { palworldGet, palworldPost } from "../shared";
+import { palworldPost, playerRoster } from "../shared";
 
 const REFRESH_SECONDS = 15;
 
-interface PalworldPlayer {
-	name?: string;
-	playerId?: string;
-	userId?: string;
-	level?: number;
-	ping?: number;
-}
+const KICK_PATH = "/v1/api/kick";
 
-interface PalworldPlayers {
-	players?: PalworldPlayer[];
-}
+const BAN_PATH = "/v1/api/ban";
 
 export const players: Bridge.Collection = {
 	kind: BridgeKind.Collection,
 	requiresRunning: true,
 	refreshSeconds: REFRESH_SECONDS,
 	async list(context) {
-		const response = await palworldGet<PalworldPlayers>(context, "/v1/api/players");
-
-		return (response.players ?? []).flatMap((player) => {
-			const id = player.userId ?? player.playerId ?? "";
-
-			if (id.length === 0) {
-				return [];
-			}
-
-			return [
-				{
-					id,
-					name: player.name ?? id,
-					level: player.level ?? null,
-					ping: player.ping ?? null,
-				},
-			];
-		});
+		return await playerRoster(context);
 	},
 	actions: {
 		async kick(context, row) {
-			await palworldPost(context, "/v1/api/kick", {
+			await palworldPost(context, KICK_PATH, {
 				userid: row.id,
 				message: "You were kicked by an admin.",
 			});
 		},
 		async ban(context, row) {
-			await palworldPost(context, "/v1/api/ban", {
+			await palworldPost(context, BAN_PATH, {
 				userid: row.id,
 				message: "You were banned by an admin.",
 			});

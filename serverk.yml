@@ -59,6 +59,36 @@ files:
     - steamapps
     - Engine
     - .serverk-install.json
+  notable:
+    - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini
+      label:
+        ar: إعدادات
+        en: Settings
+      icon: settings
+      color: "#5ba32b"
+      restart: true
+      note:
+        ar: إعدادات السيرفر كاملة — الاسم، كلمة المرور، عدد اللاعبين، ومعدلات اللعب. أي تعديل يبي إعادة تشغيل.
+        en: Every server setting — name, password, player slots and the game rates. Any change needs a restart.
+    - match: Pal/Saved/SaveGames
+      label:
+        ar: بيانات العالم
+        en: World data
+      icon: map
+      color: "#4a8fd4"
+      note:
+        ar: عالمك وشخصيات اللاعبين. لا تعدّل عليه والسيرفر شغّال، وخذ نسخة احتياطية قبل أي شي.
+        en: Your world and the player characters. Do not touch it while the server runs, and take a backup first.
+    - match: Pal/Content/Paks/~mods
+      label:
+        ar: المودات
+        en: Mods
+      icon: puzzle
+      color: "#c77dff"
+      restart: true
+      note:
+        ar: مجلد المودات. حط ملفات pak هنا وأعد التشغيل عشان تشتغل، ولازم كل اللاعبين يكون عندهم نفس المودات.
+        en: Your mods folder. Drop pak files here and restart for them to load — every player needs the same mods.
 
 guideTags:
   - id: start

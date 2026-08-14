@@ -12,7 +12,7 @@
 		"tsc": "tsc"
 	},
 	"dependencies": {
-		"@serverkgg/bridge": "0.0.2"
+		"@serverkgg/bridge": "file:../serverk/modules/bridge"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.7",

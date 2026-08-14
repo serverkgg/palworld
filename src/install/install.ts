@@ -45,4 +45,13 @@ export const install: Bridge.Install = {
 			build: buildId,
 		});
 	},
+	async describe(context) {
+		const stamp = await readStamp(context);
+
+		return {
+			version: stamp?.buildId ?? (await installedBuildId(context)),
+			variant: null,
+			build: null,
+		};
+	},
 };
