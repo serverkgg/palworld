@@ -1,6 +1,5 @@
 FROM ubuntu:24.04
 
-ARG TARGETARCH
 ARG BRIDGE_VERSION
 
 LABEL gg.serverk.bridge.version="${BRIDGE_VERSION}"
@@ -30,7 +29,7 @@ ENV LANG=en_US.UTF-8 \
     TZ=UTC \
     HOME=/home/container
 
-COPY dist/bridge-${TARGETARCH} /serverk/bridge
+COPY dist/bridge /serverk/bridge
 
 RUN chmod 0755 /serverk/bridge
 
