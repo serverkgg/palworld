@@ -4,6 +4,7 @@
 	"type": "module",
 	"scripts": {
 		"prepare": "git config core.hooksPath .githooks",
+		"postinstall": "serverk-bridge link",
 		"compile": "serverk-bridge compile",
 		"validate": "serverk-bridge validate",
 		"schema": "serverk-bridge schema",
@@ -12,7 +13,7 @@
 		"tsc": "tsc"
 	},
 	"dependencies": {
-		"@serverkgg/bridge": "file:../serverk/modules/bridge"
+		"@serverkgg/bridge": "0.0.3"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.5.7",
