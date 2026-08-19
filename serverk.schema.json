@@ -270,6 +270,39 @@
 										"required": [
 											"service"
 										]
+									},
+									"activeWhen": {
+										"default": [],
+										"description": "Conditions on the server's variables that must all hold for the game to listen on this port. The port is still allocated; the panel hides the address otherwise.",
+										"maxItems": 4,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"variable": {
+													"type": "string",
+													"minLength": 2,
+													"maxLength": 32,
+													"pattern": "^[A-Z][A-Z0-9_]*$"
+												},
+												"values": {
+													"minItems": 1,
+													"maxItems": 16,
+													"type": "array",
+													"items": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 128
+													}
+												},
+												"empty": {
+													"type": "boolean"
+												}
+											},
+											"required": [
+												"variable"
+											]
+										}
 									}
 								},
 								"required": [
