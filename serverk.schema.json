@@ -208,6 +208,68 @@
 											"min",
 											"max"
 										]
+									},
+									"name": {
+										"description": "Player-facing name of this port, such as Java or Bedrock. The key is shown when omitted.",
+										"type": "object",
+										"properties": {
+											"ar": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 48
+											},
+											"en": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 48
+											}
+										},
+										"required": [
+											"ar",
+											"en"
+										]
+									},
+									"hint": {
+										"description": "One short line telling the player where this address goes in the game client.",
+										"type": "object",
+										"properties": {
+											"ar": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 160
+											},
+											"en": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 160
+											}
+										},
+										"required": [
+											"ar",
+											"en"
+										]
+									},
+									"join": {
+										"default": "combined",
+										"description": "How the game client takes the address: combined as host:port, or separate address and port fields.",
+										"type": "string",
+										"enum": [
+											"combined",
+											"separate"
+										]
+									},
+									"srv": {
+										"description": "Publishes this port as an SRV record under the server hostname, so players join by name with no port.",
+										"type": "object",
+										"properties": {
+											"service": {
+												"type": "string",
+												"pattern": "^_[a-z0-9-]{1,15}$"
+											}
+										},
+										"required": [
+											"service"
+										]
 									}
 								},
 								"required": [

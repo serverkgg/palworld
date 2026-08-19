@@ -30,6 +30,12 @@ container:
     - key: game
       containerPort: 8211
       protocol: udp
+      name:
+        ar: بالورلد
+        en: Palworld
+      hint:
+        ar: في بالورلد اختر "دخول مباشر" واكتب العنوان والمنفذ مع بعض زي ما هو.
+        en: In Palworld choose "Direct Connect" and type the address and port together, exactly as shown.
       hostRange:
         default: 8211
         min: 8211
