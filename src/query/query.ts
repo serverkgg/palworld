@@ -1,5 +1,5 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { palworldGet, playerRoster } from "../shared";
+import { type PalworldRosterEntry, palworldGet, playerRoster } from "../shared";
 
 const REFRESH_SECONDS = 15;
 
@@ -10,42 +10,55 @@ interface PalworldMetrics {
 	maxplayernum?: number;
 }
 
-const online = new Map<string, string>();
+const online = new Map<string, PalworldRosterEntry>();
+
+export const presenceOf = (id: string, player: PalworldRosterEntry) => {
+	return {
+		player: player.name,
+		userId: id,
+		...(player.level === null
+			? {}
+			: {
+					level: String(player.level),
+				}),
+		...(player.ping === null
+			? {}
+			: {
+					ping: String(player.ping),
+				}),
+	};
+};
 
 const syncSessions = async (context: Bridge.Context) => {
-	let current: Map<string, string>;
+	let current: Map<string, PalworldRosterEntry>;
 
 	try {
 		current = new Map(
 			(await playerRoster(context)).map((player) => [
 				player.id,
-				player.name,
+				player,
 			]),
 		);
 	} catch {
 		return;
 	}
 
-	for (const [id, name] of current) {
+	for (const [id, player] of current) {
 		if (!online.has(id)) {
-			context.emit("PlayerJoined", {
-				player: name,
-			});
+			context.emit("PlayerJoined", presenceOf(id, player));
 		}
 	}
 
-	for (const [id, name] of online) {
+	for (const [id, player] of online) {
 		if (!current.has(id)) {
-			context.emit("PlayerLeft", {
-				player: name,
-			});
+			context.emit("PlayerLeft", presenceOf(id, player));
 		}
 	}
 
 	online.clear();
 
-	for (const [id, name] of current) {
-		online.set(id, name);
+	for (const [id, player] of current) {
+		online.set(id, player);
 	}
 };
 

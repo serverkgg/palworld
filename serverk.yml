@@ -58,6 +58,19 @@ reset:
     - .steamcmd
     - .steam
 
+presence:
+  name: player
+  id: userId
+  fields:
+    - key: level
+      label:
+        ar: المستوى
+        en: Level
+    - key: ping
+      label:
+        ar: البنق
+        en: Ping
+
 files:
   protected:
     - .steamcmd
