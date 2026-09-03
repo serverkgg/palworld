@@ -19,8 +19,7 @@ export class PalworldApiError extends Error {
 	}
 }
 
-const credentials = async (context: Bridge.Context) => {
-	const settings = await readSettings(context);
+export const restCredentials = (settings: Bridge.Values) => {
 	const password = String(settings.AdminPassword ?? "");
 	const port = Number(settings.RESTAPIPort ?? REST_API_PORT);
 
@@ -35,7 +34,7 @@ const credentials = async (context: Bridge.Context) => {
 };
 
 const request = async (context: Bridge.Context, method: string, path: string, body?: Bridge.Values) => {
-	const { password, port } = await credentials(context);
+	const { password, port } = restCredentials(await readSettings(context));
 
 	const headers: Record<string, string> = {
 		accept: "application/json",

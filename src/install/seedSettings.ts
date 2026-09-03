@@ -14,6 +14,22 @@ const generatePassword = () => {
 	return Buffer.from(bytes).toString("base64url");
 };
 
+export const needsAdminPassword = (settings: Bridge.Values) => {
+	return String(settings.AdminPassword ?? "").length === 0;
+};
+
+export const seedPatch = (password: string | null): Bridge.Values => {
+	return {
+		RESTAPIEnabled: true,
+		RESTAPIPort: REST_API_PORT,
+		...(password === null
+			? {}
+			: {
+					AdminPassword: password,
+				}),
+	};
+};
+
 export const seedSettings = async (context: Bridge.Context) => {
 	if (!(await context.files.exists(SETTINGS_FILE)) && (await context.files.exists(DEFAULT_SETTINGS_FILE))) {
 		context.log("seeding PalWorldSettings.ini from the shipped defaults");
@@ -22,18 +38,11 @@ export const seedSettings = async (context: Bridge.Context) => {
 		await context.files.write(SETTINGS_FILE, await context.files.read(DEFAULT_SETTINGS_FILE));
 	}
 
-	const settings = await readSettings(context);
+	const missing = needsAdminPassword(await readSettings(context));
 
-	const patch: Bridge.Values = {
-		RESTAPIEnabled: true,
-		RESTAPIPort: REST_API_PORT,
-	};
-
-	if (String(settings.AdminPassword ?? "").length === 0) {
+	if (missing) {
 		context.log("generating an admin password so the panel can control the server");
-
-		patch.AdminPassword = generatePassword();
 	}
 
-	await mergeSettings(context, patch);
+	await mergeSettings(context, seedPatch(missing ? generatePassword() : null));
 };

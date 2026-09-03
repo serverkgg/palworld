@@ -11,7 +11,7 @@ interface PalworldPlayer {
 	ping?: number;
 }
 
-interface PalworldPlayers {
+export interface PalworldPlayers {
 	players?: PalworldPlayer[];
 }
 
@@ -21,10 +21,8 @@ export type PalworldRosterEntry = Bridge.Row & {
 	ping: number | null;
 };
 
-export const playerRoster = async (context: Bridge.Context): Promise<PalworldRosterEntry[]> => {
-	const response = await palworldGet<PalworldPlayers>(context, PLAYERS_PATH);
-
-	return (response.players ?? []).flatMap((player) => {
+export const rosterOf = (payload: PalworldPlayers): PalworldRosterEntry[] => {
+	return (payload.players ?? []).flatMap((player) => {
 		const id = player.userId ?? player.playerId ?? "";
 
 		if (id.length === 0) {
@@ -40,4 +38,8 @@ export const playerRoster = async (context: Bridge.Context): Promise<PalworldRos
 			},
 		];
 	});
+};
+
+export const playerRoster = async (context: Bridge.Context): Promise<PalworldRosterEntry[]> => {
+	return rosterOf(await palworldGet<PalworldPlayers>(context, PLAYERS_PATH));
 };

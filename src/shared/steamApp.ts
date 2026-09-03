@@ -16,12 +16,14 @@ export const isGameInstalled = async (context: Bridge.Context) => {
 
 const BUILD_ID = /"buildid"\s+"(?<buildId>\d+)"/;
 
+export const buildIdOf = (manifest: string) => {
+	return manifest.match(BUILD_ID)?.groups?.buildId ?? null;
+};
+
 export const installedBuildId = async (context: Bridge.Context) => {
 	if (!(await context.files.exists(APP_MANIFEST))) {
 		return null;
 	}
 
-	const manifest = await context.files.read(APP_MANIFEST);
-
-	return manifest.match(BUILD_ID)?.groups?.buildId ?? null;
+	return buildIdOf(await context.files.read(APP_MANIFEST));
 };

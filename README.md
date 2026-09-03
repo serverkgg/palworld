@@ -20,18 +20,21 @@ Everything runs on [Bun](https://bun.sh):
 bun install
 bun run check
 bun run tsc
+bun run test
 bun run validate
 bun run compile
 ```
 
 `validate` checks the manifest, assets, and driver wiring with the exact validation the platform runs at publish. `compile` produces `dist/bridge`, an amd64 binary — serverk publishes game images for `linux/amd64` only.
 
+The `.githooks/pre-commit` hook is the gate: it runs `fix`, `tsc`, `test`, `validate`, and `serverk-bridge schema --check` on every commit. `bun install` wires it up through the `prepare` script.
+
 The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). To develop against a local bridge checkout, `bun link` in the bridge package then `bun link @serverkgg/bridge` here — never commit a `file:` dependency.
 
 ## Contribute
 
 - افتح issue لأي مشكلة أو اقتراح — بالعربي أو بالإنجليزي، كلها مرحّب فيها.
-- Pull requests run the `Check` workflow (lint, types, package validation) with no secrets, so forks work out of the box.
+- Run `bun run check`, `bun run tsc`, `bun run test` and `bun run validate` before you open a pull request — the same checks the pre-commit hook runs.
 - Releases are done by the Serverk team through the platform's central release pipeline; merged changes ride the next release.
 
 ## Arabic copy

@@ -10,7 +10,8 @@
 		"schema": "serverk-bridge schema",
 		"check": "bunx biome check",
 		"fix": "bunx biome check --write --unsafe",
-		"tsc": "tsc"
+		"tsc": "tsc",
+		"test": "bun test --parallel"
 	},
 	"dependencies": {
 		"@serverkgg/bridge": "0.0.7"

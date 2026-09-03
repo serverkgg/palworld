@@ -1,13 +1,16 @@
 import type { Bridge } from "@serverkgg/bridge";
 import { STEAM_APP_ID } from "../shared";
+import { steamcmdNarrator } from "./steamcmdNarrator";
 
-const STEAMCMD_DIRECTORY = ".steamcmd";
+export const STEAMCMD_DIRECTORY = ".steamcmd";
+
+export const STEAM_DIRECTORY = ".steam";
 
 const STEAMCMD_SCRIPT = `${STEAMCMD_DIRECTORY}/steamcmd.sh`;
 
 const STEAMCMD_IMAGE = "/opt/steamcmd";
 
-const STEAM_CLIENT_DIRECTORY = ".steam/sdk64";
+const STEAM_CLIENT_DIRECTORY = `${STEAM_DIRECTORY}/sdk64`;
 
 const UPDATE_TIMEOUT_MS = 3_600_000;
 
@@ -19,54 +22,11 @@ const RETRY_DELAY_MS = 5000;
 
 const FAILURE_DETAIL = 800;
 
-const ANSI = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "g");
-
-const PROGRESS = /Update state \(0x[0-9a-f]+\)\s*(?<phase>[^,]+),\s*progress:\s*(?<percent>\d+)\.\d+/i;
-
-const PROGRESS_STEP = 10;
-
-const NOTABLE = /^(Error|Warning|Failed|Success|Logging in|Connecting|Update state \(0x\d+\) (?!downloading))/i;
-
 const tail = (text: string) => {
 	return text.trim().slice(-FAILURE_DETAIL);
 };
 
-const narrator = (context: Bridge.Context) => {
-	let phase = "";
-	let reported = -1;
-
-	return (raw: string) => {
-		const line = raw.replaceAll(ANSI, "").trim();
-		const progress = line.match(PROGRESS);
-
-		if (progress?.groups) {
-			const current = progress.groups.phase?.trim() ?? "";
-			const percent = Number(progress.groups.percent);
-			const step = Math.floor(percent / PROGRESS_STEP) * PROGRESS_STEP;
-
-			if (current !== phase) {
-				phase = current;
-				reported = -1;
-			}
-
-			if (step > reported) {
-				reported = step;
-
-				context.log(`${phase} palworld`, {
-					percent: step,
-				});
-			}
-
-			return;
-		}
-
-		if (NOTABLE.test(line)) {
-			context.log(line);
-		}
-	};
-};
-
-const detail = (result: Bridge.ExecResult) => {
+export const execDetail = (result: Bridge.ExecResult) => {
 	return [
 		tail(result.stdout),
 		tail(result.stderr),
@@ -75,13 +35,33 @@ const detail = (result: Bridge.ExecResult) => {
 		.join(" | ");
 };
 
+export const updateCommand = (root: string, validate: boolean) => {
+	const command = [
+		`./${STEAMCMD_SCRIPT}`,
+		"+force_install_dir",
+		root,
+		"+login",
+		"anonymous",
+		"+app_update",
+		STEAM_APP_ID,
+	];
+
+	if (validate) {
+		command.push("validate");
+	}
+
+	command.push("+quit");
+
+	return command;
+};
+
 export const gameRoot = async (context: Bridge.Context) => {
 	const result = await context.exec([
 		"pwd",
 	]);
 
 	if (result.code !== 0) {
-		throw new Error(`the server directory could not be resolved — ${detail(result)}`);
+		throw new Error(`the server directory could not be resolved — ${execDetail(result)}`);
 	}
 
 	return result.stdout.trim();
@@ -104,7 +84,7 @@ export const prepareSteamcmd = async (context: Bridge.Context) => {
 	]);
 
 	if (result.code !== 0) {
-		throw new Error(`steamcmd could not be prepared — ${detail(result)}`);
+		throw new Error(`steamcmd could not be prepared — ${execDetail(result)}`);
 	}
 
 	context.log("warming up steamcmd");
@@ -133,35 +113,21 @@ export const prepareSteamcmd = async (context: Bridge.Context) => {
 };
 
 export const updateGame = async (context: Bridge.Context, validate: boolean) => {
-	const command = [
-		`./${STEAMCMD_SCRIPT}`,
-		"+force_install_dir",
-		await gameRoot(context),
-		"+login",
-		"anonymous",
-		"+app_update",
-		STEAM_APP_ID,
-	];
-
-	if (validate) {
-		command.push("validate");
-	}
-
-	command.push("+quit");
+	const command = updateCommand(await gameRoot(context), validate);
 
 	let failure = "";
 
 	for (let attempt = 1; attempt <= UPDATE_ATTEMPTS; attempt++) {
 		const result = await context.exec(command, {
 			timeoutMs: UPDATE_TIMEOUT_MS,
-			onOutput: narrator(context),
+			onOutput: steamcmdNarrator(context.log),
 		});
 
 		if (result.code === 0) {
 			return;
 		}
 
-		failure = `steamcmd exited with code ${result.code} — ${detail(result)}`;
+		failure = `steamcmd exited with code ${result.code} — ${execDetail(result)}`;
 
 		if (attempt < UPDATE_ATTEMPTS) {
 			context.log("steamcmd did not finish, trying again", {
@@ -188,6 +154,6 @@ export const linkSteamClient = async (context: Bridge.Context) => {
 	]);
 
 	if (result.code !== 0) {
-		throw new Error(`steamclient.so could not be linked — ${detail(result)}`);
+		throw new Error(`steamclient.so could not be linked — ${execDetail(result)}`);
 	}
 };

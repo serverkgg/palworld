@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help fix check tsc validate schema compile
+.PHONY: help fix check tsc test validate schema compile
 
 help:
 	@echo "Usage: make <target>"
@@ -9,6 +9,7 @@ help:
 	@echo "  fix          Lint and format"
 	@echo "  check        Lint and format check"
 	@echo "  tsc          TypeScript type-check only"
+	@echo "  test         Run the driver tests"
 	@echo ""
 	@echo "Package:"
 	@echo "  validate     Validate serverk.yml and the package contents"
@@ -25,6 +26,9 @@ check:
 
 tsc:
 	bun run tsc
+
+test:
+	bun run test
 
 # --- Package ---
 
