@@ -51,7 +51,7 @@ const settingsTab: Bridge.Tab = {
 				},
 				{
 					key: "ServerPassword",
-					control: BridgeControl.Text,
+					control: BridgeControl.Secret,
 					label: {
 						ar: "كلمة مرور الدخول",
 						en: "Join password",
@@ -64,7 +64,7 @@ const settingsTab: Bridge.Tab = {
 				},
 				{
 					key: "AdminPassword",
-					control: BridgeControl.Text,
+					control: BridgeControl.Secret,
 					label: {
 						ar: "كلمة مرور الأدمن",
 						en: "Admin password",
