@@ -52,11 +52,19 @@ backup:
 
 reset:
   keep:
-    - PalServer.sh
-    - Engine
-    - steamapps
     - .steamcmd
     - .steam
+    - Steam
+    - steamapps
+    - linux64
+    - "*.so"
+    - Manifest_*.txt
+    - DefaultPalWorldSettings.ini
+    - PalServer.sh
+    - Engine
+    - Pal/Binaries
+    - Pal/Plugins
+    - Pal/Content/Paks/Pal-*
 
 presence:
   name: player
@@ -75,8 +83,15 @@ files:
   protected:
     - .steamcmd
     - .steam
+    - Steam
     - steamapps
+    - linux64
+    - "*.so"
+    - PalServer.sh
     - Engine
+    - Pal/Binaries
+    - Pal/Plugins
+    - Pal/Content/Paks/Pal-*
     - .serverk-install.json
   notable:
     - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini

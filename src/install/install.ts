@@ -1,5 +1,5 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { installedBuildId, isGameInstalled, SERVER_BINARY, STEAM_APP_ID } from "../shared";
+import { installedBuildId, missingGameRoots, STEAM_APP_ID } from "../shared";
 import { readStamp, writeStamp } from "./installStamp";
 import { seedSettings } from "./seedSettings";
 import { linkSteamClient, prepareSteamcmd, updateGame } from "./steamcmd";
@@ -8,18 +8,27 @@ export const install: Bridge.Install = {
 	kind: BridgeKind.Install,
 	async run(context) {
 		const stamp = await readStamp(context);
-		const fresh = !(await isGameInstalled(context));
+		const missing = await missingGameRoots(context);
 
 		await prepareSteamcmd(context);
 
-		context.log(fresh ? "downloading the palworld dedicated server" : "checking steam for a newer build", {
-			app: STEAM_APP_ID,
-		});
+		if (missing.length > 0) {
+			context.log("game files are missing, letting steam fetch and verify the install", {
+				app: STEAM_APP_ID,
+				missing: missing.join(", "),
+			});
+		} else {
+			context.log("checking steam for a newer build", {
+				app: STEAM_APP_ID,
+			});
+		}
 
-		await updateGame(context, fresh);
+		await updateGame(context, missing.length > 0);
 
-		if (!(await isGameInstalled(context))) {
-			throw new Error(`steamcmd finished but ${SERVER_BINARY} is missing`);
+		const unrepaired = await missingGameRoots(context);
+
+		if (unrepaired.length > 0) {
+			throw new Error(`steamcmd finished but ${unrepaired.join(", ")} is missing`);
 		}
 
 		await linkSteamClient(context);

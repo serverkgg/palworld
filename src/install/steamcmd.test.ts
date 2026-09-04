@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { STEAM_APP_ID } from "../shared";
+import { compileGlobs, matchesAny } from "@serverkgg/bridge/manifest";
+import { GAME_ROOTS, STEAM_APP_ID } from "../shared";
 import { STAMP_FILE } from "./installStamp";
 import { execDetail, STEAM_DIRECTORY, STEAMCMD_DIRECTORY, updateCommand } from "./steamcmd";
 
@@ -15,6 +16,27 @@ interface Manifest {
 }
 
 const manifest = Bun.YAML.parse(await Bun.file(new URL("../../serverk.yml", import.meta.url)).text()) as Manifest;
+
+const matchedBy = (path: string, globs: string[]) => {
+	const patterns = compileGlobs(globs);
+	const segments = path.split("/");
+
+	for (let depth = segments.length; depth > 0; depth -= 1) {
+		if (matchesAny(segments.slice(0, depth).join("/"), patterns)) {
+			return true;
+		}
+	}
+
+	return false;
+};
+
+const survivesReset = (path: string) => {
+	return matchedBy(path, manifest.reset.keep) || manifest.reset.keep.some((glob) => glob.startsWith(`${path}/`));
+};
+
+const protectedFrom = (path: string) => {
+	return matchedBy(path, manifest.files.protected);
+};
 
 describe("building the steamcmd command that downloads palworld", () => {
 	test("installs into the server directory as an anonymous user", () => {
@@ -114,9 +136,29 @@ describe("the manifest guarding the steam install against a reset", () => {
 			"PalServer.sh",
 			"Engine",
 			"steamapps",
+			"Pal/Binaries",
+			"Pal/Plugins",
+			"Pal/Content/Paks/Pal-*",
 		]) {
 			expect(manifest.reset.keep).toContain(path);
 		}
+	});
+
+	test("keeps every root the installer checks, so a reset never re-downloads the game", () => {
+		for (const root of GAME_ROOTS) {
+			expect(survivesReset(root), `${root} must survive a reset`).toBe(true);
+		}
+	});
+
+	test("still wipes the world and the mods the customer installed", () => {
+		expect(survivesReset("Pal/Saved"), "the world must not survive a reset").toBe(false);
+		expect(survivesReset("Pal/Content/Paks/~mods"), "customer mods must not survive a reset").toBe(false);
+	});
+
+	test("leaves the mods folder editable while protecting the game payload", () => {
+		expect(protectedFrom("Pal/Content/Paks/~mods")).toBe(false);
+		expect(protectedFrom("Pal/Content/Paks/Pal-LinuxServer.pak")).toBe(true);
+		expect(protectedFrom("Pal/Binaries/Linux/PalServer-Linux-Shipping")).toBe(true);
 	});
 
 	test("hides the steam directories from the file manager, so nobody deletes them by hand", () => {

@@ -6,12 +6,27 @@ export const SERVER_SCRIPT = "PalServer.sh";
 
 export const SERVER_BINARY = "Pal/Binaries/Linux/PalServer-Linux-Shipping";
 
+export const GAME_ROOTS = [
+	SERVER_SCRIPT,
+	SERVER_BINARY,
+	"Pal/Content",
+	"Engine",
+];
+
 export const APP_MANIFEST = `steamapps/appmanifest_${STEAM_APP_ID}.acf`;
 
 export const SERVER_READY = new RegExp(`Setting breakpad minidump AppID = ${STEAM_APP_ID}`);
 
-export const isGameInstalled = async (context: Bridge.Context) => {
-	return (await context.files.exists(SERVER_SCRIPT)) && (await context.files.exists(SERVER_BINARY));
+export const missingGameRoots = async (context: Bridge.Context) => {
+	const missing: string[] = [];
+
+	for (const path of GAME_ROOTS) {
+		if (!(await context.files.exists(path))) {
+			missing.push(path);
+		}
+	}
+
+	return missing;
 };
 
 const BUILD_ID = /"buildid"\s+"(?<buildId>\d+)"/;
