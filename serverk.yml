@@ -143,6 +143,7 @@ guides:
     surfaces:
       - overview
       - setup
+      - backups
     bodyPath:
       ar: guides/getting-started/ar.md
       en: guides/getting-started/en.md
