@@ -1,10 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { compileGlobs, matchesAny } from "@serverkgg/bridge/manifest";
-import { GAME_ROOTS, STEAM_APP_ID } from "../shared";
-import { STAMP_FILE } from "./installStamp";
-import { execDetail, STEAM_DIRECTORY, STEAMCMD_DIRECTORY, updateCommand } from "./steamcmd";
-
-const GAME_ROOT = "/home/serverk/server";
+import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
+import { STEAM_DIRECTORY, STEAMCMD_DIRECTORY } from "@serverkgg/bridge/steam";
+import { compileGlobs, matchesAny } from "@serverkgg/bridge/utils";
+import { GAME_ROOTS } from "../shared";
+import { type InstallStamp, stampOf } from "./install";
 
 interface Manifest {
 	reset: {
@@ -38,87 +37,33 @@ const protectedFrom = (path: string) => {
 	return matchedBy(path, manifest.files.protected);
 };
 
-describe("building the steamcmd command that downloads palworld", () => {
-	test("installs into the server directory as an anonymous user", () => {
-		expect(updateCommand(GAME_ROOT, false)).toEqual([
-			"./.steamcmd/steamcmd.sh",
-			"+force_install_dir",
-			GAME_ROOT,
-			"+login",
-			"anonymous",
-			"+app_update",
-			STEAM_APP_ID,
-			"+quit",
-		]);
-	});
-
-	test("validates the download on a fresh install", () => {
-		expect(updateCommand(GAME_ROOT, true)).toContain("validate");
-	});
-
-	test("skips validation when it is only checking steam for a newer build", () => {
-		expect(updateCommand(GAME_ROOT, false)).not.toContain("validate");
-	});
-
-	test("puts validate on the app_update, not after quit", () => {
-		const command = updateCommand(GAME_ROOT, true);
-
-		expect(command.indexOf("validate")).toBe(command.indexOf(STEAM_APP_ID) + 1);
-		expect(command.at(-1)).toBe("+quit");
-	});
-
-	test("always ends by quitting, so steamcmd never waits on a prompt", () => {
-		expect(updateCommand(GAME_ROOT, false).at(-1)).toBe("+quit");
-		expect(updateCommand(GAME_ROOT, true).at(-1)).toBe("+quit");
-	});
-
-	test("builds a fresh array each time, so one call cannot grow another", () => {
-		const first = updateCommand(GAME_ROOT, true);
-
-		expect(updateCommand(GAME_ROOT, true)).toEqual(first);
-	});
-});
-
-describe("explaining why a steamcmd run failed", () => {
-	test("joins what steamcmd wrote to both streams", () => {
+describe("reading the stamp that records which steam build was installed", () => {
+	test("reads a stamp the installer wrote", () => {
 		expect(
-			execDetail({
-				stdout: "Error! App state is 0x202",
-				stderr: "no space left on device",
-				code: 8,
+			stampOf({
+				buildId: "18234567",
 			}),
-		).toBe("Error! App state is 0x202 | no space left on device");
-	});
-
-	test("reports only the stream that said something", () => {
-		expect(
-			execDetail({
-				stdout: "",
-				stderr: "no space left on device",
-				code: 8,
-			}),
-		).toBe("no space left on device");
-	});
-
-	test("says nothing when steamcmd died silently", () => {
-		expect(
-			execDetail({
-				stdout: "   \n",
-				stderr: "",
-				code: 137,
-			}),
-		).toBe("");
-	});
-
-	test("keeps the end of a long log, where the failure is", () => {
-		const detail = execDetail({
-			stdout: `${"noise ".repeat(1000)}Error! App state is 0x202`,
-			stderr: "",
-			code: 8,
+		).toEqual({
+			buildId: "18234567",
 		});
+	});
 
-		expect(detail).toEndWith("Error! App state is 0x202");
-		expect(detail.length).toBeLessThanOrEqual(800);
+	test("treats a missing stamp file as no stamp", () => {
+		expect(stampOf(null)).toBeNull();
+	});
+
+	test("rejects a stamp with no build id at all", () => {
+		expect(stampOf({})).toBeNull();
+	});
+
+	test("rejects a stamp whose build id is not a string", () => {
+		for (const raw of [
+			'{"buildId": 18234567}',
+			'{"buildId": null}',
+			'{"buildId": ["18234567"]}',
+		]) {
+			expect(stampOf(JSON.parse(raw) as Partial<InstallStamp>)).toBeNull();
+		}
 	});
 });
 
@@ -167,6 +112,6 @@ describe("the manifest guarding the steam install against a reset", () => {
 	});
 
 	test("protects the install stamp the driver reports the version from", () => {
-		expect(manifest.files.protected).toContain(STAMP_FILE);
+		expect(manifest.files.protected).toContain(INSTALL_STAMP_FILE);
 	});
 });

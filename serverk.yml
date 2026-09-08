@@ -26,10 +26,17 @@ resources:
 
 container:
   image: serverkgg/palworld
+  runtime:
+    platform: linux
+    installBudgetMinutes: 20
+    bootBudgetMinutes: 12
+    shmMb: 64
+    pidsLimit: 512
   ports:
     - key: game
       containerPort: 8211
       protocol: udp
+      mirror: true
       name:
         ar: بالورلد
         en: Palworld

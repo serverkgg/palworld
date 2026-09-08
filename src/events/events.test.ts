@@ -77,6 +77,15 @@ describe("declaring the events the driver emits from outside the log", () => {
 		expect(events.emits).toContain("ServerStopping");
 	});
 
+	test("declares the moderation events the players collection emits", () => {
+		expect(events.emits).toContain("PlayerKicked");
+		expect(events.emits).toContain("PlayerBanned");
+	});
+
+	test("declares the update event the installer emits when steam ships a newer build", () => {
+		expect(events.emits).toContain("ServerUpdated");
+	});
+
 	test("does not redeclare an event a log pattern already emits", () => {
 		for (const pattern of events.patterns) {
 			expect(events.emits).not.toContain(pattern.emit);

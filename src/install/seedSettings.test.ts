@@ -48,20 +48,24 @@ describe("deciding whether an install has to generate an admin password", () => 
 	});
 });
 
+const GAME_PORT = 8241;
+
 describe("building the settings patch an install writes", () => {
 	test("always turns the rest api on and pins it to the port the driver talks to", () => {
-		expect(seedPatch(null)).toEqual({
+		expect(seedPatch(GAME_PORT, null)).toEqual({
+			PublicPort: GAME_PORT,
 			RESTAPIEnabled: true,
 			RESTAPIPort: REST_API_PORT,
 		});
 	});
 
 	test("never overwrites an existing admin password", () => {
-		expect(Object.keys(seedPatch(null))).not.toContain("AdminPassword");
+		expect(Object.keys(seedPatch(GAME_PORT, null))).not.toContain("AdminPassword");
 	});
 
 	test("writes the generated password alongside the rest api settings", () => {
-		expect(seedPatch("generated")).toEqual({
+		expect(seedPatch(GAME_PORT, "generated")).toEqual({
+			PublicPort: GAME_PORT,
 			RESTAPIEnabled: true,
 			RESTAPIPort: REST_API_PORT,
 			AdminPassword: "generated",
@@ -69,6 +73,18 @@ describe("building the settings patch an install writes", () => {
 	});
 
 	test("still enables the rest api when it generates a password", () => {
-		expect(seedPatch("generated").RESTAPIEnabled).toBe(true);
+		expect(seedPatch(GAME_PORT, "generated").RESTAPIEnabled).toBe(true);
+	});
+
+	test("advertises the host port the container mirrors, not the container port", () => {
+		expect(seedPatch(GAME_PORT, null).PublicPort).toBe(GAME_PORT);
+	});
+
+	test("re-asserts the public port on every boot, so a migration to another host port follows", () => {
+		expect(seedPatch(8300, null).PublicPort).toBe(8300);
+	});
+
+	test("keeps the public port apart from the rest api port the panel talks to", () => {
+		expect(seedPatch(GAME_PORT, null).RESTAPIPort).toBe(REST_API_PORT);
 	});
 });

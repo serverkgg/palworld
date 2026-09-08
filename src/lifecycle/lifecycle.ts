@@ -1,5 +1,6 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { palworldPost, SERVER_READY, SERVER_SCRIPT } from "../shared";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { palworldPost, roster, SERVER_READY, SERVER_SCRIPT } from "../shared";
 
 const STOP_TIMEOUT_SECONDS = 90;
 
@@ -20,8 +21,13 @@ export const lifecycle: Bridge.Lifecycle = {
 			"-UseMultithreadForDS",
 		];
 	},
+	async onReady() {
+		roster.clear();
+	},
 	async stop(context) {
-		context.emit("ServerStopping");
+		context.emit(BridgeEventName.ServerStopping);
+
+		roster.clear();
 
 		await palworldPost(context, SHUTDOWN_PATH, {
 			waittime: SHUTDOWN_DELAY_SECONDS,

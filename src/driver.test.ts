@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { BridgeControl, BridgeLayout, BridgeSetupStepKind } from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
+import { isBridgeEventName } from "@serverkgg/bridge/protocol";
 import { driver } from "./driver";
 import { rosterOf } from "./shared";
 
@@ -147,6 +148,20 @@ describe("keeping the customer's own secrets out of everyone else's hands", () =
 	test("keeps both passwords secrets", () => {
 		expect(fieldOf("settings", "world", "ServerPassword")?.control).toBe(BridgeControl.Secret);
 		expect(fieldOf("settings", "world", "AdminPassword")?.control).toBe(BridgeControl.Secret);
+	});
+});
+
+describe("declaring the events the platform is allowed to act on", () => {
+	test("names only events the platform's taxonomy knows, so none are dropped", () => {
+		for (const name of driver.events?.emits ?? []) {
+			expect(isBridgeEventName(name)).toBe(true);
+		}
+	});
+
+	test("names only events the platform's taxonomy knows in the log patterns too", () => {
+		for (const pattern of driver.events?.patterns ?? []) {
+			expect(isBridgeEventName(pattern.emit)).toBe(true);
+		}
 	});
 });
 

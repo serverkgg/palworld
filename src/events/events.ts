@@ -1,4 +1,5 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { SERVER_READY } from "../shared";
 
 export const events: Bridge.Events = {
@@ -6,20 +7,23 @@ export const events: Bridge.Events = {
 	patterns: [
 		{
 			match: SERVER_READY,
-			emit: "ServerStarted",
+			emit: BridgeEventName.ServerStarted,
 		},
 		{
 			match: /Fatal error/,
-			emit: "ServerCrashed",
+			emit: BridgeEventName.ServerCrashed,
 		},
 		{
 			match: /Assertion failed: (?<detail>[^\n]{1,200})/,
-			emit: "ServerCrashed",
+			emit: BridgeEventName.ServerCrashed,
 		},
 	],
 	emits: [
-		"PlayerJoined",
-		"PlayerLeft",
-		"ServerStopping",
+		BridgeEventName.PlayerJoined,
+		BridgeEventName.PlayerLeft,
+		BridgeEventName.PlayerKicked,
+		BridgeEventName.PlayerBanned,
+		BridgeEventName.ServerStopping,
+		BridgeEventName.ServerUpdated,
 	],
 };

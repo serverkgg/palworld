@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { PalworldApiError, REST_API_PORT, restCredentials } from "./restApi";
+import { BridgeNetError } from "@serverkgg/bridge";
+import { REST_API_PORT, restCredentials } from "./restApi";
 
 describe("deciding how the panel reaches the palworld rest api", () => {
 	test("uses the admin password and the port the settings declare", () => {
@@ -67,13 +68,13 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 			return restCredentials({
 				AdminPassword: "",
 			});
-		}).toThrow(PalworldApiError);
+		}).toThrow(BridgeNetError);
 	});
 
 	test("refuses to build a request when the admin password is missing", () => {
 		expect(() => {
 			return restCredentials({});
-		}).toThrow(PalworldApiError);
+		}).toThrow(BridgeNetError);
 	});
 
 	test("reports a missing password with no http status, because nothing was sent", () => {
@@ -82,8 +83,8 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 
 			expect.unreachable();
 		} catch (error) {
-			expect(error).toBeInstanceOf(PalworldApiError);
-			expect((error as PalworldApiError).status).toBeNull();
+			expect(error).toBeInstanceOf(BridgeNetError);
+			expect((error as BridgeNetError).status).toBeNull();
 		}
 	});
 });

@@ -1,25 +1,18 @@
-import { Buffer } from "node:buffer";
 import type { Bridge } from "@serverkgg/bridge";
+import { generateToken } from "@serverkgg/bridge/utils";
 import { mergeSettings, REST_API_PORT, readSettings, SETTINGS_DIRECTORY, SETTINGS_FILE } from "../shared";
 
 const DEFAULT_SETTINGS_FILE = "DefaultPalWorldSettings.ini";
 
-const PASSWORD_BYTES = 18;
-
-const generatePassword = () => {
-	const bytes = new Uint8Array(PASSWORD_BYTES);
-
-	crypto.getRandomValues(bytes);
-
-	return Buffer.from(bytes).toString("base64url");
-};
+const PASSWORD_LENGTH = 24;
 
 export const needsAdminPassword = (settings: Bridge.Values) => {
 	return String(settings.AdminPassword ?? "").length === 0;
 };
 
-export const seedPatch = (password: string | null): Bridge.Values => {
+export const seedPatch = (publicPort: number, password: string | null): Bridge.Values => {
 	return {
+		PublicPort: publicPort,
 		RESTAPIEnabled: true,
 		RESTAPIPort: REST_API_PORT,
 		...(password === null
@@ -44,5 +37,5 @@ export const seedSettings = async (context: Bridge.Context) => {
 		context.log("generating an admin password so the panel can control the server");
 	}
 
-	await mergeSettings(context, seedPatch(missing ? generatePassword() : null));
+	await mergeSettings(context, seedPatch(context.port("game"), missing ? generateToken(PASSWORD_LENGTH) : null));
 };
