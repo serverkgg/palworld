@@ -7,7 +7,7 @@ The Palworld game package for the Serverk platform (`serverk.gg`). This repo hol
 ## Layout
 
 - `serverk.yml` — the game manifest: metadata, resources, ports, backup rules, guides.
-- `src/` — the bridge driver: install (SteamCMD), lifecycle, query, backup, and the panel modules.
+- `src/` — the bridge driver: install (SteamCMD), lifecycle, query, backup, and the panel modules. The panel controls the server over Palworld's REST API on loopback with `AdminPassword`; the same password is the RCON password the remote-access card shows, so a rotation waits in the install stamp until the next start writes it into the ini and RCON only listens while the panel toggle is on.
 - `image/Dockerfile` — the runtime image; the compiled bridge binary is its entrypoint.
 - `assets/` — logo and banner (webp).
 - `guides/` — player guides in Arabic and English.

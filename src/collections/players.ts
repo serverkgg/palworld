@@ -17,6 +17,24 @@ const presenceOfRow = (row: Bridge.Row) => {
 	});
 };
 
+export const kickPlayer: Bridge.RowAction = async (context, row) => {
+	await palworldPost(context, KICK_PATH, {
+		userid: row.id,
+		message: "You were kicked by an admin.",
+	});
+
+	context.emit(BridgeEventName.PlayerKicked, presenceOfRow(row));
+};
+
+export const banPlayer: Bridge.RowAction = async (context, row) => {
+	await palworldPost(context, BAN_PATH, {
+		userid: row.id,
+		message: "You were banned by an admin.",
+	});
+
+	context.emit(BridgeEventName.PlayerBanned, presenceOfRow(row));
+};
+
 export const players: Bridge.Collection = {
 	kind: BridgeKind.Collection,
 	requiresRunning: true,
@@ -25,21 +43,7 @@ export const players: Bridge.Collection = {
 		return await playerRoster(context);
 	},
 	actions: {
-		async kick(context, row) {
-			await palworldPost(context, KICK_PATH, {
-				userid: row.id,
-				message: "You were kicked by an admin.",
-			});
-
-			context.emit(BridgeEventName.PlayerKicked, presenceOfRow(row));
-		},
-		async ban(context, row) {
-			await palworldPost(context, BAN_PATH, {
-				userid: row.id,
-				message: "You were banned by an admin.",
-			});
-
-			context.emit(BridgeEventName.PlayerBanned, presenceOfRow(row));
-		},
+		kick: kickPlayer,
+		ban: banPlayer,
 	},
 };

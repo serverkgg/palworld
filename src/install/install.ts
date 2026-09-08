@@ -1,25 +1,8 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { readStamp, writeStamp } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { createSteamcmd, installedBuildId, missingGameRoots } from "@serverkgg/bridge/steam";
-import { GAME_ROOTS, STEAM_APP_ID } from "../shared";
+import { GAME_ROOTS, readInstallStamp, STEAM_APP_ID, writeInstallStamp } from "../shared";
 import { seedSettings } from "./seedSettings";
-
-export interface InstallStamp {
-	buildId: string;
-}
-
-export const stampOf = (raw: Partial<InstallStamp> | null): InstallStamp | null => {
-	return typeof raw?.buildId === "string"
-		? {
-				buildId: raw.buildId,
-			}
-		: null;
-};
-
-const readInstallStamp = async (context: Bridge.Context) => {
-	return stampOf(await readStamp<Partial<InstallStamp>>(context));
-};
 
 const steamcmdOf = (context: Bridge.Context) => {
 	return createSteamcmd(context, {
@@ -62,24 +45,24 @@ export const install: Bridge.Install = {
 		await seedSettings(context);
 
 		const buildId = await steamcmd.buildId();
+		const previous = stamp?.buildId ?? null;
 
-		if (buildId !== null && stamp !== null && stamp.buildId !== buildId) {
+		if (buildId !== null && previous !== null && previous !== buildId) {
 			context.log("the server updated to a newer steam build", {
-				from: stamp.buildId,
+				from: previous,
 				to: buildId,
 			});
 
 			context.emit(BridgeEventName.ServerUpdated, {
-				from: stamp.buildId,
+				from: previous,
 				to: buildId,
 			});
 		}
 
-		if (buildId !== null) {
-			await writeStamp<InstallStamp>(context, {
-				buildId,
-			});
-		}
+		await writeInstallStamp(context, {
+			buildId: buildId ?? previous,
+			adminPasswordNext: stamp?.adminPasswordNext ?? null,
+		});
 
 		context.log("install complete", {
 			app: STEAM_APP_ID,

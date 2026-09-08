@@ -1,25 +1,20 @@
 import type { Bridge } from "@serverkgg/bridge";
+import { RCON_PASSWORD_LENGTH, rconExposed } from "@serverkgg/bridge/rcon";
 import { generateToken } from "@serverkgg/bridge/utils";
-import { mergeSettings, REST_API_PORT, readSettings, SETTINGS_DIRECTORY, SETTINGS_FILE } from "../shared";
+import { accessPatch, mergeSettings, REST_API_PORT, readSettings, SETTINGS_DIRECTORY, SETTINGS_FILE } from "../shared";
 
 const DEFAULT_SETTINGS_FILE = "DefaultPalWorldSettings.ini";
-
-const PASSWORD_LENGTH = 24;
 
 export const needsAdminPassword = (settings: Bridge.Values) => {
 	return String(settings.AdminPassword ?? "").length === 0;
 };
 
-export const seedPatch = (publicPort: number, password: string | null): Bridge.Values => {
+export const seedPatch = (publicPort: number, password: string | null, exposed: boolean): Bridge.Values => {
 	return {
 		PublicPort: publicPort,
 		RESTAPIEnabled: true,
 		RESTAPIPort: REST_API_PORT,
-		...(password === null
-			? {}
-			: {
-					AdminPassword: password,
-				}),
+		...accessPatch(exposed, password),
 	};
 };
 
@@ -37,5 +32,8 @@ export const seedSettings = async (context: Bridge.Context) => {
 		context.log("generating an admin password so the panel can control the server");
 	}
 
-	await mergeSettings(context, seedPatch(context.port("game"), missing ? generateToken(PASSWORD_LENGTH) : null));
+	await mergeSettings(
+		context,
+		seedPatch(context.port("game"), missing ? generateToken(RCON_PASSWORD_LENGTH) : null, rconExposed(context)),
+	);
 };

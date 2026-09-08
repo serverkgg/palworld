@@ -6,6 +6,7 @@ import {
 	BridgeIcon,
 	BridgeLayout,
 } from "@serverkgg/bridge";
+import { rconAccessSections } from "@serverkgg/bridge/rcon";
 import { ANNOUNCE_MESSAGE_LENGTH } from "../shared";
 
 const settingsTab: Bridge.Tab = {
@@ -307,6 +308,7 @@ const controlsTab: Bridge.Tab = {
 				},
 			],
 		},
+		...rconAccessSections(),
 	],
 };
 

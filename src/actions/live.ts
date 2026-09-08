@@ -1,7 +1,5 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { messageArgument, palworldPost, sendAnnounce } from "../shared";
-
-const SAVE_PATH = "/v1/api/save";
+import { messageArgument, sendAnnounce, sendSave } from "../shared";
 
 export const live: Bridge.Actions = {
 	kind: BridgeKind.Actions,
@@ -12,7 +10,7 @@ export const live: Bridge.Actions = {
 		},
 
 		async save(context) {
-			await palworldPost(context, SAVE_PATH);
+			await sendSave(context);
 		},
 	},
 };

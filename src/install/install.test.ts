@@ -3,7 +3,6 @@ import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { STEAM_DIRECTORY, STEAMCMD_DIRECTORY } from "@serverkgg/bridge/steam";
 import { compileGlobs, matchesAny } from "@serverkgg/bridge/utils";
 import { GAME_ROOTS } from "../shared";
-import { type InstallStamp, stampOf } from "./install";
 
 interface Manifest {
 	reset: {
@@ -36,36 +35,6 @@ const survivesReset = (path: string) => {
 const protectedFrom = (path: string) => {
 	return matchedBy(path, manifest.files.protected);
 };
-
-describe("reading the stamp that records which steam build was installed", () => {
-	test("reads a stamp the installer wrote", () => {
-		expect(
-			stampOf({
-				buildId: "18234567",
-			}),
-		).toEqual({
-			buildId: "18234567",
-		});
-	});
-
-	test("treats a missing stamp file as no stamp", () => {
-		expect(stampOf(null)).toBeNull();
-	});
-
-	test("rejects a stamp with no build id at all", () => {
-		expect(stampOf({})).toBeNull();
-	});
-
-	test("rejects a stamp whose build id is not a string", () => {
-		for (const raw of [
-			'{"buildId": 18234567}',
-			'{"buildId": null}',
-			'{"buildId": ["18234567"]}',
-		]) {
-			expect(stampOf(JSON.parse(raw) as Partial<InstallStamp>)).toBeNull();
-		}
-	});
-});
 
 describe("the manifest guarding the steam install against a reset", () => {
 	test("keeps steamcmd across a reset, so a reset never re-downloads twenty gigabytes", () => {

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { type Bridge, BridgeControl, BridgeFormTarget, BridgeLayout } from "@serverkgg/bridge";
+import { RCON_ACCESS_MODULE, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
 import { ANNOUNCE_MESSAGE_LENGTH } from "../shared";
 import { panel } from "./panel";
 
@@ -72,6 +73,16 @@ describe("laying out the palworld panel", () => {
 
 	test("tells the player that a settings change needs a restart", () => {
 		expect(forms.at(0)?.restartHint).toBe(true);
+	});
+
+	test("puts remote access with the controls, as a variable toggle beside its detail card", () => {
+		const controls = panel.tabs.find((tab) => tab.id === "controls");
+		const toggle = controls?.sections.find((section) => section.layout === BridgeLayout.Form);
+		const detail = controls?.sections.find((section) => section.layout === BridgeLayout.Detail);
+
+		expect(toggle?.layout === BridgeLayout.Form && toggle.target).toBe(BridgeFormTarget.Variables);
+		expect(fieldNamed(RCON_ACCESS_VARIABLE)?.control).toBe(BridgeControl.Boolean);
+		expect(detail?.layout === BridgeLayout.Detail && detail.module).toBe(RCON_ACCESS_MODULE);
 	});
 });
 

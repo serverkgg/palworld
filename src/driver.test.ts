@@ -2,8 +2,26 @@ import { describe, expect, test } from "bun:test";
 import { BridgeControl, BridgeLayout, BridgeSetupStepKind } from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
 import { isBridgeEventName } from "@serverkgg/bridge/protocol";
+import { RCON_ACCESS_MODULE, RCON_ACCESS_PORT, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
 import { driver } from "./driver";
-import { rosterOf } from "./shared";
+import { RCON_PORT, REST_API_PORT, rosterOf } from "./shared";
+
+interface Manifest {
+	container: {
+		ports: {
+			key: string;
+			containerPort: number;
+			protocol: string;
+			mirror?: boolean;
+			activeWhen?: {
+				variable: string;
+				values: string[];
+			}[];
+		}[];
+	};
+}
+
+const manifest = Bun.YAML.parse(await Bun.file(new URL("../serverk.yml", import.meta.url)).text()) as Manifest;
 
 const modules = driver.modules ?? {};
 
@@ -17,7 +35,9 @@ const tables = sections.flatMap((section) => {
 		: [];
 });
 
-const args = (driver.terminal?.commands ?? []).flatMap((command) => command.args ?? []);
+const args = (driver.terminal?.commands ?? [])
+	.flatMap((command) => command.args ?? [])
+	.filter((arg) => arg.module !== undefined);
 
 const columnsOf = (module: string) => {
 	return tables
@@ -186,15 +206,60 @@ describe("assembling the palworld driver", () => {
 		expect(driver.panel).toBeDefined();
 	});
 
-	test("registers the settings, players and live modules the tabs reference", () => {
+	test("registers the settings, players, live and remote access modules the tabs reference", () => {
 		expect(Object.keys(modules)).toEqual([
 			"settings",
 			"players",
 			"live",
+			RCON_ACCESS_MODULE,
 		]);
 	});
 
 	test("keeps the setup singleton out of the panel modules, because its id is reserved", () => {
 		expect(Object.keys(modules)).not.toContain("setup");
+	});
+});
+
+const rconPort = manifest.container.ports.find((port) => port.key === RCON_ACCESS_PORT);
+
+describe("the manifest and the driver agreeing on remote access", () => {
+	test("publishes the rcon port the driver writes into the ini, over tcp", () => {
+		expect(rconPort?.containerPort).toBe(RCON_PORT);
+		expect(rconPort?.protocol).toBe("tcp");
+	});
+
+	test("never mirrors the rcon port, because palworld binds the container port the ini names", () => {
+		expect(rconPort?.mirror ?? false).toBe(false);
+	});
+
+	test("publishes the rcon port only while the panel toggle the sections declare is on", () => {
+		expect(rconPort?.activeWhen).toEqual([
+			{
+				variable: RCON_ACCESS_VARIABLE,
+				values: [
+					"true",
+				],
+			},
+		]);
+	});
+
+	test("keeps the rest api the panel talks to off the published ports", () => {
+		for (const port of manifest.container.ports) {
+			expect(port.containerPort).not.toBe(REST_API_PORT);
+		}
+	});
+
+	test("declares every tcp container port once, so the rcon port collides with nothing", () => {
+		const tcp = manifest.container.ports.filter((port) => port.protocol === "tcp").map((port) => port.containerPort);
+
+		expect(new Set(tcp).size).toBe(tcp.length);
+	});
+
+	test("declares the remote access toggle in a form, which is what validate demands of activeWhen", () => {
+		const keys = sections.flatMap((section) => {
+			return section.layout === BridgeLayout.Form ? section.fields.map((field) => field.key) : [];
+		});
+
+		expect(keys).toContain(RCON_ACCESS_VARIABLE);
 	});
 });

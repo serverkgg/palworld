@@ -47,6 +47,24 @@ container:
         default: 8211
         min: 8211
         max: 8310
+    - key: rcon
+      containerPort: 25575
+      protocol: tcp
+      name:
+        ar: RCON
+        en: RCON
+      hint:
+        ar: للأدوات الخارجية بس، ما يدخل منه لاعب. يشتغل لما تفتح الوصول عن بُعد من اللوحة.
+        en: For external tools only, never for players. Live once remote access is turned on in the panel.
+      join: separate
+      hostRange:
+        default: 12500
+        min: 12500
+        max: 12599
+      activeWhen:
+        - variable: RCON_EXPOSED
+          values:
+            - "true"
 
 backup:
   only:

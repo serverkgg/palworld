@@ -1,4 +1,5 @@
 import { type Bridge, BridgeKind, BridgeTerminalLevel } from "@serverkgg/bridge";
+import { consoleHandler } from "./consoleHandler";
 
 const player: Bridge.TerminalArg = {
 	key: "player",
@@ -11,6 +12,25 @@ const player: Bridge.TerminalArg = {
 	column: "name",
 };
 
+const message: Bridge.TerminalArg = {
+	key: "message",
+	label: {
+		ar: "الرسالة",
+		en: "Message",
+	},
+	required: true,
+	variadic: true,
+};
+
+const seconds: Bridge.TerminalArg = {
+	key: "seconds",
+	label: {
+		ar: "الثواني",
+		en: "Seconds",
+	},
+	required: true,
+};
+
 const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "Broadcast",
@@ -19,6 +39,9 @@ const commands: Bridge.TerminalCommand[] = [
 			en: "Broadcast a message to everyone.",
 		},
 		syntax: "Broadcast <message>",
+		args: [
+			message,
+		],
 	},
 	{
 		name: "ShowPlayers",
@@ -65,23 +88,16 @@ const commands: Bridge.TerminalCommand[] = [
 		danger: true,
 	},
 	{
-		name: "TeleportToPlayer",
-		summary: {
-			ar: "ينقلك لمكان لاعب.",
-			en: "Teleport to a player.",
-		},
-		syntax: "TeleportToPlayer <player>",
-		args: [
-			player,
-		],
-	},
-	{
 		name: "Shutdown",
 		summary: {
 			ar: "يوقف السيرفر بعد مهلة مع رسالة.",
 			en: "Shut the server down after a delay, with a message.",
 		},
 		syntax: "Shutdown <seconds> <message>",
+		args: [
+			seconds,
+			message,
+		],
 		danger: true,
 	},
 	{
@@ -117,4 +133,5 @@ export const terminal: Bridge.Terminal = {
 	kind: BridgeKind.Terminal,
 	commands,
 	rules,
+	run: consoleHandler,
 };

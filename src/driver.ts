@@ -1,4 +1,6 @@
 import type { BridgeDriver } from "@serverkgg/bridge";
+import { RCON_ACCESS_MODULE } from "@serverkgg/bridge/rcon";
+import { rconAccess } from "./access";
 import { live } from "./actions";
 import { announce } from "./announce";
 import { backup } from "./backup";
@@ -26,5 +28,6 @@ export const driver: BridgeDriver = {
 		settings,
 		players,
 		live,
+		[RCON_ACCESS_MODULE]: rconAccess,
 	},
 };
