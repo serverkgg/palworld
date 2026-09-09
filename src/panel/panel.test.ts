@@ -1,12 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-	type Bridge,
-	BridgeConfirm,
-	BridgeControl,
-	BridgeFormTarget,
-	BridgeIcon,
-	BridgeLayout,
-} from "@serverkgg/bridge";
+import { type Bridge, BridgeConfirm, BridgeControl, BridgeFormTarget, BridgeLayout } from "@serverkgg/bridge";
 import { RCON_ACCESS_MODULE, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
 import {
 	ANNOUNCE_MESSAGE_LENGTH,
@@ -16,7 +9,6 @@ import {
 	SETTINGS_FIELDS,
 	settingsFieldOf,
 } from "../shared";
-import { UE4SS_MOD_STAGING, UE4SS_VARIABLE } from "../ue4ss";
 import { panel } from "./panel";
 
 const sections = panel.tabs.flatMap((tab) => tab.sections);
@@ -567,110 +559,5 @@ describe("opening the controls tab on how the world is actually running", () => 
 	test("says in both languages what an unreachable server looks like", () => {
 		expect(healthSection?.layout === BridgeLayout.Detail && healthSection.empty?.ar.length).toBeGreaterThan(0);
 		expect(healthSection?.layout === BridgeLayout.Detail && healthSection.empty?.en.length).toBeGreaterThan(0);
-	});
-});
-
-const modsTab = panel.tabs.find((tab) => tab.id === "mods");
-
-const modsSection = (id: string) => {
-	return (modsTab?.sections ?? []).find((section) => section.id === id) ?? null;
-};
-
-describe("giving palworld a mods tab the owner drives from one switch", () => {
-	test("puts the mods tab last, behind the puzzle icon", () => {
-		expect(panel.tabs.at(-1)?.id).toBe("mods");
-		expect(modsTab?.icon).toBe(BridgeIcon.Puzzle);
-		expect(modsTab?.title.ar.length).toBeGreaterThan(0);
-		expect(modsTab?.title.en.length).toBeGreaterThan(0);
-	});
-
-	test("reads the loader card above the switch, where the owner looks first", () => {
-		expect(modsTab?.sections.map((section) => section.id)).toEqual([
-			"ue4ss",
-			"loader",
-			"lua-mods",
-		]);
-	});
-
-	test("draws the card from the ue4ss detail module and explains an empty one", () => {
-		const card = modsSection("ue4ss");
-
-		expect(card?.layout).toBe(BridgeLayout.Detail);
-		expect(card?.layout === BridgeLayout.Detail && card.module).toBe("ue4ss");
-		expect(card?.layout === BridgeLayout.Detail && card.empty?.ar.length).toBeGreaterThan(0);
-		expect(card?.layout === BridgeLayout.Detail && card.empty?.en.length).toBeGreaterThan(0);
-	});
-
-	test("offers one boolean, stored as a variable the installer reads", () => {
-		const form = modsSection("loader");
-
-		expect(form?.layout).toBe(BridgeLayout.Form);
-		expect(form?.layout === BridgeLayout.Form && form.target).toBe(BridgeFormTarget.Variables);
-		expect(form?.layout === BridgeLayout.Form && form.fields.map((field) => field.key)).toEqual([
-			UE4SS_VARIABLE,
-		]);
-		expect(fieldNamed(UE4SS_VARIABLE)?.control).toBe(BridgeControl.Boolean);
-	});
-
-	test("needs no settings module, because the form writes a variable", () => {
-		const form = modsSection("loader");
-
-		expect(form?.layout === BridgeLayout.Form && form.module).toBeUndefined();
-	});
-
-	test("restarts the container instead of reinstalling it, so the world is never touched", () => {
-		const form = modsSection("loader");
-
-		expect(form?.layout === BridgeLayout.Form && form.restartHint).toBe(true);
-		expect(form?.layout === BridgeLayout.Form && form.reinstall).toBe(false);
-	});
-
-	test("says in both languages what the switch does and what turning it off keeps", () => {
-		const help = fieldNamed(UE4SS_VARIABLE)?.help;
-
-		expect(help?.ar).toContain("UE4SS");
-		expect(help?.en).toContain("UE4SS");
-		expect(help?.ar.length).toBeGreaterThan(0);
-		expect(help?.en.length).toBeGreaterThan(0);
-	});
-});
-
-describe("listing the lua mods on that tab", () => {
-	test("draws the table from the collection the driver registers", () => {
-		expect(tableNamed("lua-mods")?.module).toBe("ue4ssMods");
-		expect(tableNamed("lua-mods")?.restartHint).toBe(true);
-	});
-
-	test("shows the mod and whether it is switched on, labelled in both languages", () => {
-		expect(tableNamed("lua-mods")?.columns.map((column) => column.key)).toEqual([
-			"name",
-			"enabled",
-		]);
-
-		for (const column of tableNamed("lua-mods")?.columns ?? []) {
-			expect(column.label.ar.length).toBeGreaterThan(0);
-			expect(column.label.en.length).toBeGreaterThan(0);
-		}
-	});
-
-	test("takes a zip upload into the staging folder the collection reads back", () => {
-		expect(tableNamed("lua-mods")?.upload?.extensions).toEqual([
-			"zip",
-		]);
-		expect(tableNamed("lua-mods")?.upload?.staging).toBe(UE4SS_MOD_STAGING);
-		expect(tableNamed("lua-mods")?.upload?.label.ar.length).toBeGreaterThan(0);
-		expect(tableNamed("lua-mods")?.upload?.label.en.length).toBeGreaterThan(0);
-	});
-
-	test("offers the two row actions the collection implements", () => {
-		expect(tableNamed("lua-mods")?.actions?.map((action) => action.id)).toEqual([
-			"enable",
-			"disable",
-		]);
-	});
-
-	test("explains an empty mods list in both languages", () => {
-		expect(tableNamed("lua-mods")?.empty?.ar.length).toBeGreaterThan(0);
-		expect(tableNamed("lua-mods")?.empty?.en.length).toBeGreaterThan(0);
 	});
 });

@@ -15,7 +15,6 @@ import {
 	RULES_FIELDS,
 	WORLD_FIELDS,
 } from "../shared";
-import { UE4SS_MOD_STAGING, UE4SS_VARIABLE } from "../ue4ss";
 
 const settingsTab: Bridge.Tab = {
 	id: "settings",
@@ -289,116 +288,10 @@ const controlsTab: Bridge.Tab = {
 	],
 };
 
-const modsTab: Bridge.Tab = {
-	id: "mods",
-	title: {
-		ar: "المودات",
-		en: "Mods",
-	},
-	icon: BridgeIcon.Puzzle,
-	sections: [
-		{
-			layout: BridgeLayout.Detail,
-			id: "ue4ss",
-			title: {
-				ar: "محمّل المودات",
-				en: "Mod loader",
-			},
-			module: "ue4ss",
-			empty: {
-				ar: "UE4SS مطفّي. شغّله من الخيار اللي تحت وننزّله لك ونعيد تشغيل سيرفرك.",
-				en: "UE4SS is off. Turn the switch below on and we download it and restart your server for you.",
-			},
-		},
-		{
-			layout: BridgeLayout.Form,
-			id: "loader",
-			title: {
-				ar: "UE4SS",
-				en: "UE4SS",
-			},
-			target: BridgeFormTarget.Variables,
-			reinstall: false,
-			restartHint: true,
-			fields: [
-				{
-					key: UE4SS_VARIABLE,
-					control: BridgeControl.Boolean,
-					label: {
-						ar: "شغّل UE4SS",
-						en: "Enable UE4SS",
-					},
-					help: {
-						ar: "UE4SS هو محمّل المودات اللي تشتغل عليه مودات لوا في بالورلد. لما تشغّله ننزّله لك ونعيد تشغيل سيرفرك، ولما تطفّيه يروح المحمّل بس ومجلد المودات يبقى مكانه.",
-						en: "UE4SS is the mod loader Palworld Lua mods run on. Turning it on downloads it and restarts your server; turning it off removes only the loader and keeps your mods folder.",
-					},
-				},
-			],
-		},
-		{
-			layout: BridgeLayout.Table,
-			id: "lua-mods",
-			title: {
-				ar: "مودات لوا",
-				en: "Lua mods",
-			},
-			module: "ue4ssMods",
-			restartHint: true,
-			columns: [
-				{
-					key: "name",
-					label: {
-						ar: "المود",
-						en: "Mod",
-					},
-				},
-				{
-					key: "enabled",
-					label: {
-						ar: "شغّال",
-						en: "Enabled",
-					},
-				},
-			],
-			upload: {
-				label: {
-					ar: "رفع مود",
-					en: "Upload a mod",
-				},
-				extensions: [
-					"zip",
-				],
-				staging: UE4SS_MOD_STAGING,
-			},
-			actions: [
-				{
-					id: "enable",
-					label: {
-						ar: "شغّل",
-						en: "Enable",
-					},
-				},
-				{
-					id: "disable",
-					label: {
-						ar: "طفّي",
-						en: "Disable",
-					},
-				},
-			],
-			empty: {
-				ar: "ما فيه مودات. شغّل UE4SS أول، بعدين ارفع ملف zip فيه مجلد المود ومعاه scripts/main.lua.",
-				en: "No mods yet. Turn UE4SS on first, then upload a zip holding a mod folder with scripts/main.lua in it.",
-			},
-		},
-	],
-};
-
 export const panel: Bridge.Panel = {
 	tabs: [
 		settingsTab,
 		playersTab,
 		controlsTab,
-		modsTab,
 	],
 };

@@ -327,22 +327,15 @@ describe("assembling the palworld driver", () => {
 		expect(driver.panel).toBeDefined();
 	});
 
-	test("registers the settings, players, bans, health, live, ue4ss and remote access modules the tabs reference", () => {
+	test("registers the settings, players, bans, health, live and remote access modules the tabs reference", () => {
 		expect(Object.keys(modules)).toEqual([
 			"settings",
 			"players",
 			"bans",
 			"health",
 			"live",
-			"ue4ss",
-			"ue4ssMods",
 			RCON_ACCESS_MODULE,
 		]);
-	});
-
-	test("keeps the ue4ss card a detail module and the mods table a collection, which is what their sections demand", () => {
-		expect(modules.ue4ss?.kind).toBe(BridgeKind.Detail);
-		expect(modules.ue4ssMods?.kind).toBe(BridgeKind.Collection);
 	});
 
 	test("keeps the health card a detail module, which is what its section demands", () => {

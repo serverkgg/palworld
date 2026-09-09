@@ -147,22 +147,6 @@ const rules: Bridge.TerminalRule[] = [
 		match: /\bAssertion failed\b/,
 		level: BridgeTerminalLevel.Error,
 	},
-	{
-		match: /Palworld hook validation REFUSED\b/,
-		level: BridgeTerminalLevel.Error,
-	},
-	{
-		match: /Palworld hook validation NOTE\b/,
-		level: BridgeTerminalLevel.Warn,
-	},
-	{
-		match: /Palworld vtable sweep:/,
-		level: BridgeTerminalLevel.Info,
-	},
-	{
-		match: /Starting (?:Lua|C\+\+) mod '/,
-		level: BridgeTerminalLevel.Info,
-	},
 ];
 
 export const terminal: Bridge.Terminal = {

@@ -3,28 +3,13 @@ import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { STEAM_DIRECTORY, STEAMCMD_DIRECTORY } from "@serverkgg/bridge/steam";
 import { compileGlobs, matchesAny } from "@serverkgg/bridge/utils";
 import { GAME_ROOTS } from "../shared";
-import { UE4SS_LAYOUT, UE4SS_LIBRARY, UE4SS_MODS, UE4SS_SETTINGS, UE4SS_STAMP } from "../ue4ss";
 
 interface Manifest {
-	backup: {
-		only: string[];
-	};
 	reset: {
 		keep: string[];
 	};
 	files: {
 		protected: string[];
-		notable: {
-			match: string;
-			label: {
-				ar: string;
-				en: string;
-			};
-			note?: {
-				ar: string;
-				en: string;
-			};
-		}[];
 	};
 }
 
@@ -97,40 +82,5 @@ describe("the manifest guarding the steam install against a reset", () => {
 
 	test("protects the install stamp the driver reports the version from", () => {
 		expect(manifest.files.protected).toContain(INSTALL_STAMP_FILE);
-	});
-});
-
-describe("the manifest carrying ue4ss through a backup, a reset and the file manager", () => {
-	test("backs up the mods the owner installed, beside the world", () => {
-		expect(manifest.backup.only).toContain(`${UE4SS_MODS}/**`);
-	});
-
-	test("protects the loader, its two config files and its stamp from a stray delete", () => {
-		for (const path of [
-			UE4SS_LIBRARY,
-			UE4SS_SETTINGS,
-			UE4SS_LAYOUT,
-			UE4SS_STAMP,
-		]) {
-			expect(manifest.files.protected).toContain(path);
-		}
-	});
-
-	test("leaves the mods folder editable, because that is where the owner drops a mod", () => {
-		expect(protectedFrom(UE4SS_MODS)).toBe(false);
-	});
-
-	test("wipes the loader config on a reset, so the next boot reinstalls it clean", () => {
-		expect(survivesReset(UE4SS_SETTINGS)).toBe(false);
-		expect(survivesReset(UE4SS_STAMP)).toBe(false);
-	});
-
-	test("points the file manager at the mods folder in both languages", () => {
-		const notable = manifest.files.notable.find((entry) => entry.match === UE4SS_MODS);
-
-		expect(notable?.label.ar.length).toBeGreaterThan(0);
-		expect(notable?.label.en.length).toBeGreaterThan(0);
-		expect(notable?.note?.ar).toContain("mods.txt");
-		expect(notable?.note?.en).toContain("mods.txt");
 	});
 });

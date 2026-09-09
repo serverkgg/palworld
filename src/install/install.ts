@@ -2,7 +2,6 @@ import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { createSteamcmd, installedBuildId, missingGameRoots } from "@serverkgg/bridge/steam";
 import { GAME_ROOTS, readInstallStamp, STEAM_APP_ID, writeInstallStamp } from "../shared";
-import { applyUe4ss } from "../ue4ss";
 import { seedSettings } from "./seedSettings";
 
 const steamcmdOf = (context: Bridge.Context) => {
@@ -44,7 +43,6 @@ export const install: Bridge.Install = {
 
 		await steamcmd.linkSteamClient();
 		await seedSettings(context);
-		await applyUe4ss(context);
 
 		const buildId = await steamcmd.buildId();
 		const previous = stamp?.buildId ?? null;

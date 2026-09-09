@@ -13,6 +13,4 @@ export * from "./palworldSettings";
 export * from "./palworldSettingsFields";
 export * from "./palworldSettingsOverlay";
 export * from "./restApi";
-export * from "./serverRoot";
-export * from "./staging";
 export * from "./steamApp";

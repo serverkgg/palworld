@@ -70,7 +70,6 @@ backup:
   only:
     - Pal/Saved/**
     - Pal/Content/Paks/~mods/**
-    - Mods/**
   except:
     - Pal/Saved/**/backup/**
     - Pal/Saved/Logs/**
@@ -137,10 +136,6 @@ files:
     - Pal/Plugins
     - Pal/Content/Paks/Pal-*
     - .serverk-install.json
-    - libUE4SS.so
-    - UE4SS-settings.ini
-    - MemberVariableLayout.ini
-    - .serverk-ue4ss.json
   notable:
     - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini
       label:
@@ -180,16 +175,6 @@ files:
       note:
         ar: مجلد المودات. حط ملفات pak هنا وأعد التشغيل عشان تشتغل، ولازم كل اللاعبين يكون عندهم نفس المودات.
         en: Your mods folder. Drop pak files here and restart for them to load — every player needs the same mods.
-    - match: Mods
-      label:
-        ar: مودات UE4SS
-        en: UE4SS mods
-      icon: puzzle
-      color: "#c77dff"
-      restart: true
-      note:
-        ar: مودات لوا اللي تشتغل على UE4SS. كل مود مجلد فيه scripts/main.lua، وتشغّله من سطره في Mods/mods.txt.
-        en: The Lua mods UE4SS runs. Each mod is a folder with scripts/main.lua inside it, switched on from its line in Mods/mods.txt.
 
 guideTags:
   - id: start

@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { type Bridge, BridgeTerminalLevel, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { stripAnsi } from "@serverkgg/bridge/utils";
 import {
 	consoleCommands,
 	consoleHandler,
@@ -52,55 +51,6 @@ describe("colouring a palworld log line in the terminal", () => {
 
 	test("reads an error before a warning when a line carries both", () => {
 		expect(levelOf("LogPal: Error: Warning: both words on one line")).toBe(BridgeTerminalLevel.Error);
-	});
-
-	test("marks a refused hook as an error, so a broken port is visible in the console", () => {
-		expect(
-			levelOf(
-				"[14:22:03] Palworld hook validation REFUSED AGameModeBase::InitGameState at 0xa3b5000: no sane prologue",
-			),
-		).toBe(BridgeTerminalLevel.Error);
-	});
-
-	test("marks a validation note as a warning", () => {
-		expect(levelOf("[14:22:03] Palworld hook validation NOTE UGameEngine::Tick resolved by AOB scan")).toBe(
-			BridgeTerminalLevel.Warn,
-		);
-	});
-
-	test("marks the vtable sweep and every mod that starts as information", () => {
-		expect(levelOf("[14:22:02] Palworld vtable sweep: BeginPlay 0x380 -> 0x388")).toBe(BridgeTerminalLevel.Info);
-		expect(levelOf("[14:22:03] Starting Lua mod 'BPModLoaderMod'")).toBe(BridgeTerminalLevel.Info);
-		expect(levelOf("[14:22:03] Starting C++ mod 'ExampleMod'")).toBe(BridgeTerminalLevel.Info);
-	});
-
-	test("reads the ue4ss lines through the colour codes the port writes them with", () => {
-		const coloured: [
-			string,
-			BridgeTerminalLevel,
-		][] = [
-			[
-				"\u001b[0m\u001b[0;0m[X] Palworld vtable sweep: 505 vtables, BeginPlay slot 0x388 (261/505)",
-				BridgeTerminalLevel.Info,
-			],
-			[
-				"\u001b[0m\u001b[0;0m[X] Starting Lua mod 'BPModLoaderMod'",
-				BridgeTerminalLevel.Info,
-			],
-			[
-				"\u001b[0m\u001b[0;0m[X] Palworld hook validation REFUSED AGameModeBase::InitGameState at 0xa3b5000: no sane prologue",
-				BridgeTerminalLevel.Error,
-			],
-			[
-				"\u001b[0m\u001b[0;0m[X] Palworld hook validation NOTE UEngine::Tick at 0xaa39580: installing anyway",
-				BridgeTerminalLevel.Warn,
-			],
-		];
-
-		for (const [line, level] of coloured) {
-			expect(levelOf(line)).toBe(level);
-			expect(levelOf(stripAnsi(line))).toBe(level);
-		}
 	});
 
 	test("does not colour a line that merely mentions the word error", () => {
