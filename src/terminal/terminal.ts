@@ -22,6 +22,15 @@ const message: Bridge.TerminalArg = {
 	variadic: true,
 };
 
+const userId: Bridge.TerminalArg = {
+	key: "userId",
+	label: {
+		ar: "المعرّف",
+		en: "User ID",
+	},
+	required: true,
+};
+
 const seconds: Bridge.TerminalArg = {
 	key: "seconds",
 	label: {
@@ -78,14 +87,25 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "BanPlayer",
 		summary: {
-			ar: "يحظر لاعب نهائيًا.",
-			en: "Ban a player.",
+			ar: "يحظر لاعب نهائيًا. لو مو متصل الحين، اكتب معرّفه بدل اسمه.",
+			en: "Ban a player. If they are offline, write their user id instead of their name.",
 		},
 		syntax: "BanPlayer <player>",
 		args: [
 			player,
 		],
 		danger: true,
+	},
+	{
+		name: "UnBanPlayer",
+		summary: {
+			ar: "يرفع الحظر عن لاعب بمعرّفه.",
+			en: "Lift a ban with the player's user id.",
+		},
+		syntax: "UnBanPlayer <userId>",
+		args: [
+			userId,
+		],
 	},
 	{
 		name: "Shutdown",
@@ -126,6 +146,22 @@ const rules: Bridge.TerminalRule[] = [
 	{
 		match: /\bAssertion failed\b/,
 		level: BridgeTerminalLevel.Error,
+	},
+	{
+		match: /Palworld hook validation REFUSED\b/,
+		level: BridgeTerminalLevel.Error,
+	},
+	{
+		match: /Palworld hook validation NOTE\b/,
+		level: BridgeTerminalLevel.Warn,
+	},
+	{
+		match: /Palworld vtable sweep:/,
+		level: BridgeTerminalLevel.Info,
+	},
+	{
+		match: /Starting (?:Lua|C\+\+) mod '/,
+		level: BridgeTerminalLevel.Info,
 	},
 ];
 

@@ -7,10 +7,12 @@ describe("turning the palworld player list into panel rows", () => {
 			players: [
 				{
 					name: "Meslzy",
+					accountName: "meslzy",
 					userId: "steam_76561198000000001",
 					playerId: "1A2B3C4D",
 					level: 42,
 					ping: 31,
+					building_count: 7,
 				},
 			],
 		});
@@ -18,8 +20,12 @@ describe("turning the palworld player list into panel rows", () => {
 		expect(player).toEqual({
 			id: "steam_76561198000000001",
 			name: "Meslzy",
+			account: "meslzy",
+			platform: "Steam",
 			level: 42,
 			ping: 31,
+			buildings: 7,
+			avatarHash: null,
 		});
 	});
 
@@ -72,8 +78,12 @@ describe("turning the palworld player list into panel rows", () => {
 			{
 				id: "steam_1",
 				name: "Real",
+				account: null,
+				platform: "Steam",
 				level: null,
 				ping: null,
+				buildings: null,
+				avatarHash: null,
 			},
 		]);
 	});
@@ -90,7 +100,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBe("steam_1");
 	});
 
-	test("reports a missing level or ping as null rather than zero", () => {
+	test("reports a missing level, ping, account or building count as null rather than zero", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -101,6 +111,102 @@ describe("turning the palworld player list into panel rows", () => {
 
 		expect(player?.level).toBeNull();
 		expect(player?.ping).toBeNull();
+		expect(player?.account).toBeNull();
+		expect(player?.buildings).toBeNull();
+	});
+
+	test("rounds the float ping palworld answers with, so the panel never shows 21.866666793823242", () => {
+		const [player] = rosterOf({
+			players: [
+				{
+					userId: "steam_1",
+					level: 34.0,
+					ping: 21.866_666_793_823_242,
+				},
+			],
+		});
+
+		expect(player?.ping).toBe(22);
+		expect(player?.level).toBe(34);
+	});
+
+	test("cuts a fractional level or building count down to the whole number the game means", () => {
+		const [player] = rosterOf({
+			players: [
+				{
+					userId: "steam_1",
+					level: 34.9,
+					building_count: 7.6,
+				},
+			],
+		});
+
+		expect(player?.level).toBe(34);
+		expect(player?.buildings).toBe(7);
+	});
+
+	test("reports a number the server could not measure as null rather than passing it on", () => {
+		const [player] = rosterOf({
+			players: [
+				{
+					userId: "steam_1",
+					level: Number.NaN,
+					ping: Number.POSITIVE_INFINITY,
+					building_count: Number.NEGATIVE_INFINITY,
+				},
+			],
+		});
+
+		expect(player?.level).toBeNull();
+		expect(player?.ping).toBeNull();
+		expect(player?.buildings).toBeNull();
+	});
+
+	test("keeps a real zero building count instead of nulling it", () => {
+		expect(
+			rosterOf({
+				players: [
+					{
+						userId: "steam_1",
+						building_count: 0,
+					},
+				],
+			}).at(0)?.buildings,
+		).toBe(0);
+	});
+
+	test("names the store the player came in from, so the owner knows who to look for", () => {
+		expect(
+			rosterOf({
+				players: [
+					{
+						userId: "steam_1",
+					},
+					{
+						userId: "gdk_1",
+					},
+					{
+						playerId: "1A2B3C4D",
+					},
+				],
+			}).map((player) => player.platform),
+		).toEqual([
+			"Steam",
+			"Xbox",
+			"1A2B3C4D",
+		]);
+	});
+
+	test("leaves the avatar empty until the steam lookup fills it", () => {
+		expect(
+			rosterOf({
+				players: [
+					{
+						userId: "steam_1",
+					},
+				],
+			}).at(0)?.avatarHash,
+		).toBeNull();
 	});
 
 	test("keeps a real zero ping instead of nulling it", () => {

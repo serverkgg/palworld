@@ -1,14 +1,7 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
-import { type PalworldRosterEntry, palworldGet, playerRoster, roster } from "../shared";
+import { metrics, type PalworldRosterEntry, playerRoster, roster } from "../shared";
 
 const REFRESH_SECONDS = 15;
-
-const METRICS_PATH = "/v1/api/metrics";
-
-interface PalworldMetrics {
-	currentplayernum?: number;
-	maxplayernum?: number;
-}
 
 const currentRoster = async (context: Bridge.Context): Promise<PalworldRosterEntry[] | null> => {
 	try {
@@ -28,18 +21,11 @@ export const query: Bridge.Query = {
 			roster.sync(context, players);
 		}
 
-		try {
-			const metrics = await palworldGet<PalworldMetrics>(context, METRICS_PATH);
+		const current = await metrics.sample(context);
 
-			return {
-				online: metrics.currentplayernum ?? null,
-				max: metrics.maxplayernum ?? null,
-			};
-		} catch {
-			return {
-				online: null,
-				max: null,
-			};
-		}
+		return {
+			online: current?.currentplayernum ?? null,
+			max: current?.maxplayernum ?? null,
+		};
 	},
 };

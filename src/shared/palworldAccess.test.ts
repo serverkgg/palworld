@@ -124,6 +124,7 @@ describe("applying remote access at every start", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: "rotated",
+			settingsPending: null,
 		});
 
 		await applyAccess(context);
@@ -142,6 +143,7 @@ describe("applying remote access at every start", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: null,
+			settingsPending: null,
 		});
 
 		await applyAccess(context);
@@ -149,6 +151,7 @@ describe("applying remote access at every start", () => {
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "1",
 			adminPasswordNext: null,
+			settingsPending: null,
 		});
 		expect(logged).toEqual([]);
 	});
@@ -184,6 +187,7 @@ describe("what the remote access card shows", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: "rotated",
+			settingsPending: null,
 		});
 
 		expect(await adminPassword(context)).toEqual({
@@ -208,6 +212,7 @@ describe("rotating the admin password", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: null,
+			settingsPending: null,
 		});
 
 		await rotateAdminPassword(context);
@@ -226,6 +231,7 @@ describe("rotating the admin password", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: "first",
+			settingsPending: null,
 		});
 
 		await rotateAdminPassword(context);

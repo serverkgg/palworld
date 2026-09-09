@@ -70,10 +70,18 @@ backup:
   only:
     - Pal/Saved/**
     - Pal/Content/Paks/~mods/**
+    - Mods/**
   except:
     - Pal/Saved/**/backup/**
     - Pal/Saved/Logs/**
     - Pal/Saved/Crashes/**
+
+secrets:
+  - key: STEAM_WEB_API_KEY
+    description:
+      ar: مفتاح Steam Web API للمنصة — منه نجيب أسماء حسابات Steam وصورهم في جدول اللاعبين والمحظورين.
+      en: The platform's Steam Web API key — it reads Steam account names and avatars for the players and banned lists.
+    required: false
 
 reset:
   keep:
@@ -82,7 +90,8 @@ reset:
     - Steam
     - steamapps
     - linux64
-    - "*.so"
+    - steamclient.so
+    - libsteamwebrtc.so
     - Manifest_*.txt
     - DefaultPalWorldSettings.ini
     - PalServer.sh
@@ -94,7 +103,16 @@ reset:
 presence:
   name: player
   id: userId
+  avatar: "https://avatars.steamstatic.com/{avatarHash}_full.jpg"
   fields:
+    - key: account
+      label:
+        ar: الحساب
+        en: Account
+    - key: platform
+      label:
+        ar: المنصة
+        en: Platform
     - key: level
       label:
         ar: المستوى
@@ -111,13 +129,18 @@ files:
     - Steam
     - steamapps
     - linux64
-    - "*.so"
+    - steamclient.so
+    - libsteamwebrtc.so
     - PalServer.sh
     - Engine
     - Pal/Binaries
     - Pal/Plugins
     - Pal/Content/Paks/Pal-*
     - .serverk-install.json
+    - libUE4SS.so
+    - UE4SS-settings.ini
+    - MemberVariableLayout.ini
+    - .serverk-ue4ss.json
   notable:
     - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini
       label:
@@ -138,6 +161,15 @@ files:
       note:
         ar: عالمك وشخصيات اللاعبين. لا تعدّل عليه والسيرفر شغّال، وخذ نسخة احتياطية قبل أي شي.
         en: Your world and the player characters. Do not touch it while the server runs, and take a backup first.
+    - match: Pal/Saved/SaveGames/banlist.txt
+      label:
+        ar: محظورين
+        en: Banned
+      icon: shield
+      color: "#d64545"
+      note:
+        ar: قائمة المحظورين من سيرفرك، سطر لكل معرّف لاعب. اللوحة تدير الحظر ورفعه من تبويب اللاعبين، وهذا الملف نسخة اللعبة منها.
+        en: The ban list for your server, one player id per line. The panel adds and lifts bans from the Players tab; this file is the game's own copy.
     - match: Pal/Content/Paks/~mods
       label:
         ar: المودات
@@ -148,6 +180,16 @@ files:
       note:
         ar: مجلد المودات. حط ملفات pak هنا وأعد التشغيل عشان تشتغل، ولازم كل اللاعبين يكون عندهم نفس المودات.
         en: Your mods folder. Drop pak files here and restart for them to load — every player needs the same mods.
+    - match: Mods
+      label:
+        ar: مودات UE4SS
+        en: UE4SS mods
+      icon: puzzle
+      color: "#c77dff"
+      restart: true
+      note:
+        ar: مودات لوا اللي تشتغل على UE4SS. كل مود مجلد فيه scripts/main.lua، وتشغّله من سطره في Mods/mods.txt.
+        en: The Lua mods UE4SS runs. Each mod is a folder with scripts/main.lua inside it, switched on from its line in Mods/mods.txt.
 
 guideTags:
   - id: start

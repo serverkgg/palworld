@@ -1,36 +1,30 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { palworldPost, playerRoster, presenceOf } from "../shared";
+import { BAN_MESSAGE, KICK_MESSAGE, platformOf, playerRoster, presenceOf, sendBan, sendKick } from "../shared";
 
 const REFRESH_SECONDS = 15;
-
-const KICK_PATH = "/v1/api/kick";
-
-const BAN_PATH = "/v1/api/ban";
 
 const presenceOfRow = (row: Bridge.Row) => {
 	return presenceOf({
 		id: row.id,
-		level: typeof row.level === "number" ? row.level : null,
 		name: typeof row.name === "string" && row.name.length > 0 ? row.name : row.id,
+		account: typeof row.account === "string" ? row.account : null,
+		platform: typeof row.platform === "string" && row.platform.length > 0 ? row.platform : platformOf(row.id),
+		level: typeof row.level === "number" ? row.level : null,
 		ping: typeof row.ping === "number" ? row.ping : null,
+		buildings: typeof row.buildings === "number" ? row.buildings : null,
+		avatarHash: typeof row.avatarHash === "string" ? row.avatarHash : null,
 	});
 };
 
 export const kickPlayer: Bridge.RowAction = async (context, row) => {
-	await palworldPost(context, KICK_PATH, {
-		userid: row.id,
-		message: "You were kicked by an admin.",
-	});
+	await sendKick(context, row.id, KICK_MESSAGE);
 
 	context.emit(BridgeEventName.PlayerKicked, presenceOfRow(row));
 };
 
 export const banPlayer: Bridge.RowAction = async (context, row) => {
-	await palworldPost(context, BAN_PATH, {
-		userid: row.id,
-		message: "You were banned by an admin.",
-	});
+	await sendBan(context, row.id, BAN_MESSAGE);
 
 	context.emit(BridgeEventName.PlayerBanned, presenceOfRow(row));
 };

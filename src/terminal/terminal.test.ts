@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { type Bridge, BridgeTerminalLevel, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { stripAnsi } from "@serverkgg/bridge/utils";
 import {
 	consoleCommands,
 	consoleHandler,
@@ -53,6 +54,55 @@ describe("colouring a palworld log line in the terminal", () => {
 		expect(levelOf("LogPal: Error: Warning: both words on one line")).toBe(BridgeTerminalLevel.Error);
 	});
 
+	test("marks a refused hook as an error, so a broken port is visible in the console", () => {
+		expect(
+			levelOf(
+				"[14:22:03] Palworld hook validation REFUSED AGameModeBase::InitGameState at 0xa3b5000: no sane prologue",
+			),
+		).toBe(BridgeTerminalLevel.Error);
+	});
+
+	test("marks a validation note as a warning", () => {
+		expect(levelOf("[14:22:03] Palworld hook validation NOTE UGameEngine::Tick resolved by AOB scan")).toBe(
+			BridgeTerminalLevel.Warn,
+		);
+	});
+
+	test("marks the vtable sweep and every mod that starts as information", () => {
+		expect(levelOf("[14:22:02] Palworld vtable sweep: BeginPlay 0x380 -> 0x388")).toBe(BridgeTerminalLevel.Info);
+		expect(levelOf("[14:22:03] Starting Lua mod 'BPModLoaderMod'")).toBe(BridgeTerminalLevel.Info);
+		expect(levelOf("[14:22:03] Starting C++ mod 'ExampleMod'")).toBe(BridgeTerminalLevel.Info);
+	});
+
+	test("reads the ue4ss lines through the colour codes the port writes them with", () => {
+		const coloured: [
+			string,
+			BridgeTerminalLevel,
+		][] = [
+			[
+				"\u001b[0m\u001b[0;0m[X] Palworld vtable sweep: 505 vtables, BeginPlay slot 0x388 (261/505)",
+				BridgeTerminalLevel.Info,
+			],
+			[
+				"\u001b[0m\u001b[0;0m[X] Starting Lua mod 'BPModLoaderMod'",
+				BridgeTerminalLevel.Info,
+			],
+			[
+				"\u001b[0m\u001b[0;0m[X] Palworld hook validation REFUSED AGameModeBase::InitGameState at 0xa3b5000: no sane prologue",
+				BridgeTerminalLevel.Error,
+			],
+			[
+				"\u001b[0m\u001b[0;0m[X] Palworld hook validation NOTE UEngine::Tick at 0xaa39580: installing anyway",
+				BridgeTerminalLevel.Warn,
+			],
+		];
+
+		for (const [line, level] of coloured) {
+			expect(levelOf(line)).toBe(level);
+			expect(levelOf(stripAnsi(line))).toBe(level);
+		}
+	});
+
 	test("does not colour a line that merely mentions the word error", () => {
 		expect(levelOf("[2026.09.03-12.00.00:000][  0]LogPal: Display: no error occurred")).toBeNull();
 	});
@@ -76,6 +126,7 @@ describe("the commands an admin can run from the terminal", () => {
 			"Save",
 			"KickPlayer",
 			"BanPlayer",
+			"UnBanPlayer",
 			"Shutdown",
 			"DoExit",
 		]);
@@ -97,6 +148,7 @@ describe("the commands an admin can run from the terminal", () => {
 			"ShowPlayers",
 			"Info",
 			"Save",
+			"UnBanPlayer",
 		]) {
 			expect(named.get(name)?.danger).toBeUndefined();
 		}
@@ -222,6 +274,7 @@ const contextWith = (port: number, logged: string[], emitted: Emitted[]) => {
 				}),
 			},
 		},
+		secret: () => null,
 		emit: (event: string, payload?: Bridge.Values) => {
 			emitted.push({
 				event,
@@ -331,11 +384,14 @@ describe("mapping every declared command onto the rest api", () => {
 		expect((await refusalOf("Broadcast   "))?.en).toBe("Write the message first.");
 	});
 
-	test("saves the world", async () => {
-		const { calls, reply } = await run("Save");
+	test("saves the world, and says so, so a backup can trust the save happened", async () => {
+		const { calls, emitted, reply } = await run("Save");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/save");
 		expect(reply?.line).toBe("complete save");
+		expect(emitted.map((event) => event.event)).toEqual([
+			BridgeEventName.WorldSaved,
+		]);
 	});
 
 	test("answers ShowPlayers with the live roster", async () => {
@@ -375,6 +431,65 @@ describe("mapping every declared command onto the rest api", () => {
 		});
 		expect(emitted.at(0)?.event).toBe(BridgeEventName.PlayerBanned);
 		expect(reply?.line).toBe("banned: Nasser");
+	});
+
+	test("bans a user id nobody on the roster carries, so an offline player can be banned", async () => {
+		const { calls, emitted, logged, reply } = await run("BanPlayer steam_9");
+
+		expect(calls.map((call) => call.path)).toEqual([
+			"/v1/api/players",
+			"/v1/api/ban",
+		]);
+		expect(JSON.parse(calls.at(-1)?.body ?? "{}")).toMatchObject({
+			userid: "steam_9",
+		});
+		expect(emitted.at(0)).toEqual({
+			event: BridgeEventName.PlayerBanned,
+			payload: {
+				player: "steam_9",
+				userId: "steam_9",
+				platform: "Steam",
+			},
+		});
+		expect(logged.length).toBe(1);
+		expect(reply?.line).toBe("banned: steam_9");
+	});
+
+	test("prefers the online player when the line names one, rather than banning the raw id", async () => {
+		const { emitted, logged, reply } = await run("BanPlayer steam_1");
+
+		expect(emitted.at(0)?.payload).toMatchObject({
+			player: "Meslzy",
+		});
+		expect(logged).toEqual([]);
+		expect(reply?.line).toBe("banned: Meslzy");
+	});
+
+	test("refuses to ban a name that is neither online nor a user id", async () => {
+		expect((await refusalOf("BanPlayer ghost"))?.en).toContain("write their user id");
+	});
+
+	test("lifts a ban from the user id the line names", async () => {
+		const { calls, emitted, reply } = await run("UnBanPlayer steam_9");
+
+		expect(calls.at(-1)).toEqual({
+			path: "/v1/api/unban",
+			body: JSON.stringify({
+				userid: "steam_9",
+			}),
+		});
+		expect(emitted).toEqual([]);
+		expect(reply?.line).toBe("unbanned: steam_9");
+	});
+
+	test("refuses an unban that names anything but a user id", async () => {
+		for (const input of [
+			"UnBanPlayer",
+			"UnBanPlayer Meslzy",
+			"UnBanPlayer 76561198000000001",
+		]) {
+			expect((await refusalOf(input))?.en).toContain("That is not a user id");
+		}
 	});
 
 	test("refuses to kick a player who is not online", async () => {
@@ -451,8 +566,12 @@ describe("formatting what the rest api answers back", () => {
 				{
 					id: "steam_1",
 					name: "Meslzy",
+					account: "meslzy",
+					platform: "Steam",
 					level: 42,
 					ping: 31,
+					buildings: 7,
+					avatarHash: null,
 				},
 			]),
 		).toEqual([
@@ -481,8 +600,12 @@ describe("formatting what the rest api answers back", () => {
 			{
 				id: "steam_1",
 				name: "Meslzy",
+				account: null,
+				platform: "Steam",
 				level: null,
 				ping: null,
+				buildings: null,
+				avatarHash: null,
 			},
 		];
 

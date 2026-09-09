@@ -25,5 +25,7 @@ export const events: Bridge.Events = {
 		BridgeEventName.PlayerBanned,
 		BridgeEventName.ServerStopping,
 		BridgeEventName.ServerUpdated,
+		BridgeEventName.TickLagging,
+		BridgeEventName.WorldSaved,
 	],
 };

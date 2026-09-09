@@ -35,6 +35,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		).toEqual({
 			buildId: "18234567",
 			adminPasswordNext: null,
+			settingsPending: null,
 		});
 	});
 
@@ -65,6 +66,57 @@ describe("reading the stamp that records which steam build was installed", () =>
 		).toBe("rotated");
 	});
 
+	test("reads the settings waiting for the next start", () => {
+		expect(
+			stampOf({
+				buildId: "1",
+				settingsPending: {
+					ExpRate: "3",
+					ServerName: "سيرفر الأصحاب",
+				},
+			})?.settingsPending,
+		).toEqual({
+			ExpRate: "3",
+			ServerName: "سيرفر الأصحاب",
+		});
+	});
+
+	test("keeps only the string values a corrupt stamp still carries", () => {
+		expect(
+			stampOf({
+				settingsPending: {
+					ExpRate: "3",
+					PalCaptureRate: 2,
+					ServerName: null,
+				},
+			})?.settingsPending,
+		).toEqual({
+			ExpRate: "3",
+		});
+	});
+
+	test("reads a pending map that is not an object of settings as nothing pending", () => {
+		for (const raw of [
+			{},
+			{
+				settingsPending: null,
+			},
+			{
+				settingsPending: {},
+			},
+			{
+				settingsPending: [
+					"ExpRate",
+				],
+			},
+			{
+				settingsPending: "ExpRate=3",
+			},
+		]) {
+			expect(stampOf(raw)?.settingsPending).toBeNull();
+		}
+	});
+
 	test("reads an empty or malformed pending password as none", () => {
 		for (const raw of [
 			{},
@@ -90,11 +142,17 @@ describe("round-tripping the stamp through the volume", () => {
 		await writeInstallStamp(context, {
 			buildId: "4711",
 			adminPasswordNext: "rotated",
+			settingsPending: {
+				ExpRate: "3",
+			},
 		});
 
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "4711",
 			adminPasswordNext: "rotated",
+			settingsPending: {
+				ExpRate: "3",
+			},
 		});
 	});
 
@@ -108,6 +166,7 @@ describe("round-tripping the stamp through the volume", () => {
 		await writeInstallStamp(context, {
 			buildId: "1",
 			adminPasswordNext: null,
+			settingsPending: null,
 		});
 
 		expect(stored.has(INSTALL_STAMP_FILE)).toBe(true);

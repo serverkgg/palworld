@@ -1,16 +1,19 @@
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
-import { banPlayer, kickPlayer } from "../collections";
+import { banPlayer, banUserId, kickPlayer } from "../collections";
 import {
 	messageArgument,
 	type PalworldInfo,
 	type PalworldRosterEntry,
 	playerRoster,
 	readInfo,
+	requireUserId,
 	SHUTDOWN_MESSAGE,
 	sendAnnounce,
 	sendSave,
 	sendShutdown,
 	sendStop,
+	sendUnban,
+	USER_ID_PATTERN,
 } from "../shared";
 
 const SPACING = /\s+/;
@@ -86,7 +89,7 @@ export const shutdownSeconds = (raw: string | undefined): number | null => {
 	return seconds > 0 && seconds <= SHUTDOWN_DELAY_LIMIT_SECONDS ? seconds : null;
 };
 
-const targetOf = async (context: Bridge.Context, line: PalworldConsoleLine) => {
+const needleOf = (line: PalworldConsoleLine) => {
 	if (line.rest.length === 0) {
 		throw new BridgeUserError({
 			ar: "اكتب اسم اللاعب أو الـ ID أول.",
@@ -94,7 +97,11 @@ const targetOf = async (context: Bridge.Context, line: PalworldConsoleLine) => {
 		});
 	}
 
-	const player = findPlayer(await playerRoster(context), line.rest);
+	return line.rest;
+};
+
+const targetOf = async (context: Bridge.Context, line: PalworldConsoleLine) => {
+	const player = findPlayer(await playerRoster(context), needleOf(line));
 
 	if (!player) {
 		throw new BridgeUserError({
@@ -148,12 +155,38 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 	},
 
 	async banplayer(context, line) {
-		const player = await targetOf(context, line);
+		const needle = needleOf(line);
+		const player = findPlayer(await playerRoster(context), needle);
 
-		await banPlayer(context, player, {});
+		if (player) {
+			await banPlayer(context, player, {});
+
+			return [
+				`banned: ${player.name}`,
+			];
+		}
+
+		if (!USER_ID_PATTERN.test(needle)) {
+			throw new BridgeUserError({
+				ar: "ما فيه لاعب بهذا الاسم متصل الحين. لو تبي تحظر واحد مو متصل، اكتب معرّفه زي steam_76561198000000001",
+				en: "No player with that name is online right now. To ban someone who is offline, write their user id like steam_76561198000000001.",
+			});
+		}
+
+		await banUserId(context, needle);
 
 		return [
-			`banned: ${player.name}`,
+			`banned: ${needle}`,
+		];
+	},
+
+	async unbanplayer(context, line) {
+		const userId = requireUserId(line.rest);
+
+		await sendUnban(context, userId);
+
+		return [
+			`unbanned: ${userId}`,
 		];
 	},
 

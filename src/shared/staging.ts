@@ -1,0 +1,17 @@
+export const STAGING_ROOT = ".serverk-staging";
+
+export const relativeUploadPath = (input: string) => {
+	const trimmed = input.trim();
+
+	if (trimmed.length === 0 || trimmed.startsWith("/")) {
+		return null;
+	}
+
+	const segments = trimmed.split("/").filter((segment) => segment.length > 0 && segment !== ".");
+
+	if (segments.length === 0 || segments.includes("..")) {
+		return null;
+	}
+
+	return segments.join("/");
+};

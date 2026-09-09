@@ -86,6 +86,14 @@ describe("declaring the events the driver emits from outside the log", () => {
 		expect(events.emits).toContain("ServerUpdated");
 	});
 
+	test("declares the lag event the metrics sampler emits, which is what the server doctor counts", () => {
+		expect(events.emits).toContain("TickLagging");
+	});
+
+	test("declares the save event every save path emits, from the panel to the backup", () => {
+		expect(events.emits).toContain("WorldSaved");
+	});
+
 	test("does not redeclare an event a log pattern already emits", () => {
 		for (const pattern of events.patterns) {
 			expect(events.emits).not.toContain(pattern.emit);

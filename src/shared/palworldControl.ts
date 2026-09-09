@@ -1,4 +1,5 @@
 import type { Bridge } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { palworldGet, palworldPost } from "./restApi";
 
 const INFO_PATH = "/v1/api/info";
@@ -26,6 +27,8 @@ export const readInfo = async (context: Bridge.Context) => {
 
 export const sendSave = async (context: Bridge.Context) => {
 	await palworldPost(context, SAVE_PATH);
+
+	context.emit(BridgeEventName.WorldSaved, {});
 };
 
 export const sendShutdown = async (context: Bridge.Context, seconds: number, message: string) => {

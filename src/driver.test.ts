@@ -1,10 +1,20 @@
 import { describe, expect, test } from "bun:test";
-import { BridgeControl, BridgeLayout, BridgeSetupStepKind } from "@serverkgg/bridge";
+import { BridgeControl, BridgeFormTarget, BridgeKind, BridgeLayout, BridgeSetupStepKind } from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
+import { PRESENCE_FIELDS_LIMIT, presencePlaceholders } from "@serverkgg/bridge/manifest";
 import { isBridgeEventName } from "@serverkgg/bridge/protocol";
 import { RCON_ACCESS_MODULE, RCON_ACCESS_PORT, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
+import { banRow } from "./collections";
 import { driver } from "./driver";
-import { RCON_PORT, REST_API_PORT, rosterOf } from "./shared";
+import {
+	CROSSPLAY_KEY,
+	presenceOf,
+	RCON_PORT,
+	REST_API_PORT,
+	rosterOf,
+	settingsFieldOf,
+	validateSettingsWrite,
+} from "./shared";
 
 interface Manifest {
 	container: {
@@ -17,6 +27,18 @@ interface Manifest {
 				variable: string;
 				values: string[];
 			}[];
+		}[];
+	};
+	presence: {
+		name: string;
+		id: string;
+		avatar: string;
+		fields: {
+			key: string;
+			label: {
+				ar: string;
+				en: string;
+			};
 		}[];
 	};
 }
@@ -45,17 +67,29 @@ const columnsOf = (module: string) => {
 		.flatMap((table) => table.columns.map((column) => column.key));
 };
 
-const ROSTER_KEYS = Object.keys(
-	rosterOf({
-		players: [
-			{
-				name: "Meslzy",
-				userId: "steam_1",
-				level: 42,
-				ping: 31,
-			},
-		],
-	}).at(0) ?? {},
+const ROSTER_ENTRY = rosterOf({
+	players: [
+		{
+			name: "Meslzy",
+			accountName: "meslzy",
+			userId: "steam_76561198000000001",
+			level: 42,
+			ping: 31,
+			building_count: 7,
+		},
+	],
+}).at(0);
+
+const ROSTER_KEYS = Object.keys(ROSTER_ENTRY ?? {});
+
+const BAN_KEYS = Object.keys(
+	banRow(
+		{
+			userId: "steam_1",
+			playerId: null,
+		},
+		"Meslzy",
+	),
 );
 
 describe("wiring the terminal autocomplete to the live roster", () => {
@@ -85,12 +119,99 @@ describe("wiring the players table to the roster the collection returns", () => 
 		}
 	});
 
-	test("shows the level and ping the panel promises", () => {
+	test("shows the account, platform, level and ping the panel promises", () => {
 		expect(columnsOf("players")).toEqual([
 			"name",
+			"account",
+			"platform",
 			"level",
 			"ping",
 		]);
+	});
+});
+
+const PRESENCE = presenceOf({
+	...(ROSTER_ENTRY ?? {
+		id: "steam_76561198000000001",
+		name: "Meslzy",
+		account: null,
+		platform: "Steam",
+		level: null,
+		ping: null,
+		buildings: null,
+		avatarHash: null,
+	}),
+	avatarHash: "a".repeat(40),
+});
+
+describe("keeping the presence the manifest promises and the payload the driver sends together", () => {
+	test("names the player and identifies them by keys the payload really carries", () => {
+		expect(Object.keys(PRESENCE)).toContain(manifest.presence.name);
+		expect(Object.keys(PRESENCE)).toContain(manifest.presence.id);
+	});
+
+	test("keeps the ban id as the presence id, so a kick and a ban target the same player", () => {
+		expect(PRESENCE[manifest.presence.id as keyof typeof PRESENCE]).toBe(ROSTER_ENTRY?.id);
+	});
+
+	test("resolves the steam avatar template from a placeholder the payload fills", () => {
+		expect(manifest.presence.avatar).toContain("{avatarHash}");
+
+		for (const placeholder of presencePlaceholders(manifest.presence.avatar)) {
+			expect(Object.keys(PRESENCE)).toContain(placeholder);
+		}
+	});
+
+	test("leads with the account every store gives a player, then the platform, the level and the ping", () => {
+		expect(manifest.presence.fields.map((field) => field.key)).toEqual([
+			"account",
+			"platform",
+			"level",
+			"ping",
+		]);
+	});
+
+	test("declares only fields the payload really carries", () => {
+		for (const field of manifest.presence.fields) {
+			expect(Object.keys(PRESENCE)).toContain(field.key);
+		}
+	});
+
+	test("labels every presence field in both arabic and english", () => {
+		for (const field of manifest.presence.fields) {
+			expect(field.label.ar.length).toBeGreaterThan(0);
+			expect(field.label.en.length).toBeGreaterThan(0);
+		}
+	});
+
+	test("stays under the six fields the manifest lets presence carry", () => {
+		expect(manifest.presence.fields.length).toBeLessThanOrEqual(PRESENCE_FIELDS_LIMIT);
+	});
+});
+
+describe("wiring the bans table to the rows the collection returns", () => {
+	test("shows only columns a ban row carries", () => {
+		for (const key of columnsOf("bans")) {
+			expect(BAN_KEYS).toContain(key);
+		}
+	});
+
+	test("shows the name, the platform and the id the owner needs to recognise a ban", () => {
+		expect(columnsOf("bans")).toEqual([
+			"player",
+			"platform",
+			"userId",
+		]);
+	});
+
+	test("takes the unban id by hand, because a banned player is never on the roster", () => {
+		const unban = (driver.terminal?.commands ?? []).find((command) => command.name === "UnBanPlayer");
+
+		expect(unban?.args?.map((arg) => arg.key)).toEqual([
+			"userId",
+		]);
+		expect(unban?.args?.at(0)?.module).toBeUndefined();
+		expect(unban?.args?.at(0)?.column).toBeUndefined();
 	});
 });
 
@@ -206,13 +327,26 @@ describe("assembling the palworld driver", () => {
 		expect(driver.panel).toBeDefined();
 	});
 
-	test("registers the settings, players, live and remote access modules the tabs reference", () => {
+	test("registers the settings, players, bans, health, live, ue4ss and remote access modules the tabs reference", () => {
 		expect(Object.keys(modules)).toEqual([
 			"settings",
 			"players",
+			"bans",
+			"health",
 			"live",
+			"ue4ss",
+			"ue4ssMods",
 			RCON_ACCESS_MODULE,
 		]);
+	});
+
+	test("keeps the ue4ss card a detail module and the mods table a collection, which is what their sections demand", () => {
+		expect(modules.ue4ss?.kind).toBe(BridgeKind.Detail);
+		expect(modules.ue4ssMods?.kind).toBe(BridgeKind.Collection);
+	});
+
+	test("keeps the health card a detail module, which is what its section demands", () => {
+		expect(modules.health?.kind).toBe(BridgeKind.Detail);
 	});
 
 	test("keeps the setup singleton out of the panel modules, because its id is reserved", () => {
@@ -261,5 +395,51 @@ describe("the manifest and the driver agreeing on remote access", () => {
 		});
 
 		expect(keys).toContain(RCON_ACCESS_VARIABLE);
+	});
+});
+
+const settingsForms = sections.flatMap((section) => {
+	return section.layout === BridgeLayout.Form && section.target === BridgeFormTarget.Settings
+		? [
+				section,
+			]
+		: [];
+});
+
+describe("binding every settings form to the module that guards its writes", () => {
+	test("names a module the driver really registers", () => {
+		for (const section of settingsForms) {
+			expect(Object.keys(modules)).toContain(section.module ?? "");
+		}
+	});
+
+	test("keeps that module a settings module, which is what a settings form demands", () => {
+		expect(modules.settings?.kind).toBe(BridgeKind.Settings);
+	});
+
+	test("accepts every field it renders, so the panel can never offer a write the driver refuses", () => {
+		for (const section of settingsForms) {
+			for (const field of section.fields) {
+				expect(settingsFieldOf(field.key)).not.toBeNull();
+			}
+		}
+	});
+
+	test("refuses the ini keys the driver writes for itself, which the panel never offers", () => {
+		for (const key of [
+			"PublicPort",
+			"RESTAPIEnabled",
+			"RESTAPIPort",
+			"RCONEnabled",
+			"RCONPort",
+			CROSSPLAY_KEY,
+		]) {
+			expect(settingsFieldOf(key)).toBeNull();
+			expect(() => {
+				validateSettingsWrite({
+					[key]: 1,
+				});
+			}).toThrow();
+		}
 	});
 });

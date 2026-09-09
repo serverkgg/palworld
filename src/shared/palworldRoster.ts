@@ -5,6 +5,12 @@ export const presenceOf = (player: PalworldRosterEntry) => {
 	return {
 		player: player.name,
 		userId: player.id,
+		...(player.account === null || player.account.length === 0
+			? {}
+			: {
+					account: player.account,
+				}),
+		platform: player.platform,
 		...(player.level === null
 			? {}
 			: {
@@ -14,6 +20,11 @@ export const presenceOf = (player: PalworldRosterEntry) => {
 			? {}
 			: {
 					ping: String(player.ping),
+				}),
+		...(player.avatarHash === null
+			? {}
+			: {
+					avatarHash: player.avatarHash,
 				}),
 	};
 };
