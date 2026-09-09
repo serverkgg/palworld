@@ -1,7 +1,6 @@
 export * from "./installStamp";
 export * from "./palworldAccess";
 export * from "./palworldAnnounce";
-export * from "./palworldAvatars";
 export * from "./palworldBans";
 export * from "./palworldControl";
 export * from "./palworldCrossplay";

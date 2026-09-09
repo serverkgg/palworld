@@ -1,9 +1,13 @@
 import type { Bridge } from "@serverkgg/bridge";
-import { avatars } from "./palworldAvatars";
-import { platformOf } from "./palworldBans";
+import { createSteamAvatars } from "@serverkgg/bridge/steam";
+import { platformOf, steamIdOf } from "./palworldBans";
 import { palworldGet } from "./restApi";
 
 const PLAYERS_PATH = "/v1/api/players";
+
+export const avatars = createSteamAvatars({
+	steamIdOf,
+});
 
 const roundedOf = (value: number | undefined) => {
 	return value === undefined || !Number.isFinite(value) ? null : Math.round(value);

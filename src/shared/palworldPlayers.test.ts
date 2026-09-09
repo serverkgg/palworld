@@ -1,5 +1,50 @@
 import { describe, expect, test } from "bun:test";
-import { rosterOf } from "./palworldPlayers";
+import type { Bridge } from "@serverkgg/bridge";
+import { avatars, rosterOf } from "./palworldPlayers";
+
+interface FakeSteam {
+	context: Bridge.Context;
+	calls: string[][];
+}
+
+const fakeSteam = (hashes: Record<string, string>): FakeSteam => {
+	const calls: string[][] = [];
+
+	const context = {
+		secret(key: string) {
+			return key === "STEAM_WEB_API_KEY" ? "secret-key" : null;
+		},
+		net: {
+			async json(url: string) {
+				const steamIds = (new URL(url).searchParams.get("steamids") ?? "").split(",").filter((id) => id.length > 0);
+
+				calls.push(steamIds);
+
+				return {
+					response: {
+						players: steamIds.flatMap((steamId) => {
+							const hash = hashes[steamId];
+
+							return hash === undefined
+								? []
+								: [
+										{
+											steamid: steamId,
+											avatarfull: `https://avatars.steamstatic.com/${hash}_full.jpg`,
+										},
+									];
+						}),
+					},
+				};
+			},
+		},
+	} as unknown as Bridge.Context;
+
+	return {
+		context,
+		calls,
+	};
+};
 
 describe("turning the palworld player list into panel rows", () => {
 	test("keeps a fully described player as-is", () => {
@@ -258,5 +303,42 @@ describe("turning the palworld player list into panel rows", () => {
 			"steam_2",
 			"steam_3",
 		]);
+	});
+});
+
+describe("reading a steam id out of a palworld user id for the avatar cache", () => {
+	test("asks steam for the steam64 the user id carries, and answers with its avatar hash", async () => {
+		const steam = fakeSteam({
+			"76561198000000001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		});
+
+		expect(
+			await avatars.resolve(steam.context, [
+				"steam_76561198000000001",
+			]),
+		).toEqual(
+			new Map([
+				[
+					"steam_76561198000000001",
+					"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				],
+			]),
+		);
+		expect(steam.calls).toEqual([
+			[
+				"76561198000000001",
+			],
+		]);
+	});
+
+	test("never asks steam about a player who came in from another store", async () => {
+		const steam = fakeSteam({});
+
+		expect(
+			await avatars.resolve(steam.context, [
+				"gdk_2535000000000001",
+			]),
+		).toEqual(new Map());
+		expect(steam.calls).toEqual([]);
 	});
 });

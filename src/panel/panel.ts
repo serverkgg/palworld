@@ -5,6 +5,7 @@ import {
 	BridgeFormTarget,
 	BridgeIcon,
 	BridgeLayout,
+	BridgePlace,
 } from "@serverkgg/bridge";
 import { rconAccessSections } from "@serverkgg/bridge/rcon";
 import {
@@ -31,6 +32,10 @@ const settingsTab: Bridge.Tab = {
 				ar: "أساسيات السيرفر",
 				en: "Server basics",
 			},
+			help: {
+				ar: "اسم سيرفرك ووصفه وكلمات المرور وعدد اللاعبين اللي يدخلون معك.",
+				en: "Your server's name and description, its passwords, and how many players can join.",
+			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
 			restartHint: true,
@@ -42,6 +47,10 @@ const settingsTab: Bridge.Tab = {
 			title: {
 				ar: "المجتمع",
 				en: "Community",
+			},
+			help: {
+				ar: "مودات اللاعبين والشات والشات الصوتي ورسائل الدخول والخروج داخل اللعبة.",
+				en: "Client mods, chat, voice chat, and the join and leave messages inside the game.",
 			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
@@ -55,6 +64,10 @@ const settingsTab: Bridge.Tab = {
 				ar: "قوانين العالم",
 				en: "World rules",
 			},
+			help: {
+				ar: "قتال اللاعبين والنمط القاسي وعقوبة الموت والسفر السريع وباقي قوانين عالمك.",
+				en: "PvP, hardcore, the death penalty, fast travel and the rest of your world's rules.",
+			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
 			restartHint: true,
@@ -67,6 +80,10 @@ const settingsTab: Bridge.Tab = {
 				ar: "معدلات اللعب",
 				en: "Game rates",
 			},
+			help: {
+				ar: "سرعة الخبرة والاصطياد والشغل والضرر وطول اليوم والليل.",
+				en: "How fast XP, catching, work and damage go, and how long the day and the night last.",
+			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
 			restartHint: true,
@@ -78,6 +95,10 @@ const settingsTab: Bridge.Tab = {
 			title: {
 				ar: "القواعد والقروبات",
 				en: "Bases and guilds",
+			},
+			help: {
+				ar: "حدود القروب والقاعدة وعدد المباني والأغراض اللي تبقى على الأرض.",
+				en: "Guild and base limits, how many buildings there can be, and how long dropped items stay.",
 			},
 			target: BridgeFormTarget.Settings,
 			module: "settings",
@@ -102,6 +123,7 @@ const playersTab: Bridge.Tab = {
 				ar: "المتصلين الحين",
 				en: "Online now",
 			},
+			place: BridgePlace.Players,
 			module: "players",
 			columns: [
 				{
@@ -156,6 +178,7 @@ const playersTab: Bridge.Tab = {
 						en: "Ban",
 					},
 					confirm: BridgeConfirm.Strong,
+					offline: true,
 				},
 			],
 			empty: {
@@ -170,6 +193,7 @@ const playersTab: Bridge.Tab = {
 				ar: "المحظورون",
 				en: "Banned players",
 			},
+			place: BridgePlace.Players,
 			module: "bans",
 			columns: [
 				{
@@ -234,6 +258,7 @@ const controlsTab: Bridge.Tab = {
 				ar: "حالة السيرفر",
 				en: "Server health",
 			},
+			place: BridgePlace.Overview,
 			module: "health",
 			empty: {
 				ar: "ما قدرنا نوصل لسيرفرك الحين. شغّله وخلّه دقيقة، وبتطلع لك الأرقام هنا.",

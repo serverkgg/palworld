@@ -1,5 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { type Bridge, BridgeConfirm, BridgeControl, BridgeFormTarget, BridgeLayout } from "@serverkgg/bridge";
+import {
+	type Bridge,
+	BridgeConfirm,
+	BridgeControl,
+	BridgeFormTarget,
+	BridgeLayout,
+	BridgePlace,
+} from "@serverkgg/bridge";
+import type { BridgeSection } from "@serverkgg/bridge/protocol";
 import { RCON_ACCESS_MODULE, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
 import {
 	ANNOUNCE_MESSAGE_LENGTH,
@@ -10,6 +18,10 @@ import {
 	settingsFieldOf,
 } from "../shared";
 import { panel } from "./panel";
+
+const placeOf = (section: BridgeSection | null | undefined) => {
+	return section && "place" in section ? section.place : undefined;
+};
 
 const sections = panel.tabs.flatMap((tab) => tab.sections);
 
@@ -268,6 +280,15 @@ describe("showing the owner who is on the server right now", () => {
 		expect(tableNamed("online")?.actions?.at(0)?.confirm).toBe(BridgeConfirm.Normal);
 		expect(tableNamed("online")?.actions?.at(1)?.confirm).toBe(BridgeConfirm.Strong);
 	});
+
+	test("renders the roster on the platform players page instead of a second players entry", () => {
+		expect(placeOf(tableNamed("online"))).toBe(BridgePlace.Players);
+	});
+
+	test("keeps the ban on a player who already left, and the kick only on one who is still in", () => {
+		expect(tableNamed("online")?.actions?.at(0)?.offline).toBeUndefined();
+		expect(tableNamed("online")?.actions?.at(1)?.offline).toBe(true);
+	});
 });
 
 describe("giving the owner a way back from a ban", () => {
@@ -278,6 +299,16 @@ describe("giving the owner a way back from a ban", () => {
 			"online",
 			"bans",
 		]);
+	});
+
+	test("puts the ban list under the roster, on the same platform players page", () => {
+		expect(placeOf(tableNamed("bans"))).toBe(BridgePlace.Players);
+	});
+
+	test("places every section of the players tab, so the sidebar never shows the noun twice", () => {
+		const players = panel.tabs.find((tab) => tab.id === "players");
+
+		expect(players?.sections.every((section) => placeOf(section) === BridgePlace.Players)).toBe(true);
 	});
 
 	test("titles both tables, so two lists on one tab are never confused", () => {
@@ -434,6 +465,15 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
+	test("says in one sentence what every settings section controls, in both arabic and english", () => {
+		for (const section of settingsSections) {
+			expect(section.help?.ar.length).toBeGreaterThan(0);
+			expect(section.help?.en.length).toBeGreaterThan(0);
+			expect(section.help?.ar.split(".").length).toBe(2);
+			expect(section.help?.en.split(".").length).toBe(2);
+		}
+	});
+
 	test("keeps the world section on the five fields the setup step names", () => {
 		expect(settingsSections.at(0)?.fields.map((field) => field.key)).toEqual([
 			"ServerName",
@@ -544,6 +584,16 @@ const healthSection = (panel.tabs.find((tab) => tab.id === "controls")?.sections
 describe("opening the controls tab on how the world is actually running", () => {
 	test("puts the health card above the quick actions, where the owner looks first", () => {
 		expect(panel.tabs.find((tab) => tab.id === "controls")?.sections.at(0)?.id).toBe("health");
+	});
+
+	test("renders the live numbers on the overview, beside the cpu and the memory", () => {
+		expect(placeOf(healthSection)).toBe(BridgePlace.Overview);
+	});
+
+	test("keeps the quick actions and remote access on the controls tab, so it stays in the sidebar", () => {
+		const controls = panel.tabs.find((tab) => tab.id === "controls");
+
+		expect(controls?.sections.some((section) => placeOf(section) === undefined)).toBe(true);
 	});
 
 	test("reads it from the health detail module", () => {
