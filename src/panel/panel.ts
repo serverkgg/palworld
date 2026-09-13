@@ -123,6 +123,10 @@ const playersTab: Bridge.Tab = {
 				ar: "المتصلين الحين",
 				en: "Online now",
 			},
+			help: {
+				ar: "اللي داخلين سيرفرك الحين. تقدر تطرد أو تحظر أي واحد من سطره.",
+				en: "Who is on your server right now. Kick or ban anyone from their row.",
+			},
 			place: BridgePlace.Players,
 			module: "players",
 			columns: [
@@ -193,6 +197,10 @@ const playersTab: Bridge.Tab = {
 				ar: "المحظورون",
 				en: "Banned players",
 			},
+			help: {
+				ar: "اللي ممنوعين يدخلون سيرفرك. احظر أي واحد بمعرّفه، أو ارفع الحظر من سطره.",
+				en: "Players who cannot join your server. Ban anyone by user id, or lift a ban from its row.",
+			},
 			place: BridgePlace.Players,
 			module: "bans",
 			columns: [
@@ -257,6 +265,10 @@ const controlsTab: Bridge.Tab = {
 			title: {
 				ar: "حالة السيرفر",
 				en: "Server health",
+			},
+			help: {
+				ar: "أداء سيرفرك واللاعبين ومن متى شغّال، تتحدث كل 15 ثانية وهو شغّال.",
+				en: "Your server performance, players and uptime, refreshed every 15 seconds while it runs.",
 			},
 			place: BridgePlace.Overview,
 			module: "health",
