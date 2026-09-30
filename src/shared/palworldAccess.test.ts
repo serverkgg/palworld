@@ -49,6 +49,9 @@ const harness = (options: { settings?: Bridge.Values; variables?: Record<string,
 				},
 			},
 		},
+		activity: {
+			report() {},
+		},
 		log(message: string) {
 			logged.push(message);
 		},
@@ -125,6 +128,7 @@ describe("applying remote access at every start", () => {
 			buildId: "1",
 			adminPasswordNext: "rotated",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		await applyAccess(context);
@@ -144,6 +148,7 @@ describe("applying remote access at every start", () => {
 			buildId: "1",
 			adminPasswordNext: null,
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		await applyAccess(context);
@@ -152,6 +157,7 @@ describe("applying remote access at every start", () => {
 			buildId: "1",
 			adminPasswordNext: null,
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 		expect(logged).toEqual([]);
 	});
@@ -188,6 +194,7 @@ describe("what the remote access card shows", () => {
 			buildId: "1",
 			adminPasswordNext: "rotated",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		expect(await adminPassword(context)).toEqual({
@@ -213,6 +220,7 @@ describe("rotating the admin password", () => {
 			buildId: "1",
 			adminPasswordNext: null,
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		await rotateAdminPassword(context);
@@ -232,6 +240,7 @@ describe("rotating the admin password", () => {
 			buildId: "1",
 			adminPasswordNext: "first",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		await rotateAdminPassword(context);

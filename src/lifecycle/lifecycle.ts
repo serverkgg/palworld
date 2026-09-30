@@ -1,10 +1,12 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
+	appliedSettingKeys,
 	applyAccess,
 	clearPendingSettings,
 	mergeSettings,
 	metrics,
+	readPendingBaseline,
 	readPendingSettings,
 	roster,
 	SERVER_READY,
@@ -12,6 +14,7 @@ import {
 	SHUTDOWN_DELAY_SECONDS,
 	SHUTDOWN_MESSAGE,
 	sendShutdown,
+	settingsAppliedActivity,
 } from "../shared";
 
 const STOP_TIMEOUT_SECONDS = 90;
@@ -22,15 +25,21 @@ export const lifecycle: Bridge.Lifecycle = {
 	stopTimeoutSeconds: STOP_TIMEOUT_SECONDS,
 	async command(context) {
 		const pending = await readPendingSettings(context);
-		const replayed = Object.keys(pending).length;
+		const replayed = Object.keys(pending);
 
-		if (replayed > 0) {
+		if (replayed.length > 0) {
+			const changed = appliedSettingKeys(pending, await readPendingBaseline(context));
+
 			await mergeSettings(context, pending);
 			await clearPendingSettings(context);
 
 			context.log("replayed the settings the game overwrote on its last shutdown", {
-				keys: replayed,
+				keys: replayed.length,
 			});
+
+			if (changed.length > 0) {
+				context.activity.report(settingsAppliedActivity(changed));
+			}
 		}
 
 		await applyAccess(context);

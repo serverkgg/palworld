@@ -1,5 +1,6 @@
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
-import { banPlayer, banUserId, kickPlayer } from "../collections";
+import { broadcastMessage, saveWorld } from "../actions";
+import { banPlayer, banUserId, kickPlayer, unbanUserId } from "../collections";
 import {
 	messageArgument,
 	type PalworldInfo,
@@ -8,11 +9,8 @@ import {
 	readInfo,
 	requireUserId,
 	SHUTDOWN_MESSAGE,
-	sendAnnounce,
-	sendSave,
 	sendShutdown,
 	sendStop,
-	sendUnban,
 	USER_ID_PATTERN,
 } from "../shared";
 
@@ -121,7 +119,7 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 			message: line.rest,
 		});
 
-		await sendAnnounce(context, message);
+		await broadcastMessage(context, message);
 
 		return [
 			`broadcasted: ${message}`,
@@ -137,7 +135,7 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 	},
 
 	async save(context) {
-		await sendSave(context);
+		await saveWorld(context);
 
 		return [
 			"complete save",
@@ -183,7 +181,7 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 	async unbanplayer(context, line) {
 		const userId = requireUserId(line.rest);
 
-		await sendUnban(context, userId);
+		await unbanUserId(context, userId, "");
 
 		return [
 			`unbanned: ${userId}`,

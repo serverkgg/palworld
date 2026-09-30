@@ -214,7 +214,7 @@ interface Emitted {
 	payload: Bridge.Values | undefined;
 }
 
-const contextWith = (port: number, logged: string[], emitted: Emitted[]) => {
+const contextWith = (port: number, logged: string[], emitted: Emitted[], reported: Bridge.Activity[]) => {
 	return {
 		codec: {
 			ueIni: {
@@ -231,6 +231,11 @@ const contextWith = (port: number, logged: string[], emitted: Emitted[]) => {
 				payload,
 			});
 		},
+		activity: {
+			report: (entry: Bridge.Activity) => {
+				reported.push(entry);
+			},
+		},
 		log: (message: string) => {
 			logged.push(message);
 		},
@@ -241,15 +246,17 @@ const run = async (input: string) => {
 	const calls: RestCall[] = [];
 	const logged: string[] = [];
 	const emitted: Emitted[] = [];
+	const reported: Bridge.Activity[] = [];
 	const server = restServer(calls);
 
 	try {
-		const reply = await consoleHandler(contextWith(server.port ?? 0, logged, emitted), input);
+		const reply = await consoleHandler(contextWith(server.port ?? 0, logged, emitted, reported), input);
 
 		return {
 			calls,
 			emitted,
 			logged,
+			reported,
 			reply,
 		};
 	} finally {
@@ -584,6 +591,81 @@ describe("formatting what the rest api answers back", () => {
 			"soon",
 		]) {
 			expect(shutdownSeconds(raw)).toBeNull();
+		}
+	});
+});
+
+describe("telling the owner what a console command changed", () => {
+	test("reports a kick once, with the player it names", async () => {
+		const { reported } = await run("KickPlayer steam_1");
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.PlayerKicked,
+		]);
+		expect(reported.at(0)?.subject).toBe("Meslzy");
+		expect(reported.at(0)?.text.en).toBe("Kicked Meslzy (Steam)");
+	});
+
+	test("reports a ban once, whether the player is online or only a user id", async () => {
+		for (const input of [
+			"BanPlayer nasser",
+			"BanPlayer steam_9",
+		]) {
+			const { reported } = await run(input);
+
+			expect(reported.map((entry) => entry.name)).toEqual([
+				BridgeEventName.PlayerBanned,
+			]);
+		}
+	});
+
+	test("reports an unban once, by the user id when no name can be found", async () => {
+		const { reported } = await run("UnBanPlayer steam_9");
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.PlayerUnbanned,
+		]);
+		expect(reported.at(0)?.subject).toBe("steam_9");
+	});
+
+	test("reports a broadcast once, as an excerpt", async () => {
+		const { reported } = await run(`Broadcast ${"a".repeat(150)}`);
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.BroadcastSent,
+		]);
+		expect(reported.at(0)?.text.en).not.toContain("a".repeat(100));
+	});
+
+	test("reports a save once, beside the save event a backup waits for", async () => {
+		const { emitted, reported } = await run("Save");
+
+		expect(emitted.map((event) => event.event)).toEqual([
+			BridgeEventName.WorldSaved,
+		]);
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.GameplayChanged,
+		]);
+	});
+
+	test("reports nothing for a command that only reads", async () => {
+		for (const input of [
+			"ShowPlayers",
+			"Info",
+		]) {
+			expect((await run(input)).reported).toEqual([]);
+		}
+	});
+
+	test("never puts the admin password into what it reports", async () => {
+		for (const input of [
+			"KickPlayer steam_1",
+			"BanPlayer steam_9",
+			"UnBanPlayer steam_9",
+			"Broadcast hello",
+			"Save",
+		]) {
+			expect(JSON.stringify((await run(input)).reported)).not.toContain("s3cret");
 		}
 	});
 });

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
+import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { readPendingSettings, writeInstallStamp } from "../shared";
 import { lifecycle } from "./lifecycle";
 
@@ -9,6 +10,7 @@ interface Harness {
 	context: Bridge.Context;
 	ini: Bridge.Values;
 	logged: string[];
+	reported: Bridge.Activity[];
 }
 
 const harness = (ini: Bridge.Values = {}): Harness => {
@@ -17,6 +19,7 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 		...ini,
 	};
 	const logged: string[] = [];
+	const reported: Bridge.Activity[] = [];
 
 	const context = {
 		variable() {
@@ -48,6 +51,11 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 				},
 			},
 		},
+		activity: {
+			report(entry: Bridge.Activity) {
+				reported.push(entry);
+			},
+		},
 		log(message: string) {
 			logged.push(message);
 		},
@@ -57,6 +65,7 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 		context,
 		ini: settings,
 		logged,
+		reported,
 	};
 };
 
@@ -65,6 +74,7 @@ const pending = async (context: Bridge.Context, settingsPending: Record<string, 
 		buildId: "1",
 		adminPasswordNext: null,
 		settingsPending,
+		settingsBaseline: null,
 	});
 };
 
@@ -131,8 +141,78 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(logged).toContain("replayed the settings the game overwrote on its last shutdown");
 	});
 
+	test("tells the owner which settings landed from a pending record with no baseline, by name and never by value", async () => {
+		const { context, reported } = harness();
+
+		await pending(context, {
+			ExpRate: "3",
+			ServerPassword: "hunter22",
+			AdminPassword: "admin-s3cret",
+		});
+
+		await lifecycle.command(context);
+
+		expect(reported).toEqual([
+			{
+				name: BridgeEventName.SettingsApplied,
+				text: {
+					ar: "تم تطبيق الإعدادات اللي كانت تنتظر التشغيل (3)",
+					en: "Applied the settings that were waiting for the next start (3)",
+				},
+				details: {
+					keys: "ExpRate,ServerPassword,AdminPassword",
+					count: 3,
+				},
+			},
+		]);
+		expect(JSON.stringify(reported)).not.toContain("hunter22");
+		expect(JSON.stringify(reported)).not.toContain("admin-s3cret");
+	});
+
+	test("reports the replay once, so the next start does not repeat it", async () => {
+		const { context, reported } = harness();
+
+		await pending(context, {
+			ExpRate: "3",
+		});
+
+		await lifecycle.command(context);
+		await lifecycle.command(context);
+
+		expect(reported.map((entry) => entry.name)).toEqual([
+			BridgeEventName.SettingsApplied,
+		]);
+	});
+
+	test("reports nothing when the replay could not be written, and keeps it waiting", async () => {
+		const { context, reported } = harness();
+
+		await pending(context, {
+			ExpRate: "3",
+		});
+
+		const failing = {
+			...context,
+			codec: {
+				ueIni: {
+					...context.codec.ueIni,
+					async merge() {
+						throw new Error("disk full");
+					},
+				},
+			},
+		} as unknown as Bridge.Context;
+
+		await expect(lifecycle.command(failing)).rejects.toThrow("disk full");
+
+		expect(reported).toEqual([]);
+		expect(await readPendingSettings(context)).toEqual({
+			ExpRate: "3",
+		});
+	});
+
 	test("says nothing and touches nothing when no write is waiting", async () => {
-		const { context, ini, logged } = harness({
+		const { context, ini, logged, reported } = harness({
 			ExpRate: "1.000000",
 		});
 
@@ -142,6 +222,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 
 		expect(ini.ExpRate).toBe("1.000000");
 		expect(logged).toEqual([]);
+		expect(reported).toEqual([]);
 	});
 
 	test("still applies remote access after the replay", async () => {

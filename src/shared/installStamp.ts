@@ -1,18 +1,28 @@
 import type { Bridge } from "@serverkgg/bridge";
 import { readStamp, writeStamp } from "@serverkgg/bridge/install";
 
+export interface PendingBaseline {
+	values: Record<string, string>;
+	secrets: Record<string, boolean>;
+}
+
 export interface InstallStamp {
 	buildId: string | null;
 	adminPasswordNext: string | null;
 	settingsPending: Record<string, string> | null;
+	settingsBaseline: PendingBaseline | null;
 }
 
-const pendingOf = (raw: unknown): Record<string, string> | null => {
-	if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-		return null;
-	}
+const isRecord = (raw: unknown): raw is Record<string, unknown> => {
+	return typeof raw === "object" && raw !== null && !Array.isArray(raw);
+};
 
+const textsOf = (raw: unknown): Record<string, string> => {
 	const values: Record<string, string> = {};
+
+	if (!isRecord(raw)) {
+		return values;
+	}
 
 	for (const [key, value] of Object.entries(raw)) {
 		if (typeof value === "string") {
@@ -20,7 +30,40 @@ const pendingOf = (raw: unknown): Record<string, string> | null => {
 		}
 	}
 
+	return values;
+};
+
+const flagsOf = (raw: unknown): Record<string, boolean> => {
+	const flags: Record<string, boolean> = {};
+
+	if (!isRecord(raw)) {
+		return flags;
+	}
+
+	for (const [key, value] of Object.entries(raw)) {
+		if (typeof value === "boolean") {
+			flags[key] = value;
+		}
+	}
+
+	return flags;
+};
+
+const pendingOf = (raw: unknown): Record<string, string> | null => {
+	const values = textsOf(raw);
+
 	return Object.keys(values).length === 0 ? null : values;
+};
+
+const baselineOf = (raw: unknown): PendingBaseline | null => {
+	if (!isRecord(raw)) {
+		return null;
+	}
+
+	return {
+		values: textsOf(raw.values),
+		secrets: flagsOf(raw.secrets),
+	};
 };
 
 export const stampOf = (raw: Record<string, unknown> | null): InstallStamp | null => {
@@ -33,6 +76,7 @@ export const stampOf = (raw: Record<string, unknown> | null): InstallStamp | nul
 		adminPasswordNext:
 			typeof raw.adminPasswordNext === "string" && raw.adminPasswordNext.length > 0 ? raw.adminPasswordNext : null,
 		settingsPending: pendingOf(raw.settingsPending),
+		settingsBaseline: baselineOf(raw.settingsBaseline),
 	};
 };
 

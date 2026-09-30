@@ -3,8 +3,10 @@ import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { readInstallStamp, writeInstallStamp } from "./installStamp";
 import {
+	appliedSettingKeys,
 	clearPendingSettings,
 	forgetPendingSettings,
+	readPendingBaseline,
 	readPendingSettings,
 	recordPendingSettings,
 } from "./palworldSettingsOverlay";
@@ -39,6 +41,7 @@ const stamped = async (settingsPending: Record<string, string> | null) => {
 		buildId: "1",
 		adminPasswordNext: null,
 		settingsPending,
+		settingsBaseline: null,
 	});
 
 	return context;
@@ -76,12 +79,16 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 	test("stores the values the way the ini codec writes them", async () => {
 		const context = await stamped(null);
 
-		await recordPendingSettings(context, {
-			ExpRate: 3,
-			bIsPvP: true,
-			ServerName: "سيرفر الأصحاب",
-			ServerPassword: null,
-		});
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 3,
+				bIsPvP: true,
+				ServerName: "سيرفر الأصحاب",
+				ServerPassword: null,
+			},
+			{},
+		);
 
 		expect(await readPendingSettings(context)).toEqual({
 			ExpRate: "3",
@@ -96,9 +103,13 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 			ExpRate: "3",
 		});
 
-		await recordPendingSettings(context, {
-			WorkSpeedRate: 2,
-		});
+		await recordPendingSettings(
+			context,
+			{
+				WorkSpeedRate: 2,
+			},
+			{},
+		);
 
 		expect(await readPendingSettings(context)).toEqual({
 			ExpRate: "3",
@@ -111,9 +122,13 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 			ExpRate: "3",
 		});
 
-		await recordPendingSettings(context, {
-			ExpRate: 5000,
-		});
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 5000,
+			},
+			{},
+		);
 
 		expect(await readPendingSettings(context)).toEqual({
 			ExpRate: "5000",
@@ -127,11 +142,16 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 			buildId: "4711",
 			adminPasswordNext: "rotated",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
-		await recordPendingSettings(context, {
-			ExpRate: 3,
-		});
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 3,
+			},
+			{},
+		);
 
 		const stamp = await readInstallStamp(context);
 
@@ -142,9 +162,13 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 	test("keeps the write on a volume the installer never stamped, instead of losing it", async () => {
 		const { context } = contextWith();
 
-		await recordPendingSettings(context, {
-			ExpRate: 3,
-		});
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 3,
+			},
+			{},
+		);
 
 		expect(await readPendingSettings(context)).toEqual({
 			ExpRate: "3",
@@ -154,7 +178,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 	test("writes no stamp for a write that carries nothing", async () => {
 		const { context, stored } = contextWith();
 
-		await recordPendingSettings(context, {});
+		await recordPendingSettings(context, {}, {});
 
 		expect(stored.has(INSTALL_STAMP_FILE)).toBe(false);
 	});
@@ -180,6 +204,7 @@ describe("clearing the pending settings once they were replayed", () => {
 			settingsPending: {
 				ExpRate: "3",
 			},
+			settingsBaseline: null,
 		});
 
 		await clearPendingSettings(context);
@@ -188,6 +213,7 @@ describe("clearing the pending settings once they were replayed", () => {
 			buildId: "4711",
 			adminPasswordNext: "rotated",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 	});
 
@@ -225,6 +251,7 @@ describe("forgetting a pending write the owner has since made while the game was
 			settingsPending: {
 				ExpRate: "3",
 			},
+			settingsBaseline: null,
 		});
 
 		await forgetPendingSettings(context, [
@@ -235,6 +262,7 @@ describe("forgetting a pending write the owner has since made while the game was
 			buildId: "4711",
 			adminPasswordNext: "rotated",
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 	});
 
@@ -260,5 +288,101 @@ describe("forgetting a pending write the owner has since made while the game was
 		]);
 
 		expect(stored.has(INSTALL_STAMP_FILE)).toBe(false);
+	});
+});
+
+describe("remembering what each pending setting was before the owner changed it", () => {
+	test("keeps the first value a setting had across several writes", async () => {
+		const context = await stamped(null);
+
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 2,
+			},
+			{
+				ExpRate: "1.000000",
+			},
+		);
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 3,
+			},
+			{
+				ExpRate: "2",
+			},
+		);
+
+		expect(await readPendingBaseline(context)).toEqual({
+			values: {
+				ExpRate: "1.000000",
+			},
+			secrets: {},
+		});
+	});
+
+	test("counts a key an older release left pending without a baseline as changed", async () => {
+		const context = await stamped({
+			ExpRate: "1",
+		});
+
+		await recordPendingSettings(
+			context,
+			{
+				WorkSpeedRate: 1,
+			},
+			{
+				ExpRate: "1",
+				WorkSpeedRate: "1.000000",
+			},
+		);
+
+		expect(appliedSettingKeys(await readPendingSettings(context), await readPendingBaseline(context))).toEqual([
+			"ExpRate",
+		]);
+	});
+
+	test("clears the baseline with the pending settings", async () => {
+		const context = await stamped(null);
+
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 2,
+			},
+			{
+				ExpRate: "1",
+			},
+		);
+		await clearPendingSettings(context);
+
+		expect(await readPendingBaseline(context)).toBeNull();
+	});
+
+	test("drops the baseline of a key the owner wrote while the game was down", async () => {
+		const context = await stamped(null);
+
+		await recordPendingSettings(
+			context,
+			{
+				ExpRate: 2,
+				WorkSpeedRate: 2,
+			},
+			{
+				ExpRate: "1",
+				WorkSpeedRate: "1",
+			},
+		);
+		await forgetPendingSettings(context, [
+			"ExpRate",
+		]);
+
+		expect(await readPendingBaseline(context)).toEqual({
+			values: {
+				WorkSpeedRate: "1",
+			},
+			secrets: {},
+		});
 	});
 });

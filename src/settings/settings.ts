@@ -30,12 +30,13 @@ export const settings: Bridge.Settings = {
 	},
 	async write(context, values) {
 		const checked = validateSettingsWrite(values);
-		const patch = foldCrossplay(checked, crossplayRaw(await currentSettings(context)));
+		const current = await currentSettings(context);
+		const patch = foldCrossplay(checked, crossplayRaw(current));
 
 		await mergeSettings(context, patch);
 
 		if (context.server.running) {
-			await recordPendingSettings(context, patch);
+			await recordPendingSettings(context, patch, current);
 
 			return;
 		}

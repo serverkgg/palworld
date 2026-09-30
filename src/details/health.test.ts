@@ -150,6 +150,9 @@ const harness = (answering: Answering) => {
 			},
 		},
 		emit() {},
+		activity: {
+			report() {},
+		},
 		log: Object.assign(() => {}, {
 			warn() {},
 			error() {},

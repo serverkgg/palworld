@@ -3,6 +3,7 @@ import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { playerSummaries, steamWebApiReady } from "@serverkgg/bridge/steam";
 import {
 	BAN_MESSAGE,
+	bannedActivity,
 	type PalworldBan,
 	platformOf,
 	readBanList,
@@ -11,6 +12,7 @@ import {
 	sendBan,
 	sendUnban,
 	steamIdOf,
+	unbannedActivity,
 } from "../shared";
 
 const REFRESH_SECONDS = 15;
@@ -60,15 +62,30 @@ export const banUserId = async (context: Bridge.Context, input: string) => {
 
 	await sendBan(context, userId, BAN_MESSAGE);
 
-	context.emit(BridgeEventName.PlayerBanned, {
+	const target = {
 		player: userId,
 		userId,
 		platform: platformOf(userId),
-	});
+	};
+
+	context.emit(BridgeEventName.PlayerBanned, target);
+	context.activity.report(bannedActivity(target));
 
 	context.log("banned a user id that was not online", {
 		userId,
 	});
+};
+
+export const unbanUserId = async (context: Bridge.Context, userId: string, known: string) => {
+	await sendUnban(context, userId);
+
+	context.activity.report(
+		unbannedActivity({
+			player: known.length > 0 ? known : userId,
+			userId,
+			platform: platformOf(userId),
+		}),
+	);
 };
 
 export const bans: Bridge.Collection = {
@@ -86,7 +103,7 @@ export const bans: Bridge.Collection = {
 	},
 	actions: {
 		async remove(context, row) {
-			await sendUnban(context, row.id);
+			await unbanUserId(context, row.id, typeof row.player === "string" ? row.player : "");
 
 			context.log("lifted a ban from the panel", {
 				userId: row.id,

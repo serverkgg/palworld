@@ -1,6 +1,16 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { BAN_MESSAGE, KICK_MESSAGE, platformOf, playerRoster, presenceOf, sendBan, sendKick } from "../shared";
+import {
+	BAN_MESSAGE,
+	bannedActivity,
+	KICK_MESSAGE,
+	kickedActivity,
+	platformOf,
+	playerRoster,
+	presenceOf,
+	sendBan,
+	sendKick,
+} from "../shared";
 
 const REFRESH_SECONDS = 15;
 
@@ -20,13 +30,19 @@ const presenceOfRow = (row: Bridge.Row) => {
 export const kickPlayer: Bridge.RowAction = async (context, row) => {
 	await sendKick(context, row.id, KICK_MESSAGE);
 
-	context.emit(BridgeEventName.PlayerKicked, presenceOfRow(row));
+	const presence = presenceOfRow(row);
+
+	context.emit(BridgeEventName.PlayerKicked, presence);
+	context.activity.report(kickedActivity(presence));
 };
 
 export const banPlayer: Bridge.RowAction = async (context, row) => {
 	await sendBan(context, row.id, BAN_MESSAGE);
 
-	context.emit(BridgeEventName.PlayerBanned, presenceOfRow(row));
+	const presence = presenceOfRow(row);
+
+	context.emit(BridgeEventName.PlayerBanned, presence);
+	context.activity.report(bannedActivity(presence));
 };
 
 export const players: Bridge.Collection = {

@@ -36,6 +36,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 			buildId: "18234567",
 			adminPasswordNext: null,
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 	});
 
@@ -74,6 +75,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 					ExpRate: "3",
 					ServerName: "سيرفر الأصحاب",
 				},
+				settingsBaseline: null,
 			})?.settingsPending,
 		).toEqual({
 			ExpRate: "3",
@@ -89,6 +91,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 					PalCaptureRate: 2,
 					ServerName: null,
 				},
+				settingsBaseline: null,
 			})?.settingsPending,
 		).toEqual({
 			ExpRate: "3",
@@ -100,9 +103,11 @@ describe("reading the stamp that records which steam build was installed", () =>
 			{},
 			{
 				settingsPending: null,
+				settingsBaseline: null,
 			},
 			{
 				settingsPending: {},
+				settingsBaseline: null,
 			},
 			{
 				settingsPending: [
@@ -111,6 +116,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 			},
 			{
 				settingsPending: "ExpRate=3",
+				settingsBaseline: null,
 			},
 		]) {
 			expect(stampOf(raw)?.settingsPending).toBeNull();
@@ -145,6 +151,7 @@ describe("round-tripping the stamp through the volume", () => {
 			settingsPending: {
 				ExpRate: "3",
 			},
+			settingsBaseline: null,
 		});
 
 		expect(await readInstallStamp(context)).toEqual({
@@ -153,6 +160,7 @@ describe("round-tripping the stamp through the volume", () => {
 			settingsPending: {
 				ExpRate: "3",
 			},
+			settingsBaseline: null,
 		});
 	});
 
@@ -167,6 +175,7 @@ describe("round-tripping the stamp through the volume", () => {
 			buildId: "1",
 			adminPasswordNext: null,
 			settingsPending: null,
+			settingsBaseline: null,
 		});
 
 		expect(stored.has(INSTALL_STAMP_FILE)).toBe(true);
