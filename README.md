@@ -29,7 +29,7 @@ bun run compile
 
 The `.githooks/pre-commit` hook is the gate: it runs `fix`, `tsc`, `test`, `validate`, and `serverk-bridge schema --check` on every commit. `bun install` wires it up through the `prepare` script.
 
-The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). To develop against a local bridge checkout, `bun link` in the bridge package then `bun link @serverkgg/bridge` here — never commit a `file:` dependency.
+The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). When the `serverk` repository is cloned beside this one, the `postinstall` script (`serverk-bridge link`) points `node_modules/@serverkgg/bridge` at `../serverk/modules/bridge` without touching `package.json` or `bun.lock`; it does nothing in CI or when the checkout is absent. `bunx serverk-bridge link --check` shows which bridge is installed, and `bunx serverk-bridge link --unlink` followed by `bun install` restores the registry package. `package.json` keeps the published version pinned — never commit a `file:` dependency.
 
 ## Contribute
 
