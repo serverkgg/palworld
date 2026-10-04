@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { avatars, rosterOf } from "./palworldPlayers";
 
@@ -47,7 +47,7 @@ const fakeSteam = (hashes: Record<string, string>): FakeSteam => {
 };
 
 describe("turning the palworld player list into panel rows", () => {
-	test("keeps a fully described player as-is", () => {
+	it("keeps a fully described player as-is", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -74,7 +74,7 @@ describe("turning the palworld player list into panel rows", () => {
 		});
 	});
 
-	test("prefers the steam user id over the per-world player id", () => {
+	it("prefers the steam user id over the per-world player id", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -88,7 +88,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBe("steam_76561198000000001");
 	});
 
-	test("falls back to the player id when the server sends no user id", () => {
+	it("falls back to the player id when the server sends no user id", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -101,7 +101,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBe("1A2B3C4D");
 	});
 
-	test("drops a player the server could not identify, so kick and ban never target the wrong row", () => {
+	it("drops a player the server could not identify, so kick and ban never target the wrong row", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -133,7 +133,7 @@ describe("turning the palworld player list into panel rows", () => {
 		]);
 	});
 
-	test("shows the id as the name when the player has none", () => {
+	it("shows the id as the name when the player has none", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -145,7 +145,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBe("steam_1");
 	});
 
-	test("reports a missing level, ping, account or building count as null rather than zero", () => {
+	it("reports a missing level, ping, account or building count as null rather than zero", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -160,7 +160,7 @@ describe("turning the palworld player list into panel rows", () => {
 		expect(player?.buildings).toBeNull();
 	});
 
-	test("rounds the float ping palworld answers with, so the panel never shows 21.866666793823242", () => {
+	it("rounds the float ping palworld answers with, so the panel never shows 21.866666793823242", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -175,7 +175,7 @@ describe("turning the palworld player list into panel rows", () => {
 		expect(player?.level).toBe(34);
 	});
 
-	test("cuts a fractional level or building count down to the whole number the game means", () => {
+	it("cuts a fractional level or building count down to the whole number the game means", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -190,7 +190,7 @@ describe("turning the palworld player list into panel rows", () => {
 		expect(player?.buildings).toBe(7);
 	});
 
-	test("reports a number the server could not measure as null rather than passing it on", () => {
+	it("reports a number the server could not measure as null rather than passing it on", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -207,7 +207,7 @@ describe("turning the palworld player list into panel rows", () => {
 		expect(player?.buildings).toBeNull();
 	});
 
-	test("keeps a real zero building count instead of nulling it", () => {
+	it("keeps a real zero building count instead of nulling it", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -220,7 +220,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBe(0);
 	});
 
-	test("names the store the player came in from, so the owner knows who to look for", () => {
+	it("names the store the player came in from, so the owner knows who to look for", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -242,7 +242,7 @@ describe("turning the palworld player list into panel rows", () => {
 		]);
 	});
 
-	test("leaves the avatar empty until the steam lookup fills it", () => {
+	it("leaves the avatar empty until the steam lookup fills it", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -254,7 +254,7 @@ describe("turning the palworld player list into panel rows", () => {
 		).toBeNull();
 	});
 
-	test("keeps a real zero ping instead of nulling it", () => {
+	it("keeps a real zero ping instead of nulling it", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -271,7 +271,7 @@ describe("turning the palworld player list into panel rows", () => {
 		});
 	});
 
-	test("returns an empty roster when nobody is online", () => {
+	it("returns an empty roster when nobody is online", () => {
 		expect(
 			rosterOf({
 				players: [],
@@ -279,11 +279,11 @@ describe("turning the palworld player list into panel rows", () => {
 		).toEqual([]);
 	});
 
-	test("returns an empty roster when the server omits the players field entirely", () => {
+	it("returns an empty roster when the server omits the players field entirely", () => {
 		expect(rosterOf({})).toEqual([]);
 	});
 
-	test("keeps every identified player in the order the server sent them", () => {
+	it("keeps every identified player in the order the server sent them", () => {
 		expect(
 			rosterOf({
 				players: [
@@ -307,7 +307,7 @@ describe("turning the palworld player list into panel rows", () => {
 });
 
 describe("reading a steam id out of a palworld user id for the avatar cache", () => {
-	test("asks steam for the steam64 the user id carries, and answers with its avatar hash", async () => {
+	it("asks steam for the steam64 the user id carries, and answers with its avatar hash", async () => {
 		const steam = fakeSteam({
 			"76561198000000001": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		});
@@ -331,7 +331,7 @@ describe("reading a steam id out of a palworld user id for the avatar cache", ()
 		]);
 	});
 
-	test("never asks steam about a player who came in from another store", async () => {
+	it("never asks steam about a player who came in from another store", async () => {
 		const steam = fakeSteam({});
 
 		expect(

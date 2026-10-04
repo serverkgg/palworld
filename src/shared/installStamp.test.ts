@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { readInstallStamp, stampOf, writeInstallStamp } from "./installStamp";
@@ -27,7 +27,7 @@ const contextWith = (seed: Record<string, string> = {}) => {
 };
 
 describe("reading the stamp that records which steam build was installed", () => {
-	test("reads a stamp the installer wrote", () => {
+	it("reads a stamp the installer wrote", () => {
 		expect(
 			stampOf({
 				buildId: "18234567",
@@ -40,15 +40,15 @@ describe("reading the stamp that records which steam build was installed", () =>
 		});
 	});
 
-	test("treats a missing stamp file as no stamp", () => {
+	it("treats a missing stamp file as no stamp", () => {
 		expect(stampOf(null)).toBeNull();
 	});
 
-	test("reads a stamp written before the build was known, so a rotation still has somewhere to live", () => {
+	it("reads a stamp written before the build was known, so a rotation still has somewhere to live", () => {
 		expect(stampOf({})?.buildId).toBeNull();
 	});
 
-	test("reads a build id that is not a string as unknown", () => {
+	it("reads a build id that is not a string as unknown", () => {
 		for (const raw of [
 			'{"buildId": 18234567}',
 			'{"buildId": null}',
@@ -58,7 +58,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		}
 	});
 
-	test("reads the admin password waiting for the next restart", () => {
+	it("reads the admin password waiting for the next restart", () => {
 		expect(
 			stampOf({
 				buildId: "1",
@@ -67,7 +67,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		).toBe("rotated");
 	});
 
-	test("reads the settings waiting for the next start", () => {
+	it("reads the settings waiting for the next start", () => {
 		expect(
 			stampOf({
 				buildId: "1",
@@ -83,7 +83,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		});
 	});
 
-	test("keeps only the string values a corrupt stamp still carries", () => {
+	it("keeps only the string values a corrupt stamp still carries", () => {
 		expect(
 			stampOf({
 				settingsPending: {
@@ -98,7 +98,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		});
 	});
 
-	test("reads a pending map that is not an object of settings as nothing pending", () => {
+	it("reads a pending map that is not an object of settings as nothing pending", () => {
 		for (const raw of [
 			{},
 			{
@@ -123,7 +123,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 		}
 	});
 
-	test("reads an empty or malformed pending password as none", () => {
+	it("reads an empty or malformed pending password as none", () => {
 		for (const raw of [
 			{},
 			{
@@ -142,7 +142,7 @@ describe("reading the stamp that records which steam build was installed", () =>
 });
 
 describe("round-tripping the stamp through the volume", () => {
-	test("reads back exactly what was written", async () => {
+	it("reads back exactly what was written", async () => {
 		const { context } = contextWith();
 
 		await writeInstallStamp(context, {
@@ -164,11 +164,11 @@ describe("round-tripping the stamp through the volume", () => {
 		});
 	});
 
-	test("reads no stamp from an empty volume", async () => {
+	it("reads no stamp from an empty volume", async () => {
 		expect(await readInstallStamp(contextWith().context)).toBeNull();
 	});
 
-	test("writes the file the manifest protects", async () => {
+	it("writes the file the manifest protects", async () => {
 		const { context, stored } = contextWith();
 
 		await writeInstallStamp(context, {

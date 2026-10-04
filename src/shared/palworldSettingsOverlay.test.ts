@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { readInstallStamp, writeInstallStamp } from "./installStamp";
@@ -48,15 +48,15 @@ const stamped = async (settingsPending: Record<string, string> | null) => {
 };
 
 describe("reading the settings waiting for the next start", () => {
-	test("reads nothing from a volume the installer never stamped", async () => {
+	it("reads nothing from a volume the installer never stamped", async () => {
 		expect(await readPendingSettings(contextWith().context)).toEqual({});
 	});
 
-	test("reads nothing while no write is waiting", async () => {
+	it("reads nothing while no write is waiting", async () => {
 		expect(await readPendingSettings(await stamped(null))).toEqual({});
 	});
 
-	test("reads back what the panel recorded", async () => {
+	it("reads back what the panel recorded", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 		});
@@ -66,7 +66,7 @@ describe("reading the settings waiting for the next start", () => {
 		});
 	});
 
-	test("reads nothing from a stamp whose pending map is corrupt", async () => {
+	it("reads nothing from a stamp whose pending map is corrupt", async () => {
 		const { context } = contextWith({
 			[INSTALL_STAMP_FILE]: '{"buildId": "1", "settingsPending": "ExpRate=3"}',
 		});
@@ -76,7 +76,7 @@ describe("reading the settings waiting for the next start", () => {
 });
 
 describe("recording a settings write the game will overwrite on shutdown", () => {
-	test("stores the values the way the ini codec writes them", async () => {
+	it("stores the values the way the ini codec writes them", async () => {
 		const context = await stamped(null);
 
 		await recordPendingSettings(
@@ -98,7 +98,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 		});
 	});
 
-	test("merges into what an earlier write left pending", async () => {
+	it("merges into what an earlier write left pending", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 		});
@@ -117,7 +117,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 		});
 	});
 
-	test("takes the newer value for a setting written twice", async () => {
+	it("takes the newer value for a setting written twice", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 		});
@@ -135,7 +135,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 		});
 	});
 
-	test("leaves the build and the rotated password alone", async () => {
+	it("leaves the build and the rotated password alone", async () => {
 		const { context } = contextWith();
 
 		await writeInstallStamp(context, {
@@ -159,7 +159,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 		expect(stamp?.adminPasswordNext).toBe("rotated");
 	});
 
-	test("keeps the write on a volume the installer never stamped, instead of losing it", async () => {
+	it("keeps the write on a volume the installer never stamped, instead of losing it", async () => {
 		const { context } = contextWith();
 
 		await recordPendingSettings(
@@ -175,7 +175,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 		});
 	});
 
-	test("writes no stamp for a write that carries nothing", async () => {
+	it("writes no stamp for a write that carries nothing", async () => {
 		const { context, stored } = contextWith();
 
 		await recordPendingSettings(context, {}, {});
@@ -185,7 +185,7 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 });
 
 describe("clearing the pending settings once they were replayed", () => {
-	test("leaves nothing waiting for the start after next", async () => {
+	it("leaves nothing waiting for the start after next", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 		});
@@ -195,7 +195,7 @@ describe("clearing the pending settings once they were replayed", () => {
 		expect(await readPendingSettings(context)).toEqual({});
 	});
 
-	test("keeps the rest of the stamp", async () => {
+	it("keeps the rest of the stamp", async () => {
 		const { context } = contextWith();
 
 		await writeInstallStamp(context, {
@@ -217,7 +217,7 @@ describe("clearing the pending settings once they were replayed", () => {
 		});
 	});
 
-	test("writes no stamp when there was nothing to clear", async () => {
+	it("writes no stamp when there was nothing to clear", async () => {
 		const { context, stored } = contextWith();
 
 		await clearPendingSettings(context);
@@ -227,7 +227,7 @@ describe("clearing the pending settings once they were replayed", () => {
 });
 
 describe("forgetting a pending write the owner has since made while the game was down", () => {
-	test("drops only the keys that were written straight into the ini", async () => {
+	it("drops only the keys that were written straight into the ini", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 			WorkSpeedRate: "2",
@@ -242,7 +242,7 @@ describe("forgetting a pending write the owner has since made while the game was
 		});
 	});
 
-	test("empties the overlay entirely once the last key is gone", async () => {
+	it("empties the overlay entirely once the last key is gone", async () => {
 		const { context } = contextWith();
 
 		await writeInstallStamp(context, {
@@ -266,7 +266,7 @@ describe("forgetting a pending write the owner has since made while the game was
 		});
 	});
 
-	test("writes no stamp when none of the keys was waiting", async () => {
+	it("writes no stamp when none of the keys was waiting", async () => {
 		const context = await stamped({
 			ExpRate: "3",
 		});
@@ -280,7 +280,7 @@ describe("forgetting a pending write the owner has since made while the game was
 		});
 	});
 
-	test("writes no stamp at all on a volume the installer never stamped", async () => {
+	it("writes no stamp at all on a volume the installer never stamped", async () => {
 		const { context, stored } = contextWith();
 
 		await forgetPendingSettings(context, [
@@ -292,7 +292,7 @@ describe("forgetting a pending write the owner has since made while the game was
 });
 
 describe("remembering what each pending setting was before the owner changed it", () => {
-	test("keeps the first value a setting had across several writes", async () => {
+	it("keeps the first value a setting had across several writes", async () => {
 		const context = await stamped(null);
 
 		await recordPendingSettings(
@@ -322,7 +322,7 @@ describe("remembering what each pending setting was before the owner changed it"
 		});
 	});
 
-	test("counts a key an older release left pending without a baseline as changed", async () => {
+	it("counts a key an older release left pending without a baseline as changed", async () => {
 		const context = await stamped({
 			ExpRate: "1",
 		});
@@ -343,7 +343,7 @@ describe("remembering what each pending setting was before the owner changed it"
 		]);
 	});
 
-	test("clears the baseline with the pending settings", async () => {
+	it("clears the baseline with the pending settings", async () => {
 		const context = await stamped(null);
 
 		await recordPendingSettings(
@@ -360,7 +360,7 @@ describe("remembering what each pending setting was before the owner changed it"
 		expect(await readPendingBaseline(context)).toBeNull();
 	});
 
-	test("drops the baseline of a key the owner wrote while the game was down", async () => {
+	it("drops the baseline of a key the owner wrote while the game was down", async () => {
 		const context = await stamped(null);
 
 		await recordPendingSettings(

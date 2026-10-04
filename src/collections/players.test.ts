@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { banPlayer, kickPlayer } from "./players";
@@ -63,7 +63,7 @@ const act = async (action: Bridge.RowAction, row: Bridge.Row): Promise<Recorded>
 };
 
 describe("telling the owner who was kicked or banned from the players table", () => {
-	test("reports a kick with the player's name and platform, beside the kick event", async () => {
+	it("reports a kick with the player's name and platform, beside the kick event", async () => {
 		const { paths, emitted, reported } = await act(kickPlayer, MESLZY);
 
 		expect(paths).toEqual([
@@ -88,7 +88,7 @@ describe("telling the owner who was kicked or banned from the players table", ()
 		]);
 	});
 
-	test("reports a ban with the player's name and platform, beside the ban event", async () => {
+	it("reports a ban with the player's name and platform, beside the ban event", async () => {
 		const { emitted, reported } = await act(banPlayer, MESLZY);
 
 		expect(emitted).toEqual([
@@ -101,7 +101,7 @@ describe("telling the owner who was kicked or banned from the players table", ()
 		expect(reported.at(0)?.text.ar).toBe("تم حظر Meslzy (Steam)");
 	});
 
-	test("names an xbox player by the platform their id carries", async () => {
+	it("names an xbox player by the platform their id carries", async () => {
 		const { reported } = await act(kickPlayer, {
 			id: "gdk_2535400000000001",
 			name: "Nasser",
@@ -113,7 +113,7 @@ describe("telling the owner who was kicked or banned from the players table", ()
 		});
 	});
 
-	test("never puts the admin password into what it reports", async () => {
+	it("never puts the admin password into what it reports", async () => {
 		for (const action of [
 			kickPlayer,
 			banPlayer,

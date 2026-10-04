@@ -1,9 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeNetError, BridgeUserError } from "@serverkgg/bridge";
 import { palworldPost, REST_API_PORT, restCredentials, restFailure } from "./restApi";
 
 describe("deciding how the panel reaches the palworld rest api", () => {
-	test("uses the admin password and the port the settings declare", () => {
+	it("uses the admin password and the port the settings declare", () => {
 		expect(
 			restCredentials({
 				AdminPassword: "s3cret",
@@ -15,7 +15,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		});
 	});
 
-	test("falls back to the default port when the settings do not name one", () => {
+	it("falls back to the default port when the settings do not name one", () => {
 		expect(
 			restCredentials({
 				AdminPassword: "s3cret",
@@ -23,7 +23,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		).toBe(REST_API_PORT);
 	});
 
-	test("reads a port the ini codec handed back as text", () => {
+	it("reads a port the ini codec handed back as text", () => {
 		expect(
 			restCredentials({
 				AdminPassword: "s3cret",
@@ -32,7 +32,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		).toBe(8300);
 	});
 
-	test("ignores a port that is not a number", () => {
+	it("ignores a port that is not a number", () => {
 		expect(
 			restCredentials({
 				AdminPassword: "s3cret",
@@ -41,7 +41,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		).toBe(REST_API_PORT);
 	});
 
-	test("ignores a port of zero or below", () => {
+	it("ignores a port of zero or below", () => {
 		for (const port of [
 			0,
 			-1,
@@ -55,7 +55,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		}
 	});
 
-	test("keeps a password the codec handed back as a number", () => {
+	it("keeps a password the codec handed back as a number", () => {
 		expect(
 			restCredentials({
 				AdminPassword: 1234,
@@ -63,7 +63,7 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		).toBe("1234");
 	});
 
-	test("refuses to build a request when the admin password is empty", () => {
+	it("refuses to build a request when the admin password is empty", () => {
 		expect(() => {
 			return restCredentials({
 				AdminPassword: "",
@@ -71,13 +71,13 @@ describe("deciding how the panel reaches the palworld rest api", () => {
 		}).toThrow(BridgeNetError);
 	});
 
-	test("refuses to build a request when the admin password is missing", () => {
+	it("refuses to build a request when the admin password is missing", () => {
 		expect(() => {
 			return restCredentials({});
 		}).toThrow(BridgeNetError);
 	});
 
-	test("reports a missing password with no http status, because nothing was sent", () => {
+	it("reports a missing password with no http status, because nothing was sent", () => {
 		try {
 			restCredentials({});
 
@@ -113,7 +113,7 @@ const refusalOf = async (run: () => Promise<unknown>) => {
 };
 
 describe("explaining a rest api call that failed during an action", () => {
-	test("tells the owner to wait when the game does not answer yet, and keeps the raw failure", async () => {
+	it("tells the owner to wait when the game does not answer yet, and keeps the raw failure", async () => {
 		const server = Bun.serve({
 			hostname: "127.0.0.1",
 			port: 0,
@@ -129,12 +129,12 @@ describe("explaining a rest api call that failed during an action", () => {
 
 		expect(error).toBeInstanceOf(BridgeUserError);
 		expect((error as BridgeUserError).text.en).toBe(
-			"The server is not answering the panel right now. If it just started, wait a bit, then try again.",
+			"The server isn't answering the panel right now. If it just started, give it a moment and try again.",
 		);
 		expect((error as BridgeUserError).cause).toBeInstanceOf(BridgeNetError);
 	});
 
-	test("tells the owner to restart when the game still runs with an older admin password", async () => {
+	it("tells the owner to restart when the game still runs with an older admin password", async () => {
 		const server = Bun.serve({
 			hostname: "127.0.0.1",
 			port: 0,
@@ -156,7 +156,7 @@ describe("explaining a rest api call that failed during an action", () => {
 		}
 	});
 
-	test("keeps any other failure raw, because the owner cannot act on it", () => {
+	it("keeps any other failure raw, because the owner cannot act on it", () => {
 		const failure = new BridgeNetError(500, "127.0.0.1:8212 answered 500");
 		const other = new Error("boom");
 

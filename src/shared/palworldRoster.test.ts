@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { rosterOf } from "./palworldPlayers";
 import { presenceOf } from "./palworldRoster";
 
@@ -14,7 +14,7 @@ const ENTRY = {
 };
 
 describe("sending the player data serverk.yml promises", () => {
-	test("carries the name, the stable id and every declared field", () => {
+	it("carries the name, the stable id and every declared field", () => {
 		expect(presenceOf(ENTRY)).toEqual({
 			player: "Meslzy",
 			userId: "steam_1",
@@ -25,7 +25,7 @@ describe("sending the player data serverk.yml promises", () => {
 		});
 	});
 
-	test("carries the store account for a player who will never have a steam avatar", () => {
+	it("carries the store account for a player who will never have a steam avatar", () => {
 		expect(
 			presenceOf({
 				...ENTRY,
@@ -40,7 +40,7 @@ describe("sending the player data serverk.yml promises", () => {
 		});
 	});
 
-	test("carries the avatar hash once the steam lookup has filled it", () => {
+	it("carries the avatar hash once the steam lookup has filled it", () => {
 		expect(
 			presenceOf({
 				...ENTRY,
@@ -49,7 +49,7 @@ describe("sending the player data serverk.yml promises", () => {
 		).toBe("a".repeat(40));
 	});
 
-	test("drops a field palworld did not report rather than sending it empty", () => {
+	it("drops a field palworld did not report rather than sending it empty", () => {
 		expect(
 			presenceOf({
 				...ENTRY,
@@ -64,7 +64,7 @@ describe("sending the player data serverk.yml promises", () => {
 		});
 	});
 
-	test("drops an account palworld answered with as an empty string", () => {
+	it("drops an account palworld answered with as an empty string", () => {
 		expect(
 			presenceOf({
 				...ENTRY,
@@ -73,7 +73,7 @@ describe("sending the player data serverk.yml promises", () => {
 		).not.toContainKey("account");
 	});
 
-	test("sends the whole-number ping the roster rounded, never the float palworld answered with", () => {
+	it("sends the whole-number ping the roster rounded, never the float palworld answered with", () => {
 		const [player] = rosterOf({
 			players: [
 				{
@@ -91,7 +91,7 @@ describe("sending the player data serverk.yml promises", () => {
 		});
 	});
 
-	test("names the player by the id when palworld reports no name", () => {
+	it("names the player by the id when palworld reports no name", () => {
 		expect(
 			presenceOf({
 				...ENTRY,

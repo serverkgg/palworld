@@ -12,12 +12,12 @@ const REQUEST_TIMEOUT_MS = 10_000;
 const UNAUTHORIZED_STATUS = 401;
 
 const NOT_ANSWERING: Bridge.Text = {
-	ar: "السيرفر ما يرد على اللوحة الحين. إذا توه شغّال انتظر شوي، وبعدين جرّب مرة ثانية.",
-	en: "The server is not answering the panel right now. If it just started, wait a bit, then try again.",
+	ar: "السيرفر لا يستجيب للوحة الآن. إذا شغّلته للتو، فعطه لحظة وجرب مرة ثانية.",
+	en: "The server isn't answering the panel right now. If it just started, give it a moment and try again.",
 };
 
 const PASSWORD_CHANGED: Bridge.Text = {
-	ar: "كلمة مرور الأدمن تغيّرت والسيرفر لسا شغّال بالقديمة. أعد تشغيل السيرفر عشان تنطبق.",
+	ar: "تغيّرت كلمة مرور الأدمن، والسيرفر ما زال شغّالًا بالكلمة القديمة. يُطبَّق التغيير بعد الريستارت.",
 	en: "The admin password changed while the server still runs with the old one. Restart the server so it takes effect.",
 };
 

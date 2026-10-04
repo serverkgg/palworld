@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { RCON_ACCESS_ROTATE } from "@serverkgg/bridge/rcon";
@@ -62,7 +62,7 @@ const rotate = async (context: Bridge.Context) => {
 };
 
 describe("telling the owner the remote access password was rotated", () => {
-	test("reports the rotation by its target alone", async () => {
+	it("reports the rotation by its target alone", async () => {
 		const { context, reported } = harness();
 
 		await writeInstallStamp(context, {
@@ -78,7 +78,7 @@ describe("telling the owner the remote access password was rotated", () => {
 			{
 				name: BridgeEventName.SecretRotated,
 				text: {
-					ar: "تم إنشاء كلمة مرور جديدة لـ RCON والأدمن، والتغيير ينطبق مع التشغيل الجاي",
+					ar: "تم إنشاء كلمة مرور جديدة لـ RCON والأدمن، ويُطبَّق التغيير في التشغيل القادم",
 					en: "Generated a new RCON and admin password, takes effect on the next start",
 				},
 				subject: "RCON",
@@ -86,7 +86,7 @@ describe("telling the owner the remote access password was rotated", () => {
 		]);
 	});
 
-	test("never puts the old or the new password into what it reports", async () => {
+	it("never puts the old or the new password into what it reports", async () => {
 		const { context, reported } = harness();
 
 		await writeInstallStamp(context, {
@@ -105,7 +105,7 @@ describe("telling the owner the remote access password was rotated", () => {
 		expect(JSON.stringify(reported)).not.toContain(ADMIN_PASSWORD);
 	});
 
-	test("reports nothing when there is no password to rotate yet", async () => {
+	it("reports nothing when there is no password to rotate yet", async () => {
 		const { context, reported } = harness();
 
 		await expect(rotate(context)).rejects.toThrow("Start your server once to generate the password.");

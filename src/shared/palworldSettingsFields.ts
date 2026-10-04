@@ -31,7 +31,7 @@ export const WORLD_FIELDS: Bridge.Field[] = [
 			en: "Server name",
 		},
 		help: {
-			ar: "الاسم اللي يظهر للاعبين في قائمة السيرفرات وشاشة الدخول.",
+			ar: "الاسم الذي يظهر للاعبين في قائمة السيرفرات وشاشة الدخول.",
 			en: "Shown to players in the server browser and on join.",
 		},
 		maxLength: 48,
@@ -57,7 +57,7 @@ export const WORLD_FIELDS: Bridge.Field[] = [
 			en: "Join password",
 		},
 		help: {
-			ar: "اتركها فاضية عشان يكون السيرفر مفتوح للجميع.",
+			ar: "اتركها فارغة ليكون السيرفر مفتوحًا للجميع.",
 			en: "Leave empty to keep the server open to everyone.",
 		},
 		maxLength: 32,
@@ -70,8 +70,8 @@ export const WORLD_FIELDS: Bridge.Field[] = [
 			en: "Admin password",
 		},
 		help: {
-			ar: "تستخدمها داخل اللعبة لأوامر الأدمن، واللوحة تستخدمها عشان توقف السيرفر وتحفظ وتدير اللاعبين. نولّد لك وحدة تلقائياً — تقدر تغيّرها، بس لا تخليها فاضية.",
-			en: "Used in-game for admin commands, and by the panel to stop the server, save the world and manage players. We generate one for you — changing it is fine, leaving it empty is not.",
+			ar: "تُستخدم داخل اللعبة لأوامر الأدمن، وتستخدمها اللوحة لإيقاف السيرفر وحفظ الماب وإدارة اللاعبين. ننشئها لك تلقائيًا، ويمكن تغييرها، لكن لا تتركها فارغة.",
+			en: "Used in-game for admin commands, and by the panel to stop the server, save the world and manage players. We generate one for you. You can change it, but don't leave it empty.",
 		},
 		maxLength: 32,
 	},
@@ -92,11 +92,11 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 		key: CROSSPLAY_XBOX_KEY,
 		control: BridgeControl.Boolean,
 		label: {
-			ar: "لاعبين Xbox",
+			ar: "لاعبو Xbox",
 			en: "Xbox players",
 		},
 		help: {
-			ar: "لاعبين Steam يدخلون على طول لأن السيرفر نفسه على Steam. هذي الخيارات تفتح الباب لأصحابك على Xbox و PS5 و Mac.",
+			ar: "يدخل لاعبو Steam دائمًا لأن السيرفر نفسه على Steam. وهذه الخيارات تتيح الدخول لأصحابك على Xbox و PS5 و Mac.",
 			en: "Steam players can always join because the server itself runs on Steam. These open the door to your friends on Xbox, PS5 and Mac.",
 		},
 	},
@@ -104,7 +104,7 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 		key: CROSSPLAY_PS5_KEY,
 		control: BridgeControl.Boolean,
 		label: {
-			ar: "لاعبين PS5",
+			ar: "لاعبو PS5",
 			en: "PS5 players",
 		},
 	},
@@ -112,7 +112,7 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 		key: CROSSPLAY_MAC_KEY,
 		control: BridgeControl.Boolean,
 		label: {
-			ar: "لاعبين Mac",
+			ar: "لاعبو Mac",
 			en: "Mac players",
 		},
 	},
@@ -124,7 +124,7 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 			en: "Allow client mods",
 		},
 		help: {
-			ar: "يخلي اللي عنده مودات يدخل سيرفرك. طفّيه إذا تبي الكل على نفس النسخة.",
+			ar: "يسمح للاعبين الذين لديهم مودات بدخول سيرفرك. أوقفه إذا أردت أن يلعب الجميع على الإصدار نفسه.",
 			en: "Lets players with mods join your server. Turn it off to keep everyone on the same build.",
 		},
 	},
@@ -136,7 +136,7 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 			en: "Show the player list",
 		},
 		help: {
-			ar: "يخلي أي أحد داخل السيرفر يشوف أسماء اللي معه.",
+			ar: "يتيح لكل من في السيرفر رؤية أسماء اللاعبين معه.",
 			en: "Anyone on the server can see who else is in.",
 		},
 	},
@@ -148,7 +148,7 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 			en: "Join and leave messages",
 		},
 		help: {
-			ar: "تطلع رسالة في الشات كل ما أحد دخل أو طلع.",
+			ar: "تظهر رسالة في الشات كلما دخل لاعب أو خرج.",
 			en: "A chat line every time someone joins or leaves.",
 		},
 	},
@@ -160,8 +160,8 @@ export const COMMUNITY_FIELDS: Bridge.Field[] = [
 			en: "Chat messages per minute",
 		},
 		help: {
-			ar: "أقصى عدد رسائل يرسلها اللاعب الواحد في الدقيقة — يوقف السبام.",
-			en: "The most messages one player can send per minute — it stops spam.",
+			ar: "أقصى عدد رسائل يرسلها اللاعب الواحد في الدقيقة، ويمنع السبام.",
+			en: "The most messages one player can send per minute. It stops spam.",
 		},
 		min: 0,
 		step: 1,
@@ -185,7 +185,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "PvP",
 		},
 		help: {
-			ar: "من هنا تفصّل عالمك: القتال، عقوبة الموت، الغارات، والتنقّل. لما تفعّل PvP يقدر اللاعبين يهاجمون بعض.",
+			ar: "من هنا تضبط مابك: القتال، وعقوبة الموت، والغارات، والتنقّل. عند تفعيل PvP يستطيع اللاعبون مهاجمة بعضهم.",
 			en: "This is where you shape your world: combat, the death penalty, raids and travel. With PvP on, players can attack each other.",
 		},
 	},
@@ -197,7 +197,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Player to player damage",
 		},
 		help: {
-			ar: "لازم يكون شغّال عشان ضربات اللاعبين تأثر على بعض.",
+			ar: "يلزم تفعيله لتؤثر ضربات اللاعبين على بعضهم.",
 			en: "It has to be on for player hits to land on each other.",
 		},
 	},
@@ -209,7 +209,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Friendly fire",
 		},
 		help: {
-			ar: "لما يشتغل، ضرباتك تأذي أعضاء قروبك بعد.",
+			ar: "عند تفعيله، تؤذي ضرباتك أعضاء قروبك أيضًا.",
 			en: "When on, your hits hurt your own guild members too.",
 		},
 	},
@@ -233,7 +233,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Lose your Pals with your character",
 		},
 		help: {
-			ar: "في النمط القاسي، الـ Pals اللي بفريقك تروح مع شخصيتك.",
+			ar: "في النمط القاسي، تضيع الـ Pals التي في فريقك مع شخصيتك.",
 			en: "In hardcore, the Pals in your party are lost along with your character.",
 		},
 	},
@@ -245,7 +245,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "New character after a hardcore death",
 		},
 		help: {
-			ar: "يخلي اللاعب يبدأ من جديد بدل ما يقفل عليه السيرفر.",
+			ar: "يسمح للاعب بالبدء من جديد بدلًا من منعه من دخول السيرفر.",
 			en: "Lets the player start over instead of being locked out of the server.",
 		},
 	},
@@ -295,7 +295,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Enemy raids",
 		},
 		help: {
-			ar: "لما تطفّيه، ما تنهجم قاعدتك من الأعداء.",
+			ar: "عند إيقافه، لا يهاجم الأعداء قاعدتك.",
 			en: "When off, your base is never raided by enemies.",
 		},
 	},
@@ -307,7 +307,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Predator Pals",
 		},
 		help: {
-			ar: "Pals نادرة وقوية تطلع في العالم وتصيد اللي يقابلها.",
+			ar: "Pals نادرة وقوية تتجول في الماب وتصطاد من يصادفها.",
 			en: "Rare, powerful Pals that roam the world and hunt whoever runs into them.",
 		},
 	},
@@ -327,7 +327,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Pick your starting point on the map",
 		},
 		help: {
-			ar: "كل لاعب جديد يختار من وين يبدأ بدل نقطة ثابتة.",
+			ar: "يختار كل لاعب جديد مكان بدايته بدلًا من نقطة ثابتة.",
 			en: "Every new player picks where to start instead of one fixed spot.",
 		},
 	},
@@ -339,7 +339,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Character stays after logout",
 		},
 		help: {
-			ar: "شخصية اللاعب تضل في العالم بعد ما يطلع، وممكن أحد يهاجمها.",
+			ar: "تبقى شخصية اللاعب في الماب بعد خروجه، ويمكن مهاجمتها.",
 			en: "The player's character stays in the world after they leave, and it can be attacked.",
 		},
 	},
@@ -351,7 +351,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Absence penalty",
 		},
 		help: {
-			ar: "اللي ما يدخل مدة طويلة تنقص موارد قاعدته.",
+			ar: "اللاعب الذي يغيب مدة طويلة تنقص موارد قاعدته.",
 			en: "A player who stays away for a long time loses base resources.",
 		},
 	},
@@ -363,7 +363,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Build area limit",
 		},
 		help: {
-			ar: "يمنع البناء برّا حدود القاعدة.",
+			ar: "يمنع البناء خارج حدود القاعدة.",
 			en: "Stops building outside the base area.",
 		},
 	},
@@ -371,11 +371,11 @@ export const RULES_FIELDS: Bridge.Field[] = [
 		key: "bAllowEnemyCampSpawnNearBaseCamp",
 		control: BridgeControl.Boolean,
 		label: {
-			ar: "مخيمات الأعداء جنب القاعدة",
+			ar: "مخيمات الأعداء قرب القاعدة",
 			en: "Enemy camps near your base",
 		},
 		help: {
-			ar: "لما تطفّيه، ما تطلع مخيمات أعداء قريبة من قواعدكم.",
+			ar: "عند إيقافه، لا تظهر مخيمات أعداء قرب قواعدكم.",
 			en: "When off, enemy camps never spawn close to your bases.",
 		},
 	},
@@ -387,14 +387,14 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			en: "Pal randomizer",
 		},
 		help: {
-			ar: "يخلط الـ Pals اللي تطلع في كل مكان بالعالم.",
+			ar: "يخلط الـ Pals التي تظهر في كل مكان من الماب.",
 			en: "Shuffles which Pals show up around the world.",
 		},
 		options: [
 			{
 				value: "None",
 				label: {
-					ar: "بدون",
+					ar: "موقوف",
 					en: "Off",
 				},
 			},
@@ -408,7 +408,7 @@ export const RULES_FIELDS: Bridge.Field[] = [
 			{
 				value: "All",
 				label: {
-					ar: "كل شي عشوائي",
+					ar: "كل شيء عشوائي",
 					en: "Everything random",
 				},
 			},
@@ -430,11 +430,11 @@ export const RULES_FIELDS: Bridge.Field[] = [
 		key: "RandomizerSeed",
 		control: BridgeControl.Text,
 		label: {
-			ar: "بذرة العشوائية (Seed)",
+			ar: "سيد العشوائية",
 			en: "Randomizer seed",
 		},
 		help: {
-			ar: "خلها فاضية عشان تطلع عشوائية جديدة، أو اكتب نفس البذرة عشان يرجع لك نفس الترتيب.",
+			ar: "اتركها فارغة لترتيب عشوائي جديد، أو اكتب السيد نفسه ليعود الترتيب نفسه.",
 			en: "Leave it empty for a fresh shuffle, or type the same seed to get the same shuffle back.",
 		},
 		maxLength: 32,
@@ -454,7 +454,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "EXP rate",
 		},
 		help: {
-			ar: "كل المعدلات هنا تمشي بنفس الطريقة: 1 هو الطبيعي، وكل ما كبّرت الرقم صار الشي أسرع أو أكثر. هذا يقرر سرعة رفع المستوى.",
+			ar: "تُقرأ كل المعدلات هنا بالطريقة نفسها: 1 هو الوضع الطبيعي، وكلما زاد الرقم كان الشيء أسرع أو أكثر. وهذا المعدل يحدد سرعة رفع المستوى.",
 			en: "Every rate here reads the same way: 1 is normal, and a bigger number means faster or more. This one sets how fast you level up.",
 		},
 		min: 0,
@@ -468,7 +468,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Pal capture rate",
 		},
 		help: {
-			ar: "كل ما زاد، صار اصطياد الـ Pals أسهل.",
+			ar: "كلما زاد، أصبح اصطياد الـ Pals أسهل.",
 			en: "Higher makes catching Pals easier.",
 		},
 		min: 0,
@@ -478,11 +478,11 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "PalSpawnNumRate",
 		control: BridgeControl.Number,
 		label: {
-			ar: "عدد الـ Pals في العالم",
+			ar: "عدد الـ Pals في الماب",
 			en: "Pal spawn count",
 		},
 		warning: {
-			ar: "كل ما زاد العدد، زاد الضغط على المعالج وممكن يصير لاق.",
+			ar: "كلما زاد العدد، زاد الضغط على المعالج، وقد يظهر لاق.",
 			en: "More Pals load the CPU and can bring lag.",
 		},
 		min: 0,
@@ -492,7 +492,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "WorkSpeedRate",
 		control: BridgeControl.Number,
 		label: {
-			ar: "سرعة شغل الـ Pals",
+			ar: "سرعة عمل الـ Pals",
 			en: "Pal work speed",
 		},
 		min: 0,
@@ -506,8 +506,8 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Huge egg hatching time",
 		},
 		help: {
-			ar: "بالساعات — كم تبي البيضة الضخمة عشان تفقس.",
-			en: "In hours — how long a huge egg takes to hatch.",
+			ar: "بالساعات: المدة التي تحتاجها البيضة الضخمة لتفقس.",
+			en: "In hours: how long a huge egg takes to hatch.",
 		},
 		min: 0,
 		step: 1,
@@ -520,7 +520,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Day speed",
 		},
 		help: {
-			ar: "كل ما زاد، قصر النهار.",
+			ar: "كلما زاد، قصر النهار.",
 			en: "Higher makes the day shorter.",
 		},
 		min: 0,
@@ -534,7 +534,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Night speed",
 		},
 		help: {
-			ar: "كل ما زاد، قصر الليل.",
+			ar: "كلما زاد، قصر الليل.",
 			en: "Higher makes the night shorter.",
 		},
 		min: 0,
@@ -554,7 +554,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "CollectionObjectRespawnSpeedRate",
 		control: BridgeControl.Number,
 		label: {
-			ar: "رجوع الأشجار والصخور",
+			ar: "عودة ظهور الأشجار والصخور",
 			en: "Tree and rock respawn",
 		},
 		min: 0,
@@ -584,7 +584,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "PlayerDamageRateDefense",
 		control: BridgeControl.Number,
 		label: {
-			ar: "الضرر اللي ياخذه اللاعب",
+			ar: "الضرر الذي يتلقاه اللاعب",
 			en: "Damage the player takes",
 		},
 		min: 0,
@@ -604,7 +604,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "PalDamageRateDefense",
 		control: BridgeControl.Number,
 		label: {
-			ar: "الضرر اللي تاخذه الـ Pals",
+			ar: "الضرر الذي تتلقاه الـ Pals",
 			en: "Damage Pals take",
 		},
 		min: 0,
@@ -658,7 +658,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Item weight",
 		},
 		help: {
-			ar: "كل ما نقّصته، شلت أغراض أكثر.",
+			ar: "كلما خفّضته، حملت أغراضًا أكثر.",
 			en: "Lower it and you carry more.",
 		},
 		min: 0,
@@ -672,7 +672,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Equipment wear",
 		},
 		help: {
-			ar: "كل ما زاد، خربت أسلحتك وعتادك أسرع.",
+			ar: "كلما زاد، تلفت أسلحتك وعتادك أسرع.",
 			en: "Higher wears your weapons and gear out faster.",
 		},
 		min: 0,
@@ -696,7 +696,7 @@ export const RATES_FIELDS: Bridge.Field[] = [
 			en: "Building decay",
 		},
 		help: {
-			ar: "0 يعني مبانيك ما تتهالك أبداً.",
+			ar: "0 يعني أن مبانيك لا تتهالك أبدًا.",
 			en: "0 means your buildings never decay.",
 		},
 		min: 0,
@@ -706,11 +706,11 @@ export const RATES_FIELDS: Bridge.Field[] = [
 		key: "SupplyDropSpan",
 		control: BridgeControl.Number,
 		label: {
-			ar: "كل كم تنزل الإمدادات",
+			ar: "الفاصل بين إسقاط الإمدادات",
 			en: "Supply drop interval",
 		},
 		help: {
-			ar: "بالدقايق.",
+			ar: "بالدقائق.",
 			en: "In minutes.",
 		},
 		min: 0,
@@ -727,7 +727,7 @@ export const BASES_FIELDS: Bridge.Field[] = [
 			en: "Bases per guild",
 		},
 		help: {
-			ar: "هنا حدود القواعد والقروبات والأغراض المرمية بالعالم. هذا أقصى عدد قواعد يبنيها القروب الواحد.",
+			ar: "هنا حدود القواعد والقروبات والأغراض المرمية في الماب. وهذا أقصى عدد قواعد يبنيها القروب الواحد.",
 			en: "This is where the limits on bases, guilds and dropped items live. This one is the most bases a single guild can build.",
 		},
 		min: 1,
@@ -742,7 +742,7 @@ export const BASES_FIELDS: Bridge.Field[] = [
 			en: "Workers per base",
 		},
 		warning: {
-			ar: "كل ما زاد العدد، زاد الضغط على المعالج وممكن يصير لاق.",
+			ar: "كلما زاد العدد، زاد الضغط على المعالج، وقد يظهر لاق.",
 			en: "More workers load the CPU and can bring lag.",
 		},
 		min: 1,
@@ -763,12 +763,12 @@ export const BASES_FIELDS: Bridge.Field[] = [
 		key: "bAutoResetGuildNoOnlinePlayers",
 		control: BridgeControl.Boolean,
 		label: {
-			ar: "حذف القروب الفاضي تلقائياً",
+			ar: "حذف القروب الفارغ تلقائيًا",
 			en: "Delete an empty guild automatically",
 		},
 		help: {
-			ar: "لما ما يدخل ولا عضو من القروب مدة طويلة، ينحذف القروب وقواعده.",
-			en: "When nobody from a guild logs in for a long time, the guild and its bases go away.",
+			ar: "إذا لم يدخل أي عضو من القروب مدة طويلة، يُحذف القروب وقواعده.",
+			en: "When nobody from a guild signs in for a long time, the guild and its bases are deleted.",
 		},
 	},
 	{
@@ -795,11 +795,11 @@ export const BASES_FIELDS: Bridge.Field[] = [
 		key: "GuildRejoinCooldownMinutes",
 		control: BridgeControl.Number,
 		label: {
-			ar: "الانتظار قبل الرجوع لقروب",
+			ar: "الانتظار قبل الانضمام إلى قروب من جديد",
 			en: "Guild rejoin cooldown",
 		},
 		help: {
-			ar: "بالدقايق، بعد ما يطلع اللاعب من قروبه.",
+			ar: "بالدقائق، بعد خروج اللاعب من قروبه.",
 			en: "In minutes, after a player leaves their guild.",
 		},
 		min: 0,
@@ -813,7 +813,7 @@ export const BASES_FIELDS: Bridge.Field[] = [
 			en: "Building limit per player",
 		},
 		help: {
-			ar: "0 يعني بدون حد.",
+			ar: "0 يعني بلا حد.",
 			en: "0 means no limit.",
 		},
 		min: 0,
@@ -823,7 +823,7 @@ export const BASES_FIELDS: Bridge.Field[] = [
 		key: "DropItemMaxNum",
 		control: BridgeControl.Number,
 		label: {
-			ar: "أقصى عدد أغراض مرمية بالعالم",
+			ar: "أقصى عدد أغراض مرمية في الماب",
 			en: "Max dropped items in the world",
 		},
 		min: 0,
@@ -869,7 +869,7 @@ const booleanOf = (field: Bridge.Field, value: Bridge.Value) => {
 	}
 
 	throw new BridgeUserError({
-		ar: `«${field.label.ar}» يا مشغّل يا مطفّي، ما فيه خيار ثالث.`,
+		ar: `«${field.label.ar}» إما مفعّل أو موقوف، ولا يوجد خيار ثالث.`,
 		en: `${field.label.en} is either on or off, nothing else.`,
 	});
 };
@@ -881,7 +881,7 @@ const numberOf = (field: Bridge.Field, value: Bridge.Value) => {
 
 	if (!readable || !Number.isFinite(parsed)) {
 		throw new BridgeUserError({
-			ar: `«${field.label.ar}» يبي له رقم.`,
+			ar: `«${field.label.ar}» يتطلب رقمًا.`,
 			en: `${field.label.en} needs a number.`,
 		});
 	}
@@ -896,7 +896,7 @@ const numberOf = (field: Bridge.Field, value: Bridge.Value) => {
 	if (max === undefined) {
 		if (parsed < min) {
 			throw new BridgeUserError({
-				ar: `«${field.label.ar}» لازم يكون ${min} أو أكثر.`,
+				ar: `«${field.label.ar}» يلزم أن يكون ${min} أو أكثر.`,
 				en: `${field.label.en} must be ${min} or more.`,
 			});
 		}
@@ -906,7 +906,7 @@ const numberOf = (field: Bridge.Field, value: Bridge.Value) => {
 
 	if (parsed < min || parsed > max) {
 		throw new BridgeUserError({
-			ar: `«${field.label.ar}» لازم يكون بين ${min} و ${max}.`,
+			ar: `«${field.label.ar}» يلزم أن يكون بين ${min} و ${max}.`,
 			en: `${field.label.en} must be between ${min} and ${max}.`,
 		});
 	}
@@ -920,8 +920,8 @@ const selectOf = (field: Bridge.Field, value: Bridge.Value) => {
 
 	if (!options.some((option) => option.value === text)) {
 		throw new BridgeUserError({
-			ar: `«${field.label.ar}» ما يقبل «${text}».`,
-			en: `${field.label.en} does not accept "${text}".`,
+			ar: `«${field.label.ar}» لا يقبل «${text}».`,
+			en: `${field.label.en} doesn't accept "${text}".`,
 		});
 	}
 
@@ -934,14 +934,14 @@ const textOf = (field: Bridge.Field, value: Bridge.Value) => {
 
 	if (hasControlCharacter(text)) {
 		throw new BridgeUserError({
-			ar: `«${field.label.ar}» يبيله سطر واحد بدون رموز مخفية.`,
+			ar: `«${field.label.ar}» يلزم أن يكون سطرًا واحدًا دون رموز مخفية.`,
 			en: `${field.label.en} must be one line, with no line breaks or control characters.`,
 		});
 	}
 
 	if (text.length > limit) {
 		throw new BridgeUserError({
-			ar: `«${field.label.ar}» أطول من ${limit} حرف.`,
+			ar: `«${field.label.ar}» يتجاوز الحد الأقصى لعدد الأحرف، وهو ${limit}.`,
 			en: `${field.label.en} is longer than ${limit} characters.`,
 		});
 	}
@@ -973,8 +973,8 @@ export const validateSettingsWrite = (values: Bridge.Values): Bridge.Values => {
 
 		if (field === null) {
 			throw new BridgeUserError({
-				ar: `${key} مو إعداد تقدر تغيّره من اللوحة.`,
-				en: `${key} is not a setting the panel can change.`,
+				ar: `${key} ليس إعدادًا يمكن تغييره من اللوحة.`,
+				en: `${key} isn't a setting the panel can change.`,
 			});
 		}
 

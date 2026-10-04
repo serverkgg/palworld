@@ -28,7 +28,7 @@ const arabicHours = (hours: number) => {
 };
 
 const arabicMinutes = (minutes: number) => {
-	return arabicCount(minutes, "دقيقة", "دقيقتين", "دقايق", "دقيقة");
+	return arabicCount(minutes, "دقيقة", "دقيقتين", "دقائق", "دقيقة");
 };
 
 export const formatUptime = (seconds: number): Bridge.Text => {
@@ -77,7 +77,7 @@ export const fpsBadge = (fps: number): Bridge.DetailBadge => {
 	if (fps >= LAG_FPS_THRESHOLD) {
 		return {
 			label: {
-				ar: "فيه شوي لاق",
+				ar: "لاق خفيف",
 				en: "Slight lag",
 			},
 			tone: BridgeDetailTone.Warning,
@@ -130,7 +130,7 @@ export const health: Bridge.Detail = {
 				en: "Server health",
 			},
 			subtitle: {
-				ar: "الأرقام هذي طالعة من سيرفرك نفسه، مو تقدير.",
+				ar: "هذه الأرقام صادرة من سيرفرك مباشرة، وليست تقديرًا.",
 				en: "These numbers come straight from your own server, not an estimate.",
 			},
 			description: null,
@@ -175,7 +175,7 @@ export const health: Bridge.Detail = {
 				{
 					key: "players",
 					label: {
-						ar: "اللاعبين",
+						ar: "اللاعبون",
 						en: "Players",
 					},
 					value: online === undefined || max === undefined ? MISSING : `${online}/${max}`,
@@ -202,7 +202,7 @@ export const health: Bridge.Detail = {
 				{
 					key: "uptime",
 					label: {
-						ar: "شغّال من",
+						ar: "مدة التشغيل",
 						en: "Up for",
 					},
 					value: current.uptime === undefined ? MISSING : formatUptime(current.uptime),

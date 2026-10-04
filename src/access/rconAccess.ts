@@ -12,7 +12,7 @@ export const rconAccess = createRconAccess({
 	password: adminPassword,
 	rotate: rotateRconPassword,
 	tools: {
-		ar: "تشتغل معه BattleMetrics وRCON Console. Pocketpair الحين توصي بالـ REST API بدل RCON، والأسماء اللي فيها حروف غير لاتينية ترجع مقصوصة على RCON.",
-		en: "BattleMetrics and RCON Console work; Pocketpair now recommends its REST API instead of RCON, and names with non-Latin letters come back cut off over RCON.",
+		ar: "تدعمه BattleMetrics و RCON Console. توصي Pocketpair حاليًا بالـ REST API بدلًا من RCON، وتصل الأسماء التي فيها حروف غير لاتينية مقصوصة عبر RCON.",
+		en: "BattleMetrics and RCON Console work with it. Pocketpair now recommends its REST API instead of RCON, and names with non-Latin letters come back cut off over RCON.",
 	},
 });

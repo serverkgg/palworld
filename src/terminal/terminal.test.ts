@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeTerminalLevel, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
@@ -19,27 +19,27 @@ const levelOf = (line: string) => {
 };
 
 describe("colouring a palworld log line in the terminal", () => {
-	test("marks an unreal error line as an error", () => {
+	it("marks an unreal error line as an error", () => {
 		expect(levelOf("[2026.09.03-12.00.00:000][  0]LogPal: Error: could not load the save")).toBe(
 			BridgeTerminalLevel.Error,
 		);
 	});
 
-	test("marks a fatal line as an error", () => {
+	it("marks a fatal line as an error", () => {
 		expect(levelOf("[2026.09.03-12.00.00:000][  0]LogWindows: Fatal: unhandled exception")).toBe(
 			BridgeTerminalLevel.Error,
 		);
 	});
 
-	test("marks a failed assertion as an error", () => {
+	it("marks a failed assertion as an error", () => {
 		expect(levelOf("Assertion failed: IsValid() [File:PalCharacter.cpp]")).toBe(BridgeTerminalLevel.Error);
 	});
 
-	test("marks a warning line as a warning", () => {
+	it("marks a warning line as a warning", () => {
 		expect(levelOf("[2026.09.03-12.00.00:000][  0]LogPal: Warning: guild not found")).toBe(BridgeTerminalLevel.Warn);
 	});
 
-	test("leaves an ordinary line alone", () => {
+	it("leaves an ordinary line alone", () => {
 		for (const line of [
 			"[2026.09.03-12.00.00:000][  0]LogPal: Display: Save completed",
 			"[2026.09.03-12.00.00:000][  0]LogNet: Join succeeded: Meslzy",
@@ -49,11 +49,11 @@ describe("colouring a palworld log line in the terminal", () => {
 		}
 	});
 
-	test("reads an error before a warning when a line carries both", () => {
+	it("reads an error before a warning when a line carries both", () => {
 		expect(levelOf("LogPal: Error: Warning: both words on one line")).toBe(BridgeTerminalLevel.Error);
 	});
 
-	test("does not colour a line that merely mentions the word error", () => {
+	it("does not colour a line that merely mentions the word error", () => {
 		expect(levelOf("[2026.09.03-12.00.00:000][  0]LogPal: Display: no error occurred")).toBeNull();
 	});
 });
@@ -66,7 +66,7 @@ describe("the commands an admin can run from the terminal", () => {
 		]),
 	);
 
-	test("offers the palworld console commands the panel documents", () => {
+	it("offers the palworld console commands the panel documents", () => {
 		expect([
 			...named.keys(),
 		]).toEqual([
@@ -82,7 +82,7 @@ describe("the commands an admin can run from the terminal", () => {
 		]);
 	});
 
-	test("warns before anything that removes a player or drops the world", () => {
+	it("warns before anything that removes a player or drops the world", () => {
 		for (const name of [
 			"BanPlayer",
 			"Shutdown",
@@ -92,7 +92,7 @@ describe("the commands an admin can run from the terminal", () => {
 		}
 	});
 
-	test("does not warn before a command that only reads or saves", () => {
+	it("does not warn before a command that only reads or saves", () => {
 		for (const name of [
 			"Broadcast",
 			"ShowPlayers",
@@ -104,7 +104,7 @@ describe("the commands an admin can run from the terminal", () => {
 		}
 	});
 
-	test("completes every player argument from the live roster", () => {
+	it("completes every player argument from the live roster", () => {
 		for (const command of terminal.commands) {
 			for (const arg of command.args ?? []) {
 				if (arg.key !== "player") {
@@ -118,7 +118,7 @@ describe("the commands an admin can run from the terminal", () => {
 		}
 	});
 
-	test("declares the text every free-form command needs, so a bare command is never sent", () => {
+	it("declares the text every free-form command needs, so a bare command is never sent", () => {
 		const named = new Map(
 			terminal.commands.map((command) => [
 				command.name,
@@ -141,7 +141,7 @@ describe("the commands an admin can run from the terminal", () => {
 		}
 	});
 
-	test("gives every command that takes an argument a syntax line", () => {
+	it("gives every command that takes an argument a syntax line", () => {
 		for (const command of terminal.commands) {
 			if ((command.args ?? []).length > 0) {
 				expect(command.syntax).toBeString();
@@ -149,7 +149,7 @@ describe("the commands an admin can run from the terminal", () => {
 		}
 	});
 
-	test("writes every summary in both arabic and english", () => {
+	it("writes every summary in both arabic and english", () => {
 		for (const command of terminal.commands) {
 			expect(command.summary.ar.length).toBeGreaterThan(0);
 			expect(command.summary.en.length).toBeGreaterThan(0);
@@ -277,7 +277,7 @@ const refusalOf = async (input: string) => {
 };
 
 describe("reading a line an admin typed into the console", () => {
-	test("splits the command from everything that follows it", () => {
+	it("splits the command from everything that follows it", () => {
 		expect(parseConsoleLine("Broadcast hello world")).toEqual({
 			name: "broadcast",
 			rest: "hello world",
@@ -288,7 +288,7 @@ describe("reading a line an admin typed into the console", () => {
 		});
 	});
 
-	test("reads the command whatever case it was typed in", () => {
+	it("reads the command whatever case it was typed in", () => {
 		for (const input of [
 			"ShowPlayers",
 			"showplayers",
@@ -298,7 +298,7 @@ describe("reading a line an admin typed into the console", () => {
 		}
 	});
 
-	test("ignores the spacing around and inside the line", () => {
+	it("ignores the spacing around and inside the line", () => {
 		expect(parseConsoleLine("   KickPlayer    steam_1   ")).toEqual({
 			name: "kickplayer",
 			rest: "steam_1",
@@ -308,7 +308,7 @@ describe("reading a line an admin typed into the console", () => {
 		});
 	});
 
-	test("reads a command that carries nothing after it", () => {
+	it("reads a command that carries nothing after it", () => {
 		expect(parseConsoleLine("Save")).toEqual({
 			name: "save",
 			rest: "",
@@ -318,13 +318,13 @@ describe("reading a line an admin typed into the console", () => {
 });
 
 describe("mapping every declared command onto the rest api", () => {
-	test("implements every command the panel offers", () => {
+	it("implements every command the panel offers", () => {
 		for (const command of terminal.commands) {
 			expect(consoleCommands[command.name.toLowerCase()]).toBeFunction();
 		}
 	});
 
-	test("sends a broadcast as an announcement", async () => {
+	it("sends a broadcast as an announcement", async () => {
 		const { calls, reply, logged } = await run("Broadcast serverk-e2e");
 
 		expect(calls.at(-1)).toEqual({
@@ -337,11 +337,11 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(logged).toEqual([]);
 	});
 
-	test("refuses a broadcast with no message", async () => {
+	it("refuses a broadcast with no message", async () => {
 		expect((await refusalOf("Broadcast   "))?.en).toBe("Write the message first.");
 	});
 
-	test("saves the world, and says so, so a backup can trust the save happened", async () => {
+	it("saves the world, and says so, so a backup can trust the save happened", async () => {
 		const { calls, emitted, reply } = await run("Save");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/save");
@@ -351,21 +351,21 @@ describe("mapping every declared command onto the rest api", () => {
 		]);
 	});
 
-	test("answers ShowPlayers with the live roster", async () => {
+	it("answers ShowPlayers with the live roster", async () => {
 		const { calls, reply } = await run("ShowPlayers");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/players");
 		expect(reply?.line).toBe("name,userid,level,ping\nMeslzy,steam_1,42,31\nNasser,steam_2,,");
 	});
 
-	test("answers Info with what the server reports about itself", async () => {
+	it("answers Info with what the server reports about itself", async () => {
 		const { calls, reply } = await run("Info");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/info");
 		expect(reply?.line).toContain("version: v0.6.0");
 	});
 
-	test("kicks the player the line names, and says who left", async () => {
+	it("kicks the player the line names, and says who left", async () => {
 		const { calls, emitted, reply } = await run("KickPlayer steam_1");
 
 		expect(calls.map((call) => call.path)).toEqual([
@@ -379,7 +379,7 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("kicked: Meslzy");
 	});
 
-	test("bans the player the line names by their in-game name", async () => {
+	it("bans the player the line names by their in-game name", async () => {
 		const { calls, emitted, reply } = await run("BanPlayer nasser");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/ban");
@@ -390,7 +390,7 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("banned: Nasser");
 	});
 
-	test("bans a user id nobody on the roster carries, so an offline player can be banned", async () => {
+	it("bans a user id nobody on the roster carries, so an offline player can be banned", async () => {
 		const { calls, emitted, logged, reply } = await run("BanPlayer steam_9");
 
 		expect(calls.map((call) => call.path)).toEqual([
@@ -412,7 +412,7 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("banned: steam_9");
 	});
 
-	test("prefers the online player when the line names one, rather than banning the raw id", async () => {
+	it("prefers the online player when the line names one, rather than banning the raw id", async () => {
 		const { emitted, logged, reply } = await run("BanPlayer steam_1");
 
 		expect(emitted.at(0)?.payload).toMatchObject({
@@ -422,11 +422,11 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("banned: Meslzy");
 	});
 
-	test("refuses to ban a name that is neither online nor a user id", async () => {
-		expect((await refusalOf("BanPlayer ghost"))?.en).toContain("write their user id");
+	it("refuses to ban a name that is neither online nor a user id", async () => {
+		expect((await refusalOf("BanPlayer ghost"))?.en).toContain("write their user ID");
 	});
 
-	test("lifts a ban from the user id the line names", async () => {
+	it("lifts a ban from the user id the line names", async () => {
 		const { calls, emitted, reply } = await run("UnBanPlayer steam_9");
 
 		expect(calls.at(-1)).toEqual({
@@ -439,25 +439,25 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("unbanned: steam_9");
 	});
 
-	test("refuses an unban that names anything but a user id", async () => {
+	it("refuses an unban that names anything but a user id", async () => {
 		for (const input of [
 			"UnBanPlayer",
 			"UnBanPlayer Meslzy",
 			"UnBanPlayer 76561198000000001",
 		]) {
-			expect((await refusalOf(input))?.en).toContain("That is not a user id");
+			expect((await refusalOf(input))?.en).toContain("That isn't a user ID");
 		}
 	});
 
-	test("refuses to kick a player who is not online", async () => {
+	it("refuses to kick a player who is not online", async () => {
 		expect((await refusalOf("KickPlayer ghost"))?.en).toBe("No player with that name is online right now.");
 	});
 
-	test("refuses to kick nobody at all", async () => {
-		expect((await refusalOf("KickPlayer"))?.en).toBe("Write the player name or id first.");
+	it("refuses to kick nobody at all", async () => {
+		expect((await refusalOf("KickPlayer"))?.en).toBe("Write the player name or ID first.");
 	});
 
-	test("shuts the server down after the delay the line asks for", async () => {
+	it("shuts the server down after the delay the line asks for", async () => {
 		const { calls, reply } = await run("Shutdown 30 be right back");
 
 		expect(calls.at(-1)).toEqual({
@@ -470,7 +470,7 @@ describe("mapping every declared command onto the rest api", () => {
 		expect(reply?.line).toBe("shutting down in 30s");
 	});
 
-	test("falls back to the platform's own message when the line carries none", async () => {
+	it("falls back to the platform's own message when the line carries none", async () => {
 		const { calls } = await run("Shutdown 30");
 
 		expect(JSON.parse(calls.at(-1)?.body ?? "{}")).toMatchObject({
@@ -478,7 +478,7 @@ describe("mapping every declared command onto the rest api", () => {
 		});
 	});
 
-	test("refuses a shutdown that names no delay", async () => {
+	it("refuses a shutdown that names no delay", async () => {
 		for (const input of [
 			"Shutdown",
 			"Shutdown now",
@@ -488,7 +488,7 @@ describe("mapping every declared command onto the rest api", () => {
 		}
 	});
 
-	test("stops the server outright on DoExit", async () => {
+	it("stops the server outright on DoExit", async () => {
 		const { calls, reply } = await run("DoExit");
 
 		expect(calls.at(-1)?.path).toBe("/v1/api/stop");
@@ -497,27 +497,27 @@ describe("mapping every declared command onto the rest api", () => {
 });
 
 describe("answering a line the rest api cannot serve", () => {
-	test("never offers TeleportToPlayer, because the panel has no character to teleport", () => {
+	it("never offers TeleportToPlayer, because the panel has no character to teleport", () => {
 		expect(terminal.commands.map((command) => command.name)).not.toContain("TeleportToPlayer");
 	});
 
-	test("still explains TeleportToPlayer to anyone who types it", async () => {
+	it("still explains TeleportToPlayer to anyone who types it", async () => {
 		const text = await refusalOf("TeleportToPlayer Meslzy");
 
 		expect(text?.en).toContain("only works inside the game");
 		expect(text?.ar.length ?? 0).toBeGreaterThan(0);
 	});
 
-	test("refuses an unknown line instead of writing it to a stdin nothing reads", async () => {
+	it("refuses an unknown line instead of writing it to a stdin nothing reads", async () => {
 		const text = await refusalOf("op Meslzy");
 
-		expect(text?.en).toBe("That command does not exist. Try one from the command list.");
+		expect(text?.en).toBe("That command doesn't exist. Try one from the command list.");
 		expect(text?.ar.length ?? 0).toBeGreaterThan(0);
 	});
 });
 
 describe("formatting what the rest api answers back", () => {
-	test("prints one line per player under a header", () => {
+	it("prints one line per player under a header", () => {
 		expect(
 			rosterLines([
 				{
@@ -537,13 +537,13 @@ describe("formatting what the rest api answers back", () => {
 		]);
 	});
 
-	test("says nobody is online rather than printing an empty table", () => {
+	it("says nobody is online rather than printing an empty table", () => {
 		expect(rosterLines([])).toEqual([
 			"no players online",
 		]);
 	});
 
-	test("prints the four fields the info endpoint carries", () => {
+	it("prints the four fields the info endpoint carries", () => {
 		expect(infoLines(INFO)).toEqual([
 			"version: v0.6.0",
 			"name: Serverk Palworld",
@@ -552,7 +552,7 @@ describe("formatting what the rest api answers back", () => {
 		]);
 	});
 
-	test("finds a player by id or by name, whatever case was typed", () => {
+	it("finds a player by id or by name, whatever case was typed", () => {
 		const players = [
 			{
 				id: "steam_1",
@@ -577,7 +577,7 @@ describe("formatting what the rest api answers back", () => {
 		expect(findPlayer(players, "ghost")).toBeNull();
 	});
 
-	test("takes a shutdown delay only when it is a real number of seconds", () => {
+	it("takes a shutdown delay only when it is a real number of seconds", () => {
 		expect(shutdownSeconds("30")).toBe(30);
 		expect(shutdownSeconds("3600")).toBe(3600);
 
@@ -596,7 +596,7 @@ describe("formatting what the rest api answers back", () => {
 });
 
 describe("telling the owner what a console command changed", () => {
-	test("reports a kick once, with the player it names", async () => {
+	it("reports a kick once, with the player it names", async () => {
 		const { reported } = await run("KickPlayer steam_1");
 
 		expect(reported.map((entry) => entry.name)).toEqual([
@@ -606,7 +606,7 @@ describe("telling the owner what a console command changed", () => {
 		expect(reported.at(0)?.text.en).toBe("Kicked Meslzy (Steam)");
 	});
 
-	test("reports a ban once, whether the player is online or only a user id", async () => {
+	it("reports a ban once, whether the player is online or only a user id", async () => {
 		for (const input of [
 			"BanPlayer nasser",
 			"BanPlayer steam_9",
@@ -619,7 +619,7 @@ describe("telling the owner what a console command changed", () => {
 		}
 	});
 
-	test("reports an unban once, by the user id when no name can be found", async () => {
+	it("reports an unban once, by the user id when no name can be found", async () => {
 		const { reported } = await run("UnBanPlayer steam_9");
 
 		expect(reported.map((entry) => entry.name)).toEqual([
@@ -628,7 +628,7 @@ describe("telling the owner what a console command changed", () => {
 		expect(reported.at(0)?.subject).toBe("steam_9");
 	});
 
-	test("reports a broadcast once, as an excerpt", async () => {
+	it("reports a broadcast once, as an excerpt", async () => {
 		const { reported } = await run(`Broadcast ${"a".repeat(150)}`);
 
 		expect(reported.map((entry) => entry.name)).toEqual([
@@ -637,7 +637,7 @@ describe("telling the owner what a console command changed", () => {
 		expect(reported.at(0)?.text.en).not.toContain("a".repeat(100));
 	});
 
-	test("reports a save once, beside the save event a backup waits for", async () => {
+	it("reports a save once, beside the save event a backup waits for", async () => {
 		const { emitted, reported } = await run("Save");
 
 		expect(emitted.map((event) => event.event)).toEqual([
@@ -648,7 +648,7 @@ describe("telling the owner what a console command changed", () => {
 		]);
 	});
 
-	test("reports nothing for a command that only reads", async () => {
+	it("reports nothing for a command that only reads", async () => {
 		for (const input of [
 			"ShowPlayers",
 			"Info",
@@ -657,7 +657,7 @@ describe("telling the owner what a console command changed", () => {
 		}
 	});
 
-	test("never puts the admin password into what it reports", async () => {
+	it("never puts the admin password into what it reports", async () => {
 		for (const input of [
 			"KickPlayer steam_1",
 			"BanPlayer steam_9",

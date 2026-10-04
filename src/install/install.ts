@@ -12,7 +12,7 @@ import {
 import { seedSettings } from "./seedSettings";
 
 const MISSING_FILES: Bridge.Text = {
-	ar: "التنزيل خلص بس ملفات اللعبة ناقصة. جرّب التثبيت مرة ثانية.",
+	ar: "اكتمل التنزيل لكن ملفات اللعبة ناقصة. جرب التثبيت مرة ثانية.",
 	en: "The download finished but the game files are missing. Try the install again.",
 };
 

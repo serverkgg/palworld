@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { live } from "./live";
@@ -63,7 +63,7 @@ const act = async (action: string, args: Bridge.Values = {}): Promise<Recorded> 
 };
 
 describe("telling the owner what the live actions did", () => {
-	test("reports a short broadcast whole", async () => {
+	it("reports a short broadcast whole", async () => {
 		const { reported } = await act("announce", {
 			message: "restart in 5 minutes",
 		});
@@ -72,7 +72,7 @@ describe("telling the owner what the live actions did", () => {
 			{
 				name: BridgeEventName.BroadcastSent,
 				text: {
-					ar: "تم إرسال رسالة للاعبين: «restart in 5 minutes»",
+					ar: "تم إرسال رسالة إلى اللاعبين: «restart in 5 minutes»",
 					en: 'Sent a message to players: "restart in 5 minutes"',
 				},
 				details: {
@@ -82,7 +82,7 @@ describe("telling the owner what the live actions did", () => {
 		]);
 	});
 
-	test("reports a long broadcast only as an 80 character excerpt, while the game gets all of it", async () => {
+	it("reports a long broadcast only as an 80 character excerpt, while the game gets all of it", async () => {
 		const message = `${"word ".repeat(30)}end`;
 		const { bodies, reported } = await act("announce", {
 			message,
@@ -97,7 +97,7 @@ describe("telling the owner what the live actions did", () => {
 		expect(reported.at(0)?.text.ar).toContain(excerpt);
 	});
 
-	test("reports a save as a gameplay change, beside the save event a backup waits for", async () => {
+	it("reports a save as a gameplay change, beside the save event a backup waits for", async () => {
 		const { emitted, reported } = await act("save");
 
 		expect(emitted).toEqual([
@@ -107,7 +107,7 @@ describe("telling the owner what the live actions did", () => {
 			{
 				name: BridgeEventName.GameplayChanged,
 				text: {
-					ar: "تم حفظ العالم",
+					ar: "تم حفظ الماب",
 					en: "Saved the world",
 				},
 				details: {
@@ -117,7 +117,7 @@ describe("telling the owner what the live actions did", () => {
 		]);
 	});
 
-	test("refuses an empty broadcast before anything is sent or reported", async () => {
+	it("refuses an empty broadcast before anything is sent or reported", async () => {
 		await expect(
 			act("announce", {
 				message: "   ",
@@ -125,7 +125,7 @@ describe("telling the owner what the live actions did", () => {
 		).rejects.toThrow("Write the message first.");
 	});
 
-	test("never puts the admin password into what it reports", async () => {
+	it("never puts the admin password into what it reports", async () => {
 		for (const action of [
 			"announce",
 			"save",

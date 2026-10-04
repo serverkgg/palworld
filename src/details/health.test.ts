@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, setSystemTime, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, setSystemTime } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeDetailTone } from "@serverkgg/bridge";
 import { LAG_FPS_THRESHOLD, metrics, SAMPLE_MIN_AGE_MS } from "../shared";
@@ -9,22 +9,22 @@ const toneOf = (fps: number) => {
 };
 
 describe("telling the owner in one word how his world is running", () => {
-	test("calls a server holding the full frame rate smooth", () => {
+	it("calls a server holding the full frame rate smooth", () => {
 		expect(toneOf(60)).toBe(BridgeDetailTone.Success);
 		expect(toneOf(SMOOTH_FPS_THRESHOLD)).toBe(BridgeDetailTone.Success);
 	});
 
-	test("warns the moment the frame rate drops under smooth", () => {
+	it("warns the moment the frame rate drops under smooth", () => {
 		expect(toneOf(SMOOTH_FPS_THRESHOLD - 1)).toBe(BridgeDetailTone.Warning);
 		expect(toneOf(LAG_FPS_THRESHOLD)).toBe(BridgeDetailTone.Warning);
 	});
 
-	test("calls it lag once the frame rate falls under the threshold the platform acts on", () => {
+	it("calls it lag once the frame rate falls under the threshold the platform acts on", () => {
 		expect(toneOf(LAG_FPS_THRESHOLD - 1)).toBe(BridgeDetailTone.Danger);
 		expect(toneOf(0)).toBe(BridgeDetailTone.Danger);
 	});
 
-	test("labels every tone in both arabic and english", () => {
+	it("labels every tone in both arabic and english", () => {
 		for (const fps of [
 			60,
 			30,
@@ -37,20 +37,20 @@ describe("telling the owner in one word how his world is running", () => {
 });
 
 describe("reading the uptime the server reports in seconds", () => {
-	test("says less than a minute before the first minute is up", () => {
+	it("says less than a minute before the first minute is up", () => {
 		expect(formatUptime(31)).toEqual({
 			ar: "أقل من دقيقة",
 			en: "Less than a minute",
 		});
 	});
 
-	test("counts the minutes of a server that just started", () => {
+	it("counts the minutes of a server that just started", () => {
 		expect(formatUptime(60)).toEqual({
 			ar: "دقيقة",
 			en: "1m",
 		});
 		expect(formatUptime(9 * 60)).toEqual({
-			ar: "9 دقايق",
+			ar: "9 دقائق",
 			en: "9m",
 		});
 		expect(formatUptime(40 * 60)).toEqual({
@@ -59,7 +59,7 @@ describe("reading the uptime the server reports in seconds", () => {
 		});
 	});
 
-	test("drops the minutes when the hour lands exactly", () => {
+	it("drops the minutes when the hour lands exactly", () => {
 		expect(formatUptime(3600)).toEqual({
 			ar: "ساعة",
 			en: "1h",
@@ -70,7 +70,7 @@ describe("reading the uptime the server reports in seconds", () => {
 		});
 	});
 
-	test("reads the hours and the minutes together on a server that has been up a while", () => {
+	it("reads the hours and the minutes together on a server that has been up a while", () => {
 		expect(formatUptime(3 * 3600 + 15 * 60 + 42)).toEqual({
 			ar: "3 ساعات و15 دقيقة",
 			en: "3h 15m",
@@ -81,7 +81,7 @@ describe("reading the uptime the server reports in seconds", () => {
 		});
 	});
 
-	test("writes every number in western digits, never arabic-indic ones", () => {
+	it("writes every number in western digits, never arabic-indic ones", () => {
 		const arabic = formatUptime(5 * 3600 + 20 * 60).ar;
 
 		expect(arabic).toContain("5");
@@ -89,7 +89,7 @@ describe("reading the uptime the server reports in seconds", () => {
 		expect(arabic).not.toMatch(/[٠-٩]/);
 	});
 
-	test("never reads a negative uptime as a duration", () => {
+	it("never reads a negative uptime as a duration", () => {
 		expect(formatUptime(-90)).toEqual({
 			ar: "أقل من دقيقة",
 			en: "Less than a minute",
@@ -98,11 +98,11 @@ describe("reading the uptime the server reports in seconds", () => {
 });
 
 describe("declaring the health card the controls tab opens with", () => {
-	test("only reads a running server, because the rest api is gone with it", () => {
+	it("only reads a running server, because the rest api is gone with it", () => {
 		expect(health.requiresRunning).toBe(true);
 	});
 
-	test("refreshes as often as the query loop samples, so the card never lags the numbers", () => {
+	it("refreshes as often as the query loop samples, so the card never lags the numbers", () => {
 		expect(health.refreshSeconds).toBe(15);
 	});
 });
@@ -175,7 +175,7 @@ afterEach(() => {
 });
 
 describe("reading the health card off a server that may not answer", () => {
-	test("asks the server itself rather than serving the sample the query loop left behind", async () => {
+	it("asks the server itself rather than serving the sample the query loop left behind", async () => {
 		const answering = {
 			reachable: true,
 		};
@@ -191,7 +191,7 @@ describe("reading the health card off a server that may not answer", () => {
 		}
 	});
 
-	test("falls back to the last numbers it saw and says they are stale once the server stops answering", async () => {
+	it("falls back to the last numbers it saw and says they are stale once the server stops answering", async () => {
 		const answering = {
 			reachable: true,
 		};
@@ -213,7 +213,7 @@ describe("reading the health card off a server that may not answer", () => {
 		}
 	});
 
-	test("serves a second reader the sample it just took, without a second call to the server", async () => {
+	it("serves a second reader the sample it just took, without a second call to the server", async () => {
 		const answering = {
 			reachable: true,
 		};
@@ -233,7 +233,7 @@ describe("reading the health card off a server that may not answer", () => {
 		}
 	});
 
-	test("shows no card at all when it never had a sample to fall back on", async () => {
+	it("shows no card at all when it never had a sample to fall back on", async () => {
 		const { context, server } = harness({
 			reachable: false,
 		});

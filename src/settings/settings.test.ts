@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
@@ -84,7 +84,7 @@ const stamped = async (context: Bridge.Context) => {
 };
 
 describe("writing a setting while the game is running", () => {
-	test("writes it into the ini the game reads at its next start", async () => {
+	it("writes it into the ini the game reads at its next start", async () => {
 		const { context, ini } = harness({
 			running: true,
 		});
@@ -97,7 +97,7 @@ describe("writing a setting while the game is running", () => {
 		expect(ini.ExpRate).toBe("3");
 	});
 
-	test("keeps it pending too, because the game rewrites the ini when it shuts down", async () => {
+	it("keeps it pending too, because the game rewrites the ini when it shuts down", async () => {
 		const { context } = harness({
 			running: true,
 		});
@@ -112,7 +112,7 @@ describe("writing a setting while the game is running", () => {
 		});
 	});
 
-	test("keeps the folded crossplay key pending, not the three toggles the panel shows", async () => {
+	it("keeps the folded crossplay key pending, not the three toggles the panel shows", async () => {
 		const { context } = harness({
 			running: true,
 			ini: {
@@ -130,7 +130,7 @@ describe("writing a setting while the game is running", () => {
 		});
 	});
 
-	test("refuses a value outside the field before anything is recorded", async () => {
+	it("refuses a value outside the field before anything is recorded", async () => {
 		const { context, ini } = harness({
 			running: true,
 		});
@@ -148,7 +148,7 @@ describe("writing a setting while the game is running", () => {
 });
 
 describe("writing a setting while the game is stopped", () => {
-	test("writes it into the ini, which nothing is going to overwrite", async () => {
+	it("writes it into the ini, which nothing is going to overwrite", async () => {
 		const { context, ini } = harness({
 			running: false,
 		});
@@ -161,7 +161,7 @@ describe("writing a setting while the game is stopped", () => {
 		expect(ini.ExpRate).toBe("3");
 	});
 
-	test("records nothing, because the ini is the truth while the game is down", async () => {
+	it("records nothing, because the ini is the truth while the game is down", async () => {
 		const { context } = harness({
 			running: false,
 		});
@@ -174,7 +174,7 @@ describe("writing a setting while the game is stopped", () => {
 		expect(await readPendingSettings(context)).toEqual({});
 	});
 
-	test("drops the older running write, so the next start does not replay it over this one", async () => {
+	it("drops the older running write, so the next start does not replay it over this one", async () => {
 		const { context, ini, server } = harness({
 			running: true,
 			ini: {
@@ -198,7 +198,7 @@ describe("writing a setting while the game is stopped", () => {
 		expect(await readPendingSettings(context)).toEqual({});
 	});
 
-	test("leaves the other keys pending, because only the written ones are now in the ini", async () => {
+	it("leaves the other keys pending, because only the written ones are now in the ini", async () => {
 		const { context, server } = harness({
 			running: true,
 		});
@@ -222,7 +222,7 @@ describe("writing a setting while the game is stopped", () => {
 });
 
 describe("changing crossplay twice across the game's own shutdown rewrite", () => {
-	test("folds the second toggle onto the pending tuple, never onto the ini the game rewrote", async () => {
+	it("folds the second toggle onto the pending tuple, never onto the ini the game rewrote", async () => {
 		const { context, ini } = harness({
 			running: true,
 			ini: {
@@ -253,7 +253,7 @@ describe("changing crossplay twice across the game's own shutdown rewrite", () =
 });
 
 describe("reading the settings the panel shows", () => {
-	test("shows what the ini says while nothing is pending", async () => {
+	it("shows what the ini says while nothing is pending", async () => {
 		const { context } = harness({
 			running: false,
 			ini: {
@@ -264,7 +264,7 @@ describe("reading the settings the panel shows", () => {
 		expect((await settings.read(context)).ExpRate).toBe("1.000000");
 	});
 
-	test("shows the owner his own value after the game rewrote the ini on shutdown", async () => {
+	it("shows the owner his own value after the game rewrote the ini on shutdown", async () => {
 		const { context, ini } = harness({
 			running: true,
 			ini: {
@@ -282,7 +282,7 @@ describe("reading the settings the panel shows", () => {
 		expect((await settings.read(context)).ExpRate).toBe("3");
 	});
 
-	test("splits the pending crossplay platforms back into the three toggles", async () => {
+	it("splits the pending crossplay platforms back into the three toggles", async () => {
 		const { context, ini } = harness({
 			running: true,
 			ini: {
@@ -323,7 +323,7 @@ const appliedKeys = (reported: Bridge.Activity[]) => {
 };
 
 describe("telling the owner which settings a restart applied", () => {
-	test("reports the keys a running write changed once the restart applies them", async () => {
+	it("reports the keys a running write changed once the restart applies them", async () => {
 		const harnessed = harness({
 			running: true,
 			ini: DEV_INI,
@@ -356,7 +356,7 @@ describe("telling the owner which settings a restart applied", () => {
 		]);
 	});
 
-	test("reports nothing when the running write changed no value", async () => {
+	it("reports nothing when the running write changed no value", async () => {
 		const harnessed = harness({
 			running: true,
 			ini: DEV_INI,
@@ -376,7 +376,7 @@ describe("telling the owner which settings a restart applied", () => {
 		expect(harnessed.reported).toEqual([]);
 	});
 
-	test("reports nothing for a value changed and changed back before the restart", async () => {
+	it("reports nothing for a value changed and changed back before the restart", async () => {
 		const harnessed = harness({
 			running: true,
 			ini: DEV_INI,
@@ -397,7 +397,7 @@ describe("telling the owner which settings a restart applied", () => {
 		expect(harnessed.reported).toEqual([]);
 	});
 
-	test("compares two saves before one restart against the value the game started with", async () => {
+	it("compares two saves before one restart against the value the game started with", async () => {
 		const harnessed = harness({
 			running: true,
 			ini: DEV_INI,
@@ -421,7 +421,7 @@ describe("telling the owner which settings a restart applied", () => {
 		]);
 	});
 
-	test("reports every pending key from a stamp an older release wrote without a baseline", async () => {
+	it("reports every pending key from a stamp an older release wrote without a baseline", async () => {
 		const harnessed = harness({
 			running: false,
 			ini: DEV_INI,
@@ -448,7 +448,7 @@ describe("telling the owner which settings a restart applied", () => {
 		expect(await readPendingSettings(harnessed.context)).toEqual({});
 	});
 
-	test("starts even when the stored baseline is corrupt, and treats every key as changed", async () => {
+	it("starts even when the stored baseline is corrupt, and treats every key as changed", async () => {
 		const harnessed = harness({
 			running: false,
 			ini: DEV_INI,
@@ -471,7 +471,7 @@ describe("telling the owner which settings a restart applied", () => {
 		]);
 	});
 
-	test("reports nothing when nothing is pending", async () => {
+	it("reports nothing when nothing is pending", async () => {
 		const harnessed = harness({
 			running: false,
 			ini: DEV_INI,
@@ -483,7 +483,7 @@ describe("telling the owner which settings a restart applied", () => {
 		expect(harnessed.reported).toEqual([]);
 	});
 
-	test("keeps a password's value out of the stored baseline and out of the report", async () => {
+	it("keeps a password's value out of the stored baseline and out of the report", async () => {
 		const harnessed = harness({
 			running: true,
 			ini: {

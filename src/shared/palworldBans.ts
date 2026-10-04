@@ -47,8 +47,8 @@ export const requireUserId = (input: string) => {
 
 	if (!USER_ID_PATTERN.test(userId)) {
 		throw new BridgeUserError({
-			ar: "هذا مو معرّف لاعب. المعرّف يبدأ بـ steam_ ومعه رقم Steam64، أو gdk_ للي على Xbox — مثال: steam_76561198000000001",
-			en: "That is not a user id. It starts with steam_ followed by the Steam64 id, or gdk_ on Xbox — like steam_76561198000000001.",
+			ar: "هذا ليس معرّف لاعب. يبدأ المعرّف بـ steam_ ثم رقم Steam64، أو بـ gdk_ للاعبي Xbox، مثل steam_76561198000000001.",
+			en: "That isn't a user ID. It starts with steam_ followed by the Steam64 ID, or gdk_ on Xbox, like steam_76561198000000001.",
 		});
 	}
 

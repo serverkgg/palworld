@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
 	type Bridge,
 	BridgeConfirm,
@@ -213,35 +213,35 @@ const MAX_PLAYERS = (
 ).resources.maxRecommendedPlayers;
 
 describe("laying out the palworld panel", () => {
-	test("gives every tab a unique id", () => {
+	it("gives every tab a unique id", () => {
 		const ids = panel.tabs.map((tab) => tab.id);
 
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
-	test("gives every section a unique id", () => {
+	it("gives every section a unique id", () => {
 		const ids = sections.map((section) => section.id);
 
 		expect(new Set(ids).size).toBe(ids.length);
 	});
 
-	test("titles every tab in both arabic and english", () => {
+	it("titles every tab in both arabic and english", () => {
 		for (const tab of panel.tabs) {
 			expect(tab.title.ar.length).toBeGreaterThan(0);
 			expect(tab.title.en.length).toBeGreaterThan(0);
 		}
 	});
 
-	test("writes the settings form into PalWorldSettings.ini through the settings module", () => {
+	it("writes the settings form into PalWorldSettings.ini through the settings module", () => {
 		expect(forms.at(0)?.target).toBe(BridgeFormTarget.Settings);
 		expect(forms.at(0)?.module).toBe("settings");
 	});
 
-	test("tells the player that a settings change needs a restart", () => {
+	it("tells the player that a settings change needs a restart", () => {
 		expect(forms.at(0)?.restartHint).toBe(true);
 	});
 
-	test("puts remote access with the controls, as a variable toggle beside its detail card", () => {
+	it("puts remote access with the controls, as a variable toggle beside its detail card", () => {
 		const controls = panel.tabs.find((tab) => tab.id === "controls");
 		const toggle = controls?.sections.find((section) => section.layout === BridgeLayout.Form);
 		const detail = controls?.sections.find((section) => {
@@ -255,7 +255,7 @@ describe("laying out the palworld panel", () => {
 });
 
 describe("showing the owner who is on the server right now", () => {
-	test("shows the player, their store account, the store itself, their level and their ping", () => {
+	it("shows the player, their store account, the store itself, their level and their ping", () => {
 		expect(tableNamed("online")?.columns.map((column) => column.key)).toEqual([
 			"name",
 			"account",
@@ -265,14 +265,14 @@ describe("showing the owner who is on the server right now", () => {
 		]);
 	});
 
-	test("labels every online column in both arabic and english", () => {
+	it("labels every online column in both arabic and english", () => {
 		for (const column of tableNamed("online")?.columns ?? []) {
 			expect(column.label.ar.length).toBeGreaterThan(0);
 			expect(column.label.en.length).toBeGreaterThan(0);
 		}
 	});
 
-	test("keeps the kick and the ban on the row, and asks harder before a ban", () => {
+	it("keeps the kick and the ban on the row, and asks harder before a ban", () => {
 		expect(tableNamed("online")?.actions?.map((action) => action.id)).toEqual([
 			"kick",
 			"ban",
@@ -281,18 +281,18 @@ describe("showing the owner who is on the server right now", () => {
 		expect(tableNamed("online")?.actions?.at(1)?.confirm).toBe(BridgeConfirm.Strong);
 	});
 
-	test("renders the roster on the platform players page instead of a second players entry", () => {
+	it("renders the roster on the platform players page instead of a second players entry", () => {
 		expect(placeOf(tableNamed("online"))).toBe(BridgePlace.Players);
 	});
 
-	test("keeps the ban on a player who already left, and the kick only on one who is still in", () => {
+	it("keeps the ban on a player who already left, and the kick only on one who is still in", () => {
 		expect(tableNamed("online")?.actions?.at(0)?.offline).toBeUndefined();
 		expect(tableNamed("online")?.actions?.at(1)?.offline).toBe(true);
 	});
 });
 
 describe("giving the owner a way back from a ban", () => {
-	test("puts the ban list beside the online list, on the players tab", () => {
+	it("puts the ban list beside the online list, on the players tab", () => {
 		const players = panel.tabs.find((tab) => tab.id === "players");
 
 		expect(players?.sections.map((section) => section.id)).toEqual([
@@ -301,17 +301,17 @@ describe("giving the owner a way back from a ban", () => {
 		]);
 	});
 
-	test("puts the ban list under the roster, on the same platform players page", () => {
+	it("puts the ban list under the roster, on the same platform players page", () => {
 		expect(placeOf(tableNamed("bans"))).toBe(BridgePlace.Players);
 	});
 
-	test("places every section of the players tab, so the sidebar never shows the noun twice", () => {
+	it("places every section of the players tab, so the sidebar never shows the noun twice", () => {
 		const players = panel.tabs.find((tab) => tab.id === "players");
 
 		expect(players?.sections.every((section) => placeOf(section) === BridgePlace.Players)).toBe(true);
 	});
 
-	test("titles both tables, so two lists on one tab are never confused", () => {
+	it("titles both tables, so two lists on one tab are never confused", () => {
 		for (const id of [
 			"online",
 			"bans",
@@ -321,47 +321,47 @@ describe("giving the owner a way back from a ban", () => {
 		}
 	});
 
-	test("labels every ban column in both arabic and english", () => {
+	it("labels every ban column in both arabic and english", () => {
 		for (const column of tableNamed("bans")?.columns ?? []) {
 			expect(column.label.ar.length).toBeGreaterThan(0);
 			expect(column.label.en.length).toBeGreaterThan(0);
 		}
 	});
 
-	test("lets the owner ban an id that never showed up on the roster", () => {
+	it("lets the owner ban an id that never showed up on the roster", () => {
 		expect(tableNamed("bans")?.add?.label.ar.length).toBeGreaterThan(0);
 		expect(tableNamed("bans")?.add?.label.en.length).toBeGreaterThan(0);
 		expect(tableNamed("bans")?.add?.placeholder).toContain("steam_");
 	});
 
-	test("offers exactly one row action, and only asks once before lifting a ban", () => {
+	it("offers exactly one row action, and only asks once before lifting a ban", () => {
 		expect(tableNamed("bans")?.actions?.map((action) => action.id)).toEqual([
 			"remove",
 		]);
 		expect(tableNamed("bans")?.actions?.at(0)?.confirm).toBe(BridgeConfirm.Normal);
 	});
 
-	test("explains an empty ban list in both arabic and english", () => {
+	it("explains an empty ban list in both arabic and english", () => {
 		expect(tableNamed("bans")?.empty?.ar.length).toBeGreaterThan(0);
 		expect(tableNamed("bans")?.empty?.en.length).toBeGreaterThan(0);
 	});
 });
 
 describe("the fields the panel renders for palworld settings", () => {
-	test("labels every field in both arabic and english", () => {
+	it("labels every field in both arabic and english", () => {
 		for (const field of fields) {
 			expect(field.label.ar.length).toBeGreaterThan(0);
 			expect(field.label.en.length).toBeGreaterThan(0);
 		}
 	});
 
-	test("gives every field a unique key, so one setting cannot shadow another", () => {
+	it("gives every field a unique key, so one setting cannot shadow another", () => {
 		const keys = fields.map((field) => field.key);
 
 		expect(new Set(keys).size).toBe(keys.length);
 	});
 
-	test("keeps every range the right way round", () => {
+	it("keeps every range the right way round", () => {
 		for (const field of fields) {
 			if (field.min !== undefined && field.max !== undefined) {
 				expect(field.max).toBeGreaterThan(field.min);
@@ -369,7 +369,7 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("only bounds numeric fields", () => {
+	it("only bounds numeric fields", () => {
 		for (const field of fields) {
 			if (field.min !== undefined || field.max !== undefined || field.step !== undefined) {
 				expect(field.control).toBe(BridgeControl.Number);
@@ -377,7 +377,7 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("keeps every text limit positive", () => {
+	it("keeps every text limit positive", () => {
 		for (const field of fields) {
 			if (field.maxLength !== undefined) {
 				expect(field.maxLength).toBeGreaterThan(0);
@@ -385,12 +385,12 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("stops the player at the slot count the manifest advertises", () => {
+	it("stops the player at the slot count the manifest advertises", () => {
 		expect(fieldNamed("ServerPlayerMaxNum")?.max).toBe(MAX_PLAYERS);
 		expect(fieldNamed("ServerPlayerMaxNum")?.min).toBe(1);
 	});
 
-	test("never lets a rate go negative, and never caps how high the owner takes it", () => {
+	it("never lets a rate go negative, and never caps how high the owner takes it", () => {
 		for (const key of [
 			"ExpRate",
 			"PalCaptureRate",
@@ -400,7 +400,7 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("offers the four death penalties palworld understands, each only once", () => {
+	it("offers the four death penalties palworld understands, each only once", () => {
 		const values = optionsOf(fieldNamed("DeathPenalty")).map((option) => option.value);
 
 		expect(values).toEqual([
@@ -412,7 +412,7 @@ describe("the fields the panel renders for palworld settings", () => {
 		expect(new Set(values).size).toBe(values.length);
 	});
 
-	test("labels every choice in both arabic and english", () => {
+	it("labels every choice in both arabic and english", () => {
 		for (const field of fields) {
 			for (const option of optionsOf(field)) {
 				expect(option.label.ar.length).toBeGreaterThan(0);
@@ -421,7 +421,7 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("only offers choices on a select", () => {
+	it("only offers choices on a select", () => {
 		for (const field of fields) {
 			if (optionsOf(field).length > 0) {
 				expect(field.control).toBe(BridgeControl.Select);
@@ -429,18 +429,18 @@ describe("the fields the panel renders for palworld settings", () => {
 		}
 	});
 
-	test("warns the player before hardcore, where a death is permanent", () => {
+	it("warns the player before hardcore, where a death is permanent", () => {
 		expect(fieldNamed("bHardcore")?.warning?.ar.length).toBeGreaterThan(0);
 		expect(fieldNamed("bHardcore")?.warning?.en.length).toBeGreaterThan(0);
 	});
 
-	test("advertises the same announce limit the driver enforces", () => {
+	it("advertises the same announce limit the driver enforces", () => {
 		expect(fieldNamed("message")?.maxLength).toBe(ANNOUNCE_MESSAGE_LENGTH);
 	});
 });
 
 describe("opening the rest of PalWorldSettings.ini to the owner", () => {
-	test("writes every settings section through the settings module, behind a restart hint", () => {
+	it("writes every settings section through the settings module, behind a restart hint", () => {
 		for (const section of settingsSections) {
 			expect(section.target).toBe(BridgeFormTarget.Settings);
 			expect(section.module).toBe("settings");
@@ -448,7 +448,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("groups the settings into the five sections, world first", () => {
+	it("groups the settings into the five sections, world first", () => {
 		expect(settingsSections.map((section) => section.id)).toEqual([
 			"world",
 			"community",
@@ -458,14 +458,14 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		]);
 	});
 
-	test("titles every settings section in both arabic and english", () => {
+	it("titles every settings section in both arabic and english", () => {
 		for (const section of settingsSections) {
 			expect(section.title?.ar.length).toBeGreaterThan(0);
 			expect(section.title?.en.length).toBeGreaterThan(0);
 		}
 	});
 
-	test("says in one sentence what every settings section controls, in both arabic and english", () => {
+	it("says in one sentence what every settings section controls, in both arabic and english", () => {
 		for (const section of settingsSections) {
 			expect(section.help?.ar.length).toBeGreaterThan(0);
 			expect(section.help?.en.length).toBeGreaterThan(0);
@@ -474,7 +474,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("keeps the world section on the five fields the setup step names", () => {
+	it("keeps the world section on the five fields the setup step names", () => {
 		expect(settingsSections.at(0)?.fields.map((field) => field.key)).toEqual([
 			"ServerName",
 			"ServerDescription",
@@ -484,13 +484,13 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		]);
 	});
 
-	test("stays under the 32 fields the bridge lets one form carry", () => {
+	it("stays under the 32 fields the bridge lets one form carry", () => {
 		for (const section of settingsSections) {
 			expect(section.fields.length).toBeLessThanOrEqual(32);
 		}
 	});
 
-	test("declares only keys palworld's own defaults carry, or a crossplay toggle the module owns", () => {
+	it("declares only keys palworld's own defaults carry, or a crossplay toggle the module owns", () => {
 		for (const field of settingsFields) {
 			expect([
 				...DEFAULT_SETTINGS_KEYS,
@@ -499,17 +499,17 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("renders exactly the keys the settings table declares, in the same order", () => {
+	it("renders exactly the keys the settings table declares, in the same order", () => {
 		expect(settingsFields.map((field) => field.key)).toEqual(SETTINGS_FIELDS.map((field) => field.key));
 	});
 
-	test("renders the very field objects the write validates against, so the two cannot drift", () => {
+	it("renders the very field objects the write validates against, so the two cannot drift", () => {
 		for (const field of settingsFields) {
 			expect(settingsFieldOf(field.key)).toBe(field);
 		}
 	});
 
-	test("offers only choices the settings table declares", () => {
+	it("offers only choices the settings table declares", () => {
 		for (const field of settingsFields) {
 			for (const option of optionsOf(field)) {
 				expect(optionsOf(settingsFieldOf(field.key) ?? undefined).map((entry) => entry.value)).toContain(option.value);
@@ -517,7 +517,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("floors every settings number, and keeps a ceiling above its floor where it has one", () => {
+	it("floors every settings number, and keeps a ceiling above its floor where it has one", () => {
 		for (const field of settingsFields) {
 			if (field.control === BridgeControl.Number) {
 				expect(typeof field.min).toBe("number");
@@ -529,7 +529,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("hides a field behind another field of its own section, which is what a settings form can resolve", () => {
+	it("hides a field behind another field of its own section, which is what a settings form can resolve", () => {
 		for (const section of settingsSections) {
 			const keys = section.fields.map((field) => field.key);
 
@@ -541,7 +541,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("shows the guild reset window only while the automatic reset is on", () => {
+	it("shows the guild reset window only while the automatic reset is on", () => {
 		expect(fieldNamed("AutoResetGuildTimeNoOnlinePlayers")?.visibleWhen).toEqual({
 			variable: "bAutoResetGuildNoOnlinePlayers",
 			values: [
@@ -550,7 +550,7 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		});
 	});
 
-	test("shows the randomizer details only while the randomizer is on", () => {
+	it("shows the randomizer details only while the randomizer is on", () => {
 		for (const key of [
 			"bIsRandomizerPalLevelRandom",
 			"RandomizerSeed",
@@ -565,13 +565,13 @@ describe("opening the rest of PalWorldSettings.ini to the owner", () => {
 		}
 	});
 
-	test("opens crossplay as three toggles, because the ini keeps one tuple", () => {
+	it("opens crossplay as three toggles, because the ini keeps one tuple", () => {
 		for (const key of CROSSPLAY_VIRTUALS) {
 			expect(fieldNamed(key)?.control).toBe(BridgeControl.Boolean);
 		}
 	});
 
-	test("says once that steam always gets in, so nobody looks for a steam toggle", () => {
+	it("says once that steam always gets in, so nobody looks for a steam toggle", () => {
 		expect(fieldNamed(CROSSPLAY_XBOX_KEY)?.help?.ar).toContain("Steam");
 		expect(fieldNamed(CROSSPLAY_XBOX_KEY)?.help?.en).toContain("Steam");
 	});
@@ -582,31 +582,31 @@ const healthSection = (panel.tabs.find((tab) => tab.id === "controls")?.sections
 });
 
 describe("opening the controls tab on how the world is actually running", () => {
-	test("puts the health card above the quick actions, where the owner looks first", () => {
+	it("puts the health card above the quick actions, where the owner looks first", () => {
 		expect(panel.tabs.find((tab) => tab.id === "controls")?.sections.at(0)?.id).toBe("health");
 	});
 
-	test("renders the live numbers on the overview, beside the cpu and the memory", () => {
+	it("renders the live numbers on the overview, beside the cpu and the memory", () => {
 		expect(placeOf(healthSection)).toBe(BridgePlace.Overview);
 	});
 
-	test("keeps the quick actions and remote access on the controls tab, so it stays in the sidebar", () => {
+	it("keeps the quick actions and remote access on the controls tab, so it stays in the sidebar", () => {
 		const controls = panel.tabs.find((tab) => tab.id === "controls");
 
 		expect(controls?.sections.some((section) => placeOf(section) === undefined)).toBe(true);
 	});
 
-	test("reads it from the health detail module", () => {
+	it("reads it from the health detail module", () => {
 		expect(healthSection?.layout).toBe(BridgeLayout.Detail);
 		expect(healthSection?.layout === BridgeLayout.Detail && healthSection.module).toBe("health");
 	});
 
-	test("titles it in both arabic and english", () => {
+	it("titles it in both arabic and english", () => {
 		expect(healthSection?.title?.ar.length).toBeGreaterThan(0);
 		expect(healthSection?.title?.en.length).toBeGreaterThan(0);
 	});
 
-	test("says in both languages what an unreachable server looks like", () => {
+	it("says in both languages what an unreachable server looks like", () => {
 		expect(healthSection?.layout === BridgeLayout.Detail && healthSection.empty?.ar.length).toBeGreaterThan(0);
 		expect(healthSection?.layout === BridgeLayout.Detail && healthSection.empty?.en.length).toBeGreaterThan(0);
 	});

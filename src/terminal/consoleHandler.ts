@@ -90,8 +90,8 @@ export const shutdownSeconds = (raw: string | undefined): number | null => {
 const needleOf = (line: PalworldConsoleLine) => {
 	if (line.rest.length === 0) {
 		throw new BridgeUserError({
-			ar: "اكتب اسم اللاعب أو الـ ID أول.",
-			en: "Write the player name or id first.",
+			ar: "اكتب اسم اللاعب أو الـ ID أولًا.",
+			en: "Write the player name or ID first.",
 		});
 	}
 
@@ -103,7 +103,7 @@ const targetOf = async (context: Bridge.Context, line: PalworldConsoleLine) => {
 
 	if (!player) {
 		throw new BridgeUserError({
-			ar: "ما فيه لاعب بهذا الاسم متصل الحين.",
+			ar: "لا يوجد لاعب متصل بهذا الاسم الآن.",
 			en: "No player with that name is online right now.",
 		});
 	}
@@ -166,8 +166,8 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 
 		if (!USER_ID_PATTERN.test(needle)) {
 			throw new BridgeUserError({
-				ar: "ما فيه لاعب بهذا الاسم متصل الحين. لو تبي تحظر واحد مو متصل، اكتب معرّفه زي steam_76561198000000001",
-				en: "No player with that name is online right now. To ban someone who is offline, write their user id like steam_76561198000000001.",
+				ar: "لا يوجد لاعب متصل بهذا الاسم الآن. لحظر لاعب غير متصل، اكتب معرّفه، مثل steam_76561198000000001.",
+				en: "No player with that name is online right now. To ban someone who's offline, write their user ID, like steam_76561198000000001.",
 			});
 		}
 
@@ -190,7 +190,7 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 
 	async teleporttoplayer() {
 		throw new BridgeUserError({
-			ar: "TeleportToPlayer يشتغل داخل اللعبة بس، ما ينفع من الكونسول.",
+			ar: "يشتغل TeleportToPlayer داخل اللعبة فقط، ولا يمكن تنفيذه من الكونسول.",
 			en: "TeleportToPlayer only works inside the game, not from the console.",
 		});
 	},
@@ -200,7 +200,7 @@ export const consoleCommands: Record<string, PalworldConsoleCommand> = {
 
 		if (seconds === null) {
 			throw new BridgeUserError({
-				ar: "اكتب عدد الثواني كذا: Shutdown 30 رسالة",
+				ar: "اكتب عدد الثواني بهذا الشكل: Shutdown 30 رسالة",
 				en: "Write the seconds first, like this: Shutdown 30 message",
 			});
 		}
@@ -229,8 +229,8 @@ export const consoleHandler: NonNullable<Bridge.Terminal["run"]> = async (contex
 
 	if (!command) {
 		throw new BridgeUserError({
-			ar: "ما نعرف هذا الأمر. جرّب أمر من قائمة الأوامر.",
-			en: "That command does not exist. Try one from the command list.",
+			ar: "هذا الأمر غير معروف. جرب أمرًا من قائمة الأوامر.",
+			en: "That command doesn't exist. Try one from the command list.",
 		});
 	}
 

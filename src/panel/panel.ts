@@ -33,7 +33,7 @@ const settingsTab: Bridge.Tab = {
 				en: "Server basics",
 			},
 			help: {
-				ar: "اسم سيرفرك ووصفه وكلمات المرور وعدد اللاعبين اللي يدخلون معك.",
+				ar: "اسم سيرفرك ووصفه، وكلمات المرور، وعدد اللاعبين الذين يدخلون معك.",
 				en: "Your server's name and description, its passwords, and how many players can join.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -61,11 +61,11 @@ const settingsTab: Bridge.Tab = {
 			layout: BridgeLayout.Form,
 			id: "rules",
 			title: {
-				ar: "قوانين العالم",
+				ar: "قوانين الماب",
 				en: "World rules",
 			},
 			help: {
-				ar: "قتال اللاعبين والنمط القاسي وعقوبة الموت والسفر السريع وباقي قوانين عالمك.",
+				ar: "قتال اللاعبين، والنمط القاسي، وعقوبة الموت، والتنقّل السريع، وباقي قوانين مابك.",
 				en: "PvP, hardcore, the death penalty, fast travel and the rest of your world's rules.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -81,7 +81,7 @@ const settingsTab: Bridge.Tab = {
 				en: "Game rates",
 			},
 			help: {
-				ar: "سرعة الخبرة والاصطياد والشغل والضرر وطول اليوم والليل.",
+				ar: "سرعة الخبرة والاصطياد والعمل والضرر، وطول النهار والليل.",
 				en: "How fast XP, catching, work and damage go, and how long the day and the night last.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -97,7 +97,7 @@ const settingsTab: Bridge.Tab = {
 				en: "Bases and guilds",
 			},
 			help: {
-				ar: "حدود القروب والقاعدة وعدد المباني والأغراض اللي تبقى على الأرض.",
+				ar: "حدود القروب والقاعدة، وعدد المباني، ومدة بقاء الأغراض المرمية على الأرض.",
 				en: "Guild and base limits, how many buildings there can be, and how long dropped items stay.",
 			},
 			target: BridgeFormTarget.Settings,
@@ -111,7 +111,7 @@ const settingsTab: Bridge.Tab = {
 const playersTab: Bridge.Tab = {
 	id: "players",
 	title: {
-		ar: "اللاعبين",
+		ar: "اللاعبون",
 		en: "Players",
 	},
 	icon: BridgeIcon.Users,
@@ -120,11 +120,11 @@ const playersTab: Bridge.Tab = {
 			layout: BridgeLayout.Table,
 			id: "online",
 			title: {
-				ar: "المتصلين الحين",
+				ar: "المتصلون الآن",
 				en: "Online now",
 			},
 			help: {
-				ar: "اللي داخلين سيرفرك الحين. تقدر تطرد أو تحظر أي واحد من سطره.",
+				ar: "اللاعبون الموجودون في سيرفرك الآن. اطرد أو احظر أي لاعب من سطره.",
 				en: "Who is on your server right now. Kick or ban anyone from their row.",
 			},
 			place: BridgePlace.Players,
@@ -170,7 +170,7 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "kick",
 					label: {
-						ar: "طرد",
+						ar: "اطرد",
 						en: "Kick",
 					},
 					confirm: BridgeConfirm.Normal,
@@ -178,7 +178,7 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "ban",
 					label: {
-						ar: "حظر",
+						ar: "احظر",
 						en: "Ban",
 					},
 					confirm: BridgeConfirm.Strong,
@@ -186,7 +186,7 @@ const playersTab: Bridge.Tab = {
 				},
 			],
 			empty: {
-				ar: "ما فيه أحد داخل الحين.",
+				ar: "لا يوجد لاعبون متصلون الآن.",
 				en: "Nobody is online right now.",
 			},
 		},
@@ -198,8 +198,8 @@ const playersTab: Bridge.Tab = {
 				en: "Banned players",
 			},
 			help: {
-				ar: "اللي ممنوعين يدخلون سيرفرك. احظر أي واحد بمعرّفه، أو ارفع الحظر من سطره.",
-				en: "Players who cannot join your server. Ban anyone by user id, or lift a ban from its row.",
+				ar: "اللاعبون الممنوعون من دخول سيرفرك. احظر أي لاعب بمعرّفه، أو فك الحظر من سطره.",
+				en: "Players who can't join your server. Ban anyone by user ID, or unban them from their row.",
 			},
 			place: BridgePlace.Players,
 			module: "bans",
@@ -229,7 +229,7 @@ const playersTab: Bridge.Tab = {
 			add: {
 				label: {
 					ar: "احظر بالمعرّف",
-					en: "Ban by user id",
+					en: "Ban by user ID",
 				},
 				placeholder: "steam_7656119…",
 			},
@@ -237,15 +237,15 @@ const playersTab: Bridge.Tab = {
 				{
 					id: "remove",
 					label: {
-						ar: "رفع الحظر",
+						ar: "فك الحظر",
 						en: "Unban",
 					},
 					confirm: BridgeConfirm.Normal,
 				},
 			],
 			empty: {
-				ar: "ما فيه أحد محظور من سيرفرك. أي واحد تحظره من جدول المتصلين بيطلع لك هنا، ومن نفس السطر ترفع عنه الحظر ويرجع يدخل.",
-				en: "Nobody is banned from your server. Whoever you ban from the online list lands here, and the same row is where you lift it so they can join again.",
+				ar: "لا يوجد لاعبون محظورون من سيرفرك. يظهر هنا كل لاعب تحظره من جدول المتصلين، ومن السطر نفسه تفك الحظر عنه ليعود إلى الدخول.",
+				en: "Nobody is banned from your server. Anyone you ban from the online list shows up here, and you unban them from the same row so they can join again.",
 			},
 		},
 	],
@@ -267,14 +267,14 @@ const controlsTab: Bridge.Tab = {
 				en: "Server health",
 			},
 			help: {
-				ar: "أداء سيرفرك واللاعبين ومن متى شغّال، تتحدث كل 15 ثانية وهو شغّال.",
+				ar: "أداء سيرفرك، واللاعبون، ومدة التشغيل، وتتحدث كل 15 ثانية أثناء تشغيله.",
 				en: "Your server performance, players and uptime, refreshed every 15 seconds while it runs.",
 			},
 			place: BridgePlace.Overview,
 			module: "health",
 			empty: {
-				ar: "ما قدرنا نوصل لسيرفرك الحين. شغّله وخلّه دقيقة، وبتطلع لك الأرقام هنا.",
-				en: "We could not reach your server right now. Start it, give it a minute, and the numbers land here.",
+				ar: "تعذّر الوصول إلى سيرفرك الآن. شغّله وعطه دقيقة، وستظهر الأرقام هنا.",
+				en: "We couldn't reach your server right now. Start it, give it a minute, and the numbers show up here.",
 			},
 		},
 		{
@@ -285,7 +285,7 @@ const controlsTab: Bridge.Tab = {
 				en: "Quick actions",
 			},
 			help: {
-				ar: "تشتغل على طول على سيرفرك الشغّال.",
+				ar: "تُنفَّذ فورًا على سيرفرك الشغّال.",
 				en: "These run on your server right away.",
 			},
 			module: "live",
@@ -305,7 +305,7 @@ const controlsTab: Bridge.Tab = {
 								en: "Message",
 							},
 							help: {
-								ar: "توصل لكل اللي داخلين الحين.",
+								ar: "تصل إلى كل اللاعبين المتصلين الآن.",
 								en: "Reaches everyone who is on the server right now.",
 							},
 							maxLength: ANNOUNCE_MESSAGE_LENGTH,
@@ -315,7 +315,7 @@ const controlsTab: Bridge.Tab = {
 				{
 					id: "save",
 					label: {
-						ar: "احفظ العالم",
+						ar: "احفظ الماب",
 						en: "Save the world",
 					},
 				},

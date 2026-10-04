@@ -1,9 +1,9 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { installedActivity, settingsAppliedActivity, updatedActivity } from "./palworldActivity";
 
 describe("the entries the install reports on its own", () => {
-	test("names the steam builds an update moved between", () => {
+	it("names the steam builds an update moved between", () => {
 		expect(updatedActivity("18000001", "18000002")).toEqual({
 			name: BridgeEventName.ServerUpdated,
 			text: {
@@ -17,7 +17,7 @@ describe("the entries the install reports on its own", () => {
 		});
 	});
 
-	test("names the build a first install landed on", () => {
+	it("names the build a first install landed on", () => {
 		expect(installedActivity("18000002")).toEqual({
 			name: BridgeEventName.GameInstalled,
 			text: {
@@ -30,7 +30,7 @@ describe("the entries the install reports on its own", () => {
 		});
 	});
 
-	test("still reports a first install steam gave no build for", () => {
+	it("still reports a first install steam gave no build for", () => {
 		expect(installedActivity(null)).toEqual({
 			name: BridgeEventName.GameInstalled,
 			text: {
@@ -40,7 +40,7 @@ describe("the entries the install reports on its own", () => {
 		});
 	});
 
-	test("lists the settings that landed by key, and counts them", () => {
+	it("lists the settings that landed by key, and counts them", () => {
 		expect(
 			settingsAppliedActivity([
 				"ExpRate",

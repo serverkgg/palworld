@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
+import { afterEach, describe, expect, it, setSystemTime } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import {
 	createMetricsSampler,
@@ -21,7 +21,7 @@ const HEALTHY = 59;
 const LOW = 11;
 
 describe("deciding when a slow palworld tick is worth telling the platform about", () => {
-	test("says nothing about a single slow sample, which is what a save or a raid looks like", () => {
+	it("says nothing about a single slow sample, which is what a save or a raid looks like", () => {
 		expect(lagDecision(IDLE, LOW, 1000)).toEqual({
 			state: {
 				low: 1,
@@ -31,7 +31,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		});
 	});
 
-	test("speaks up on the second slow sample in a row", () => {
+	it("speaks up on the second slow sample in a row", () => {
 		const first = lagDecision(IDLE, LOW, 1000);
 		const second = lagDecision(first.state, LOW, 16_000);
 
@@ -42,7 +42,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		});
 	});
 
-	test("counts the threshold itself as healthy, so a server sitting on it stays quiet", () => {
+	it("counts the threshold itself as healthy, so a server sitting on it stays quiet", () => {
 		const first = lagDecision(IDLE, LAG_FPS_THRESHOLD, 1000);
 		const second = lagDecision(first.state, LAG_FPS_THRESHOLD, 16_000);
 
@@ -50,11 +50,11 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		expect(second.state.low).toBe(0);
 	});
 
-	test("counts a frame under the threshold as slow", () => {
+	it("counts a frame under the threshold as slow", () => {
 		expect(lagDecision(IDLE, LAG_FPS_THRESHOLD - 1, 1000).state.low).toBe(1);
 	});
 
-	test("forgets the slow sample once the server recovers", () => {
+	it("forgets the slow sample once the server recovers", () => {
 		const first = lagDecision(IDLE, LOW, 1000);
 		const recovered = lagDecision(first.state, HEALTHY, 16_000);
 		const next = lagDecision(recovered.state, LOW, 31_000);
@@ -63,7 +63,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		expect(next.emit).toBe(false);
 	});
 
-	test("forgets the slow sample when the server reports no frame rate at all", () => {
+	it("forgets the slow sample when the server reports no frame rate at all", () => {
 		const first = lagDecision(IDLE, LOW, 1000);
 		const missing = lagDecision(first.state, null, 16_000);
 
@@ -71,7 +71,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		expect(missing.state.low).toBe(0);
 	});
 
-	test("keeps the last emission across a recovery, so a flapping server cannot spam the platform", () => {
+	it("keeps the last emission across a recovery, so a flapping server cannot spam the platform", () => {
 		const first = lagDecision(IDLE, LOW, 1000);
 		const emitted = lagDecision(first.state, LOW, 16_000);
 		const recovered = lagDecision(emitted.state, HEALTHY, 31_000);
@@ -79,7 +79,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		expect(recovered.state.lastEmittedAt).toBe(16_000);
 	});
 
-	test("stays silent while the cooldown runs, however long the lag lasts", () => {
+	it("stays silent while the cooldown runs, however long the lag lasts", () => {
 		let state = lagDecision(lagDecision(IDLE, LOW, 0).state, LOW, 15_000).state;
 
 		for (const now of [
@@ -97,7 +97,7 @@ describe("deciding when a slow palworld tick is worth telling the platform about
 		expect(state.low).toBe(5);
 	});
 
-	test("says it again once the cooldown has passed, so a lag that never ends is never forgotten", () => {
+	it("says it again once the cooldown has passed, so a lag that never ends is never forgotten", () => {
 		const emitted = lagDecision(lagDecision(IDLE, LOW, 0).state, LOW, 15_000);
 		const again = lagDecision(emitted.state, LOW, 15_000 + LAG_COOLDOWN_MS);
 
@@ -213,7 +213,7 @@ const LAGGING: PalworldMetrics = {
 };
 
 describe("sampling the palworld metrics endpoint on every query tick", () => {
-	test("keeps the answer the server gave, so the panel never waits on its own call", async () => {
+	it("keeps the answer the server gave, so the panel never waits on its own call", async () => {
 		const { latest, samples } = await sampleAll([
 			SMOOTH,
 		]);
@@ -224,7 +224,7 @@ describe("sampling the palworld metrics endpoint on every query tick", () => {
 		expect(latest).toEqual(SMOOTH);
 	});
 
-	test("answers nothing when the rest api is unreachable, and keeps what it already had", async () => {
+	it("answers nothing when the rest api is unreachable, and keeps what it already had", async () => {
 		const { latest, samples } = await sampleAll([
 			SMOOTH,
 			null,
@@ -234,7 +234,7 @@ describe("sampling the palworld metrics endpoint on every query tick", () => {
 		expect(latest).toEqual(SMOOTH);
 	});
 
-	test("tells the platform about a lag the owner would otherwise only feel in game", async () => {
+	it("tells the platform about a lag the owner would otherwise only feel in game", async () => {
 		const { emitted, warned } = await sampleAll([
 			LAGGING,
 			LAGGING,
@@ -252,7 +252,7 @@ describe("sampling the palworld metrics endpoint on every query tick", () => {
 		expect(warned.length).toBe(1);
 	});
 
-	test("says nothing at all while the world runs smooth", async () => {
+	it("says nothing at all while the world runs smooth", async () => {
 		const { emitted, warned } = await sampleAll([
 			SMOOTH,
 			SMOOTH,
@@ -263,7 +263,7 @@ describe("sampling the palworld metrics endpoint on every query tick", () => {
 		expect(warned).toEqual([]);
 	});
 
-	test("forgets everything on clear, so a restarted server starts from a clean slate", async () => {
+	it("forgets everything on clear, so a restarted server starts from a clean slate", async () => {
 		const sampler = createMetricsSampler();
 
 		sampler.clear();
@@ -303,7 +303,7 @@ const repeating = (answer: PalworldMetrics) => {
 };
 
 describe("sharing one sample between the query loop and the health card", () => {
-	test("answers a second reader from the sample it already has, without asking the server again", async () => {
+	it("answers a second reader from the sample it already has, without asking the server again", async () => {
 		const { context, requests, server } = repeating(SMOOTH);
 		const sampler = createMetricsSampler();
 
@@ -321,7 +321,7 @@ describe("sharing one sample between the query loop and the health card", () => 
 		}
 	});
 
-	test("asks the server again once the sample it holds is older than the minimum age", async () => {
+	it("asks the server again once the sample it holds is older than the minimum age", async () => {
 		const { context, requests, server } = repeating(SMOOTH);
 		const sampler = createMetricsSampler();
 
@@ -340,7 +340,7 @@ describe("sharing one sample between the query loop and the health card", () => 
 		}
 	});
 
-	test("never counts a shared sample twice, so two readers cannot fake a lag the server never had", async () => {
+	it("never counts a shared sample twice, so two readers cannot fake a lag the server never had", async () => {
 		const { context, emitted, requests, server } = repeating(LAGGING);
 		const sampler = createMetricsSampler();
 

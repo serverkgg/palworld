@@ -1,8 +1,8 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { ANNOUNCE_MESSAGE_LENGTH, messageArgument } from "./palworldAnnounce";
 
 describe("reading the message an admin typed into the announce action", () => {
-	test("passes an ordinary message straight through", () => {
+	it("passes an ordinary message straight through", () => {
 		expect(
 			messageArgument({
 				message: "السيرفر يرجع بعد خمس دقايق",
@@ -10,7 +10,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		).toBe("السيرفر يرجع بعد خمس دقايق");
 	});
 
-	test("trims the edges so a stray space is not announced", () => {
+	it("trims the edges so a stray space is not announced", () => {
 		expect(
 			messageArgument({
 				message: "  restarting soon  ",
@@ -18,7 +18,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		).toBe("restarting soon");
 	});
 
-	test("collapses newlines and tabs into single spaces, because palworld announces one line", () => {
+	it("collapses newlines and tabs into single spaces, because palworld announces one line", () => {
 		expect(
 			messageArgument({
 				message: "restart\n\nin\tfive\r\nminutes",
@@ -26,7 +26,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		).toBe("restart in five minutes");
 	});
 
-	test("cuts an over-long message down to the length the panel field advertises", () => {
+	it("cuts an over-long message down to the length the panel field advertises", () => {
 		const message = messageArgument({
 			message: "ب".repeat(ANNOUNCE_MESSAGE_LENGTH + 50),
 		});
@@ -34,7 +34,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		expect(message).toHaveLength(ANNOUNCE_MESSAGE_LENGTH);
 	});
 
-	test("leaves a message that is exactly at the limit alone", () => {
+	it("leaves a message that is exactly at the limit alone", () => {
 		expect(
 			messageArgument({
 				message: "b".repeat(ANNOUNCE_MESSAGE_LENGTH),
@@ -42,7 +42,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		).toHaveLength(ANNOUNCE_MESSAGE_LENGTH);
 	});
 
-	test("refuses an empty message", () => {
+	it("refuses an empty message", () => {
 		expect(() => {
 			return messageArgument({
 				message: "",
@@ -50,7 +50,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		}).toThrow();
 	});
 
-	test("refuses a message that is only whitespace", () => {
+	it("refuses a message that is only whitespace", () => {
 		expect(() => {
 			return messageArgument({
 				message: " \n\t ",
@@ -58,13 +58,13 @@ describe("reading the message an admin typed into the announce action", () => {
 		}).toThrow();
 	});
 
-	test("refuses a missing message", () => {
+	it("refuses a missing message", () => {
 		expect(() => {
 			return messageArgument({});
 		}).toThrow();
 	});
 
-	test("refuses a null message", () => {
+	it("refuses a null message", () => {
 		expect(() => {
 			return messageArgument({
 				message: null,
@@ -72,7 +72,7 @@ describe("reading the message an admin typed into the announce action", () => {
 		}).toThrow();
 	});
 
-	test("accepts a number the panel sent as a value", () => {
+	it("accepts a number the panel sent as a value", () => {
 		expect(
 			messageArgument({
 				message: 5,

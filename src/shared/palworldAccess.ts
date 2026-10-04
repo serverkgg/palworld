@@ -7,7 +7,7 @@ import { mergeSettings, readSettings } from "./palworldSettings";
 export const RCON_PORT = 25_575;
 
 const NOT_GENERATED: Bridge.Text = {
-	ar: "شغّل سيرفرك مرة عشان تتولد كلمة المرور.",
+	ar: "شغّل سيرفرك مرة واحدة لتُنشأ كلمة المرور.",
 	en: "Start your server once to generate the password.",
 };
 

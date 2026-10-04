@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { bans } from "./bans";
@@ -103,7 +103,7 @@ const unban = (row: Bridge.Row) => {
 };
 
 describe("telling the owner who was banned or unbanned from the ban list", () => {
-	test("reports a ban by user id beside the ban event, named by the id", async () => {
+	it("reports a ban by user id beside the ban event, named by the id", async () => {
 		const { paths, emitted, reported } = await act(null, async (context) => {
 			await bans.add?.(context, "steam_76561198000000009");
 		});
@@ -130,7 +130,7 @@ describe("telling the owner who was banned or unbanned from the ban list", () =>
 		]);
 	});
 
-	test("reports an unban by the name the ban list already shows", async () => {
+	it("reports an unban by the name the ban list already shows", async () => {
 		const { paths, emitted, reported } = await act(
 			null,
 			unban({
@@ -161,7 +161,7 @@ describe("telling the owner who was banned or unbanned from the ban list", () =>
 		]);
 	});
 
-	test("names an unban by the user id when the row carries no name, without asking steam", async () => {
+	it("names an unban by the user id when the row carries no name, without asking steam", async () => {
 		const { lookups, reported } = await act(
 			{
 				"76561198000000009": "Nasser",
@@ -176,7 +176,7 @@ describe("telling the owner who was banned or unbanned from the ban list", () =>
 		expect(lookups).toBe(0);
 	});
 
-	test("reads the platform from the user id of an unnamed xbox ban", async () => {
+	it("reads the platform from the user id of an unnamed xbox ban", async () => {
 		const { reported } = await act(
 			{},
 			unban({
@@ -189,7 +189,7 @@ describe("telling the owner who was banned or unbanned from the ban list", () =>
 		expect(reported.at(0)?.details?.platform).toBe("Xbox");
 	});
 
-	test("never puts the admin password or the steam key into what it reports", async () => {
+	it("never puts the admin password or the steam key into what it reports", async () => {
 		const { reported } = await act(
 			{
 				"76561198000000009": "Nasser",

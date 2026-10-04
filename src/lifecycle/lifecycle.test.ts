@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { readPendingSettings, writeInstallStamp } from "../shared";
@@ -79,14 +79,14 @@ const pending = async (context: Bridge.Context, settingsPending: Record<string, 
 };
 
 describe("the command that starts the game", () => {
-	test("starts the shipped script on the port the panel published", async () => {
+	it("starts the shipped script on the port the panel published", async () => {
 		const command = await lifecycle.command(harness().context);
 
 		expect(command[0]).toBe("./PalServer.sh");
 		expect(command).toContain(`-port=${GAME_PORT}`);
 	});
 
-	test("keeps every flag the server needs", async () => {
+	it("keeps every flag the server needs", async () => {
 		const command = await lifecycle.command(harness().context);
 
 		for (const flag of [
@@ -100,7 +100,7 @@ describe("the command that starts the game", () => {
 });
 
 describe("replaying the settings the game overwrote on its last shutdown", () => {
-	test("writes them back into the ini before the game reads it", async () => {
+	it("writes them back into the ini before the game reads it", async () => {
 		const { context, ini } = harness({
 			ExpRate: "1.000000",
 		});
@@ -116,7 +116,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(ini.ServerName).toBe("سيرفر الأصحاب");
 	});
 
-	test("clears them, so the next start does not fight a later write", async () => {
+	it("clears them, so the next start does not fight a later write", async () => {
 		const { context } = harness();
 
 		await pending(context, {
@@ -128,7 +128,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(await readPendingSettings(context)).toEqual({});
 	});
 
-	test("says how many settings it replayed", async () => {
+	it("says how many settings it replayed", async () => {
 		const { context, logged } = harness();
 
 		await pending(context, {
@@ -141,7 +141,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(logged).toContain("replayed the settings the game overwrote on its last shutdown");
 	});
 
-	test("tells the owner which settings landed from a pending record with no baseline, by name and never by value", async () => {
+	it("tells the owner which settings landed from a pending record with no baseline, by name and never by value", async () => {
 		const { context, reported } = harness();
 
 		await pending(context, {
@@ -156,7 +156,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 			{
 				name: BridgeEventName.SettingsApplied,
 				text: {
-					ar: "تم تطبيق الإعدادات اللي كانت تنتظر التشغيل (3)",
+					ar: "تم تطبيق الإعدادات التي كانت بانتظار التشغيل (3)",
 					en: "Applied the settings that were waiting for the next start (3)",
 				},
 				details: {
@@ -169,7 +169,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(JSON.stringify(reported)).not.toContain("admin-s3cret");
 	});
 
-	test("reports the replay once, so the next start does not repeat it", async () => {
+	it("reports the replay once, so the next start does not repeat it", async () => {
 		const { context, reported } = harness();
 
 		await pending(context, {
@@ -184,7 +184,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		]);
 	});
 
-	test("reports nothing when the replay could not be written, and keeps it waiting", async () => {
+	it("reports nothing when the replay could not be written, and keeps it waiting", async () => {
 		const { context, reported } = harness();
 
 		await pending(context, {
@@ -211,7 +211,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		});
 	});
 
-	test("says nothing and touches nothing when no write is waiting", async () => {
+	it("says nothing and touches nothing when no write is waiting", async () => {
 		const { context, ini, logged, reported } = harness({
 			ExpRate: "1.000000",
 		});
@@ -225,7 +225,7 @@ describe("replaying the settings the game overwrote on its last shutdown", () =>
 		expect(reported).toEqual([]);
 	});
 
-	test("still applies remote access after the replay", async () => {
+	it("still applies remote access after the replay", async () => {
 		const { context, ini } = harness();
 
 		await pending(context, {

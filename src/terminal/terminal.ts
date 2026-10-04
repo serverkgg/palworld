@@ -55,7 +55,7 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "ShowPlayers",
 		summary: {
-			ar: "يعرض اللاعبين المتصلين الحين.",
+			ar: "يعرض اللاعبين المتصلين الآن.",
 			en: "List the players who are online.",
 		},
 	},
@@ -69,14 +69,14 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "Save",
 		summary: {
-			ar: "يحفظ العالم على القرص.",
+			ar: "يحفظ الماب على القرص.",
 			en: "Save the world to disk.",
 		},
 	},
 	{
 		name: "KickPlayer",
 		summary: {
-			ar: "يطرد لاعب من السيرفر.",
+			ar: "يطرد لاعبًا من السيرفر.",
 			en: "Kick a player from the server.",
 		},
 		syntax: "KickPlayer <player>",
@@ -87,8 +87,8 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "BanPlayer",
 		summary: {
-			ar: "يحظر لاعب نهائيًا. لو مو متصل الحين، اكتب معرّفه بدل اسمه.",
-			en: "Ban a player. If they are offline, write their user id instead of their name.",
+			ar: "يحظر لاعبًا نهائيًا. إذا لم يكن متصلًا الآن، فاكتب معرّفه بدلًا من اسمه.",
+			en: "Ban a player. If they're offline, write their user ID instead of their name.",
 		},
 		syntax: "BanPlayer <player>",
 		args: [
@@ -99,8 +99,8 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "UnBanPlayer",
 		summary: {
-			ar: "يرفع الحظر عن لاعب بمعرّفه.",
-			en: "Lift a ban with the player's user id.",
+			ar: "يفك الحظر عن لاعب بمعرّفه.",
+			en: "Unban a player by their user ID.",
 		},
 		syntax: "UnBanPlayer <userId>",
 		args: [
@@ -123,7 +123,7 @@ const commands: Bridge.TerminalCommand[] = [
 	{
 		name: "DoExit",
 		summary: {
-			ar: "يوقف السيرفر فورًا بدون حفظ.",
+			ar: "يوقف السيرفر فورًا دون حفظ.",
 			en: "Stop the server immediately without saving.",
 		},
 		danger: true,

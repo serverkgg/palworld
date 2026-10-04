@@ -60,7 +60,7 @@ export const broadcastActivity = (message: string): Bridge.Activity => {
 	return {
 		name: BridgeEventName.BroadcastSent,
 		text: {
-			ar: `تم إرسال رسالة للاعبين: «${excerpt}»`,
+			ar: `تم إرسال رسالة إلى اللاعبين: «${excerpt}»`,
 			en: `Sent a message to players: "${excerpt}"`,
 		},
 		details: {
@@ -73,7 +73,7 @@ export const savedActivity = (): Bridge.Activity => {
 	return {
 		name: BridgeEventName.GameplayChanged,
 		text: {
-			ar: "تم حفظ العالم",
+			ar: "تم حفظ الماب",
 			en: "Saved the world",
 		},
 		details: {
@@ -86,7 +86,7 @@ export const rotatedActivity = (): Bridge.Activity => {
 	return {
 		name: BridgeEventName.SecretRotated,
 		text: {
-			ar: "تم إنشاء كلمة مرور جديدة لـ RCON والأدمن، والتغيير ينطبق مع التشغيل الجاي",
+			ar: "تم إنشاء كلمة مرور جديدة لـ RCON والأدمن، ويُطبَّق التغيير في التشغيل القادم",
 			en: "Generated a new RCON and admin password, takes effect on the next start",
 		},
 		subject: RCON_SUBJECT,
@@ -97,7 +97,7 @@ export const settingsAppliedActivity = (keys: string[]): Bridge.Activity => {
 	return {
 		name: BridgeEventName.SettingsApplied,
 		text: {
-			ar: `تم تطبيق الإعدادات اللي كانت تنتظر التشغيل (${keys.length})`,
+			ar: `تم تطبيق الإعدادات التي كانت بانتظار التشغيل (${keys.length})`,
 			en: `Applied the settings that were waiting for the next start (${keys.length})`,
 		},
 		details: {

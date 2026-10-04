@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
 import { RCON_ACCESS_VARIABLE, RCON_PASSWORD_LENGTH } from "@serverkgg/bridge/rcon";
 import { readInstallStamp, writeInstallStamp } from "./installStamp";
@@ -65,7 +65,7 @@ const harness = (options: { settings?: Bridge.Values; variables?: Record<string,
 };
 
 describe("the ini keys that open or close rcon", () => {
-	test("turns rcon on only while remote access is exposed, on the port the manifest publishes", () => {
+	it("turns rcon on only while remote access is exposed, on the port the manifest publishes", () => {
 		expect(accessPatch(true, null)).toEqual({
 			RCONEnabled: true,
 			RCONPort: RCON_PORT,
@@ -73,12 +73,12 @@ describe("the ini keys that open or close rcon", () => {
 		expect(accessPatch(false, null).RCONEnabled).toBe(false);
 	});
 
-	test("writes the admin password only when it was given one", () => {
+	it("writes the admin password only when it was given one", () => {
 		expect(accessPatch(false, "rotated").AdminPassword).toBe("rotated");
 		expect(Object.keys(accessPatch(false, null))).not.toContain("AdminPassword");
 	});
 
-	test("reads the live password from the ini the rest client reads", () => {
+	it("reads the live password from the ini the rest client reads", () => {
 		expect(
 			liveAdminPassword({
 				AdminPassword: "s3cret",
@@ -89,7 +89,7 @@ describe("the ini keys that open or close rcon", () => {
 });
 
 describe("applying remote access at every start", () => {
-	test("closes rcon when the variable is unset and keeps the password the server already has", async () => {
+	it("closes rcon when the variable is unset and keeps the password the server already has", async () => {
 		const { context, settings } = harness({
 			settings: {
 				AdminPassword: "s3cret",
@@ -105,7 +105,7 @@ describe("applying remote access at every start", () => {
 		});
 	});
 
-	test("opens rcon when the panel turned remote access on", async () => {
+	it("opens rcon when the panel turned remote access on", async () => {
 		const { context, settings } = harness({
 			variables: {
 				[RCON_ACCESS_VARIABLE]: "true",
@@ -117,7 +117,7 @@ describe("applying remote access at every start", () => {
 		expect(settings.RCONEnabled).toBe(true);
 	});
 
-	test("promotes the rotated password into the ini and clears it from the stamp", async () => {
+	it("promotes the rotated password into the ini and clears it from the stamp", async () => {
 		const { context, settings, logged } = harness({
 			settings: {
 				AdminPassword: "old",
@@ -141,7 +141,7 @@ describe("applying remote access at every start", () => {
 		]);
 	});
 
-	test("leaves the stamp alone when nothing is pending", async () => {
+	it("leaves the stamp alone when nothing is pending", async () => {
 		const { context, logged } = harness();
 
 		await writeInstallStamp(context, {
@@ -164,11 +164,11 @@ describe("applying remote access at every start", () => {
 });
 
 describe("what the remote access card shows", () => {
-	test("shows nothing before the first start generated a password", async () => {
+	it("shows nothing before the first start generated a password", async () => {
 		expect(await adminPassword(harness().context)).toBeNull();
 	});
 
-	test("shows the password the running server uses", async () => {
+	it("shows the password the running server uses", async () => {
 		const password = await adminPassword(
 			harness({
 				settings: {
@@ -183,7 +183,7 @@ describe("what the remote access card shows", () => {
 		});
 	});
 
-	test("shows the rotated password as pending until the restart applies it", async () => {
+	it("shows the rotated password as pending until the restart applies it", async () => {
 		const { context } = harness({
 			settings: {
 				AdminPassword: "s3cret",
@@ -205,11 +205,11 @@ describe("what the remote access card shows", () => {
 });
 
 describe("rotating the admin password", () => {
-	test("refuses before the first install wrote a stamp", async () => {
+	it("refuses before the first install wrote a stamp", async () => {
 		await expect(rotateAdminPassword(harness().context)).rejects.toBeInstanceOf(BridgeUserError);
 	});
 
-	test("stores a fresh password for the next start and touches neither the ini nor the build", async () => {
+	it("stores a fresh password for the next start and touches neither the ini nor the build", async () => {
 		const { context, settings } = harness({
 			settings: {
 				AdminPassword: "s3cret",
@@ -233,7 +233,7 @@ describe("rotating the admin password", () => {
 		expect(settings.AdminPassword).toBe("s3cret");
 	});
 
-	test("rotates again over a rotation nobody applied yet", async () => {
+	it("rotates again over a rotation nobody applied yet", async () => {
 		const { context } = harness();
 
 		await writeInstallStamp(context, {

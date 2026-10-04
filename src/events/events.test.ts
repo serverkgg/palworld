@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { STEAM_APP_ID } from "../shared";
 import { events } from "./events";
 
@@ -22,13 +22,13 @@ const emits = (line: string) => {
 };
 
 describe("reading the palworld log for the events the panel shows", () => {
-	test("marks the server started once it prints the minidump line", () => {
+	it("marks the server started once it prints the minidump line", () => {
 		expect(emits(`[2026.09.03-12.00.00:000][  0]Setting breakpad minidump AppID = ${STEAM_APP_ID}`)).toEqual([
 			"ServerStarted",
 		]);
 	});
 
-	test("marks the server crashed on an unreal fatal error", () => {
+	it("marks the server crashed on an unreal fatal error", () => {
 		expect(
 			emits("[2026.09.03-12.00.00:000][  0]LogWindows: Fatal error: [File:Runtime/Core/Private/Misc/Fork.cpp]"),
 		).toEqual([
@@ -36,23 +36,23 @@ describe("reading the palworld log for the events the panel shows", () => {
 		]);
 	});
 
-	test("marks the server crashed on a failed assertion", () => {
+	it("marks the server crashed on a failed assertion", () => {
 		expect(emits("Assertion failed: IsValid() [File:D:/build/Pal/Source/Pal/PalCharacter.cpp] [Line: 512]")).toEqual([
 			"ServerCrashed",
 		]);
 	});
 
-	test("carries the assertion text so the crash is readable in the panel", () => {
+	it("carries the assertion text so the crash is readable in the panel", () => {
 		expect(emitted("Assertion failed: IsValid() [File:PalCharacter.cpp] [Line: 512]").at(0)?.groups.detail).toBe(
 			"IsValid() [File:PalCharacter.cpp] [Line: 512]",
 		);
 	});
 
-	test("stops the assertion detail at the end of the line", () => {
+	it("stops the assertion detail at the end of the line", () => {
 		expect(emitted("Assertion failed: IsValid()\nLogPal: something else").at(0)?.groups.detail).toBe("IsValid()");
 	});
 
-	test("stays silent on the ordinary chatter a running server prints", () => {
+	it("stays silent on the ordinary chatter a running server prints", () => {
 		for (const line of [
 			"[2026.09.03-12.00.00:000][  0]LogPal: Display: Save completed",
 			"[2026.09.03-12.00.00:000][  0]LogNet: Join succeeded: Meslzy",
@@ -62,39 +62,39 @@ describe("reading the palworld log for the events the panel shows", () => {
 		}
 	});
 
-	test("does not treat another game's minidump line as a start", () => {
+	it("does not treat another game's minidump line as a start", () => {
 		expect(emits("Setting breakpad minidump AppID = 730")).toEqual([]);
 	});
 });
 
 describe("declaring the events the driver emits from outside the log", () => {
-	test("declares the presence events the query loop emits", () => {
+	it("declares the presence events the query loop emits", () => {
 		expect(events.emits).toContain("PlayerJoined");
 		expect(events.emits).toContain("PlayerLeft");
 	});
 
-	test("declares the stopping event the lifecycle emits", () => {
+	it("declares the stopping event the lifecycle emits", () => {
 		expect(events.emits).toContain("ServerStopping");
 	});
 
-	test("declares the moderation events the players collection emits", () => {
+	it("declares the moderation events the players collection emits", () => {
 		expect(events.emits).toContain("PlayerKicked");
 		expect(events.emits).toContain("PlayerBanned");
 	});
 
-	test("declares the update event the installer emits when steam ships a newer build", () => {
+	it("declares the update event the installer emits when steam ships a newer build", () => {
 		expect(events.emits).toContain("ServerUpdated");
 	});
 
-	test("declares the lag event the metrics sampler emits, which is what the server doctor counts", () => {
+	it("declares the lag event the metrics sampler emits, which is what the server doctor counts", () => {
 		expect(events.emits).toContain("TickLagging");
 	});
 
-	test("declares the save event every save path emits, from the panel to the backup", () => {
+	it("declares the save event every save path emits, from the panel to the backup", () => {
 		expect(events.emits).toContain("WorldSaved");
 	});
 
-	test("does not redeclare an event a log pattern already emits", () => {
+	it("does not redeclare an event a log pattern already emits", () => {
 		for (const pattern of events.patterns) {
 			expect(events.emits).not.toContain(pattern.emit);
 		}

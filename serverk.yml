@@ -8,14 +8,17 @@ metadata:
     ar: بالورلد
     en: Palworld
   description:
-    ar: سيرفر بالورلد — عالم مفتوح، اصطياد Pals، بناء قواعد، وغارات مع أصدقائك. حتى 32 لاعب في نفس العالم.
-    en: Palworld dedicated servers — open-world survival, Pal catching, base building and raids with your friends. Up to 32 players in one world.
+    ar: سيرفر بالورلد للبقاء في ماب مفتوحة، مع اصطياد Pals، وبناء القواعد، والغارات مع أصحابك. حتى 32 لاعبًا في الماب نفسها.
+    en: Palworld dedicated servers for open-world survival, Pal catching, base building and raids with your friends. Up to 32 players in one world.
   tagline:
-    ar: اصطد، ابنِ، وقاتل مع أصدقائك — سيرفرك جاهز خلال دقيقة
-    en: Catch, build and fight with your friends — your server, ready in a minute
+    ar: اصطد وابنِ وقاتل مع أصحابك، وسيرفرك جاهز خلال دقيقة
+    en: Catch, build and fight with your friends, on a server ready in a minute
   category: survival
   logo: assets/logo.webp
   banner: assets/banner.webp
+  extensions:
+    - kind: mods
+      sources: []
 
 resources:
   minMemoryMb: 8192
@@ -41,7 +44,7 @@ container:
         ar: بالورلد
         en: Palworld
       hint:
-        ar: في بالورلد اختر "دخول مباشر" واكتب العنوان والمنفذ مع بعض زي ما هو.
+        ar: في بالورلد اختر «دخول مباشر»، واكتب العنوان والمنفذ معًا كما يظهران.
         en: In Palworld choose "Direct Connect" and type the address and port together, exactly as shown.
       hostRange:
         default: 8211
@@ -54,8 +57,8 @@ container:
         ar: RCON
         en: RCON
       hint:
-        ar: للأدوات الخارجية بس، ما يدخل منه لاعب. يشتغل لما تفتح الوصول عن بُعد من اللوحة.
-        en: For external tools only, never for players. Live once remote access is turned on in the panel.
+        ar: للأدوات الخارجية فقط، ولا يدخل منه اللاعبون. يتفعّل عند تشغيل الوصول عن بُعد من اللوحة.
+        en: For external tools only, never for players. It works once remote access is turned on in the panel.
       join: separate
       hostRange:
         default: 12500
@@ -78,8 +81,8 @@ backup:
 secrets:
   - key: STEAM_WEB_API_KEY
     description:
-      ar: مفتاح Steam Web API للمنصة — منه نجيب أسماء حسابات Steam وصورهم في جدول اللاعبين والمحظورين.
-      en: The platform's Steam Web API key — it reads Steam account names and avatars for the players and banned lists.
+      ar: مفتاح Steam Web API الخاص بالمنصة، ونجلب به أسماء حسابات Steam وصورها في جدولي اللاعبين والمحظورين.
+      en: The platform's Steam Web API key. It reads Steam account names and avatars for the players and banned lists.
     required: false
 
 reset:
@@ -145,26 +148,26 @@ files:
       color: "#5ba32b"
       restart: true
       note:
-        ar: إعدادات السيرفر كاملة — الاسم، كلمة المرور، عدد اللاعبين، ومعدلات اللعب. أي تعديل يبي إعادة تشغيل.
-        en: Every server setting — name, password, player slots and the game rates. Any change needs a restart.
+        ar: إعدادات السيرفر كاملة، من الاسم وكلمة المرور إلى عدد اللاعبين ومعدلات اللعب. يُطبَّق أي تعديل بعد الريستارت.
+        en: Every server setting, from the name and password to player slots and the game rates. Any change needs a restart.
     - match: Pal/Saved/SaveGames
       label:
-        ar: بيانات العالم
+        ar: بيانات الماب
         en: World data
       icon: map
       color: "#4a8fd4"
       note:
-        ar: عالمك وشخصيات اللاعبين. لا تعدّل عليه والسيرفر شغّال، وخذ نسخة احتياطية قبل أي شي.
-        en: Your world and the player characters. Do not touch it while the server runs, and take a backup first.
+        ar: مابك وشخصيات اللاعبين. لا تعدّل عليها والسيرفر شغّال، وخذ نسخة احتياطية قبل أي تعديل.
+        en: Your world and the player characters. Don't touch it while the server runs, and take a backup first.
     - match: Pal/Saved/SaveGames/banlist.txt
       label:
-        ar: محظورين
+        ar: المحظورون
         en: Banned
       icon: shield
       color: "#d64545"
       note:
-        ar: قائمة المحظورين من سيرفرك، سطر لكل معرّف لاعب. اللوحة تدير الحظر ورفعه من تبويب اللاعبين، وهذا الملف نسخة اللعبة منها.
-        en: The ban list for your server, one player id per line. The panel adds and lifts bans from the Players tab; this file is the game's own copy.
+        ar: قائمة المحظورين من سيرفرك، سطر لكل معرّف لاعب. تدير اللوحة الحظر وفكه من تبويب اللاعبين، وهذا الملف نسخة اللعبة من القائمة.
+        en: The ban list for your server, one player id per line. The panel bans and unbans players from the Players tab; this file is the game's own copy.
     - match: Pal/Content/Paks/~mods
       label:
         ar: المودات
@@ -173,8 +176,8 @@ files:
       color: "#c77dff"
       restart: true
       note:
-        ar: مجلد المودات. حط ملفات pak هنا وأعد التشغيل عشان تشتغل، ولازم كل اللاعبين يكون عندهم نفس المودات.
-        en: Your mods folder. Drop pak files here and restart for them to load — every player needs the same mods.
+        ar: مجلد المودات. ضع ملفات pak هنا، وتشتغل بعد الريستارت، ويلزم أن تكون المودات نفسها عند كل اللاعبين.
+        en: Your mods folder. Drop pak files here and restart to load them. Every player needs the same mods.
 
 guideTags:
   - id: start
@@ -188,8 +191,8 @@ guides:
       ar: البدء بسيرفرك
       en: Getting started
     summary:
-      ar: أنشئ سيرفر بالورلد وادخله مع أصدقائك خلال دقائق.
-      en: Create your Palworld server and join it with friends within minutes.
+      ar: أنشئ سيرفر بالورلد وادخله مع أصحابك خلال دقائق.
+      en: Create your Palworld server and join it with your friends within minutes.
     tags:
       - start
     surfaces:

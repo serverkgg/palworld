@@ -28,7 +28,7 @@ export const setup: Bridge.Setup = {
 				en: "Name your server",
 			},
 			help: {
-				ar: "الاسم والوصف اللي يطلعون في قائمة السيرفرات، وكلمة مرور الدخول لو تبي السيرفر لك ولأصحابك بس. تقدر تعدّلها بعدين من الإعدادات.",
+				ar: "الاسم والوصف اللذان يظهران في قائمة السيرفرات، وكلمة مرور الدخول إذا أردت السيرفر لك ولأصحابك فقط. ويمكن تعديلها لاحقًا من الإعدادات.",
 				en: "The name and description in the server browser, and a join password if the server is for you and your friends only. Change them later from Settings.",
 			},
 		},
@@ -40,11 +40,11 @@ export const setup: Bridge.Setup = {
 				tab: GuideOpenTab.Access,
 			},
 			title: {
-				ar: "عزّم أصحابك",
+				ar: "ادعُ أصحابك",
 				en: "Invite your friends",
 			},
 			help: {
-				ar: "انسخ عنوان سيرفرك وأرسله لأصحابك عشان يدخلون من Join Multiplayer Game.",
+				ar: "انسخ عنوان سيرفرك وأرسله لأصحابك ليدخلوا من Join Multiplayer Game.",
 				en: "Copy your server address and send it to your friends so they can join from Join Multiplayer Game.",
 			},
 		},

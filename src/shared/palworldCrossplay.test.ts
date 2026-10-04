@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import {
 	CROSSPLAY_KEY,
 	CROSSPLAY_MAC_KEY,
@@ -12,7 +12,7 @@ import {
 } from "./palworldCrossplay";
 
 describe("reading the crossplay tuple palworld keeps in one key", () => {
-	test("treats a missing key as every platform welcome, the way the game does", () => {
+	it("treats a missing key as every platform welcome, the way the game does", () => {
 		expect(parseCrossplay(null)).toEqual({
 			xbox: true,
 			ps5: true,
@@ -20,7 +20,7 @@ describe("reading the crossplay tuple palworld keeps in one key", () => {
 		});
 	});
 
-	test("treats an empty value the same as a missing one", () => {
+	it("treats an empty value the same as a missing one", () => {
 		expect(parseCrossplay("   ")).toEqual({
 			xbox: true,
 			ps5: true,
@@ -28,7 +28,7 @@ describe("reading the crossplay tuple palworld keeps in one key", () => {
 		});
 	});
 
-	test("reads the shipped default", () => {
+	it("reads the shipped default", () => {
 		expect(parseCrossplay("(Steam,Xbox,PS5,Mac)")).toEqual({
 			xbox: true,
 			ps5: true,
@@ -36,7 +36,7 @@ describe("reading the crossplay tuple palworld keeps in one key", () => {
 		});
 	});
 
-	test("reads the platforms in any order and any case", () => {
+	it("reads the platforms in any order and any case", () => {
 		expect(parseCrossplay("( mac , STEAM , xBox )")).toEqual({
 			xbox: true,
 			ps5: false,
@@ -44,7 +44,7 @@ describe("reading the crossplay tuple palworld keeps in one key", () => {
 		});
 	});
 
-	test("reads a steam-only server as every console shut out", () => {
+	it("reads a steam-only server as every console shut out", () => {
 		expect(parseCrossplay("(Steam)")).toEqual({
 			xbox: false,
 			ps5: false,
@@ -54,7 +54,7 @@ describe("reading the crossplay tuple palworld keeps in one key", () => {
 });
 
 describe("writing the crossplay tuple back", () => {
-	test("keeps steam first and the rest in the order the game writes them", () => {
+	it("keeps steam first and the rest in the order the game writes them", () => {
 		expect(
 			serializeCrossplay({
 				xbox: true,
@@ -64,7 +64,7 @@ describe("writing the crossplay tuple back", () => {
 		).toBe("(Steam,Xbox,PS5,Mac)");
 	});
 
-	test("drops the platforms that are off", () => {
+	it("drops the platforms that are off", () => {
 		expect(
 			serializeCrossplay({
 				xbox: false,
@@ -74,7 +74,7 @@ describe("writing the crossplay tuple back", () => {
 		).toBe("(Steam,PS5)");
 	});
 
-	test("never writes an empty tuple, because the server itself is steam", () => {
+	it("never writes an empty tuple, because the server itself is steam", () => {
 		expect(
 			serializeCrossplay({
 				xbox: false,
@@ -84,7 +84,7 @@ describe("writing the crossplay tuple back", () => {
 		).toBe("(Steam)");
 	});
 
-	test("survives a round trip", () => {
+	it("survives a round trip", () => {
 		const raw = "(Steam,Xbox,Mac)";
 
 		expect(serializeCrossplay(parseCrossplay(raw))).toBe(raw);
@@ -92,7 +92,7 @@ describe("writing the crossplay tuple back", () => {
 });
 
 describe("showing crossplay as three toggles the panel can render", () => {
-	test("splits the tuple into the three virtual keys", () => {
+	it("splits the tuple into the three virtual keys", () => {
 		expect(
 			crossplayValues({
 				[CROSSPLAY_KEY]: "(Steam,PS5)",
@@ -104,7 +104,7 @@ describe("showing crossplay as three toggles the panel can render", () => {
 		});
 	});
 
-	test("answers with every toggle on when the key is not in the file", () => {
+	it("answers with every toggle on when the key is not in the file", () => {
 		expect(crossplayValues({})).toEqual({
 			[CROSSPLAY_XBOX_KEY]: true,
 			[CROSSPLAY_PS5_KEY]: true,
@@ -112,7 +112,7 @@ describe("showing crossplay as three toggles the panel can render", () => {
 		});
 	});
 
-	test("only reads a string, because anything else is not a tuple", () => {
+	it("only reads a string, because anything else is not a tuple", () => {
 		expect(
 			crossplayRaw({
 				[CROSSPLAY_KEY]: 5,
@@ -122,7 +122,7 @@ describe("showing crossplay as three toggles the panel can render", () => {
 });
 
 describe("folding the three toggles back into one key", () => {
-	test("leaves a write that never mentions crossplay alone", () => {
+	it("leaves a write that never mentions crossplay alone", () => {
 		expect(
 			foldCrossplay(
 				{
@@ -135,7 +135,7 @@ describe("folding the three toggles back into one key", () => {
 		});
 	});
 
-	test("keeps the platforms the customer did not touch", () => {
+	it("keeps the platforms the customer did not touch", () => {
 		expect(
 			foldCrossplay(
 				{
@@ -148,7 +148,7 @@ describe("folding the three toggles back into one key", () => {
 		});
 	});
 
-	test("strips the virtual keys, so none of them reaches the ini", () => {
+	it("strips the virtual keys, so none of them reaches the ini", () => {
 		const folded = foldCrossplay(
 			{
 				[CROSSPLAY_XBOX_KEY]: true,
@@ -166,7 +166,7 @@ describe("folding the three toggles back into one key", () => {
 		expect(Object.keys(folded)).not.toContain(CROSSPLAY_XBOX_KEY);
 	});
 
-	test("starts from every platform on when the key was never written", () => {
+	it("starts from every platform on when the key was never written", () => {
 		expect(
 			foldCrossplay(
 				{
