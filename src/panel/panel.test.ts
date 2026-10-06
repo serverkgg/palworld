@@ -272,13 +272,13 @@ describe("showing the owner who is on the server right now", () => {
 		}
 	});
 
-	it("keeps the kick and the ban on the row, and asks harder before a ban", () => {
+	it("keeps the kick and the ban on the row, each with one confirm", () => {
 		expect(tableNamed("online")?.actions?.map((action) => action.id)).toEqual([
 			"kick",
 			"ban",
 		]);
 		expect(tableNamed("online")?.actions?.at(0)?.confirm).toBe(BridgeConfirm.Normal);
-		expect(tableNamed("online")?.actions?.at(1)?.confirm).toBe(BridgeConfirm.Strong);
+		expect(tableNamed("online")?.actions?.at(1)?.confirm).toBe(BridgeConfirm.Normal);
 	});
 
 	it("renders the roster on the platform players page instead of a second players entry", () => {
