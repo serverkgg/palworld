@@ -126,18 +126,6 @@ presence:
 
 files:
   protected:
-    - .steamcmd
-    - .steam
-    - Steam
-    - steamapps
-    - linux64
-    - steamclient.so
-    - libsteamwebrtc.so
-    - PalServer.sh
-    - Engine
-    - Pal/Binaries
-    - Pal/Plugins
-    - Pal/Content/Paks/Pal-*
     - .serverk-install.json
   notable:
     - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini

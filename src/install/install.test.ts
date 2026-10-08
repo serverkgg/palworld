@@ -69,15 +69,15 @@ describe("the manifest guarding the steam install against a reset", () => {
 		expect(survivesReset("Pal/Content/Paks/~mods"), "customer mods must not survive a reset").toBe(false);
 	});
 
-	it("leaves the mods folder editable while protecting the game payload", () => {
+	it("leaves the game payload and the mods folder to the customer, since a reinstall brings the payload back", () => {
 		expect(protectedFrom("Pal/Content/Paks/~mods")).toBe(false);
-		expect(protectedFrom("Pal/Content/Paks/Pal-LinuxServer.pak")).toBe(true);
-		expect(protectedFrom("Pal/Binaries/Linux/PalServer-Linux-Shipping")).toBe(true);
+		expect(protectedFrom("Pal/Content/Paks/Pal-LinuxServer.pak")).toBe(false);
+		expect(protectedFrom("Pal/Binaries/Linux/PalServer-Linux-Shipping")).toBe(false);
 	});
 
-	it("hides the steam directories from the file manager, so nobody deletes them by hand", () => {
-		expect(manifest.files.protected).toContain(STEAMCMD_DIRECTORY);
-		expect(manifest.files.protected).toContain(STEAM_DIRECTORY);
+	it("leaves the steam directories to the customer, since steamcmd validates them on the next install", () => {
+		expect(manifest.files.protected).not.toContain(STEAMCMD_DIRECTORY);
+		expect(manifest.files.protected).not.toContain(STEAM_DIRECTORY);
 	});
 
 	it("protects the install stamp the driver reports the version from", () => {
