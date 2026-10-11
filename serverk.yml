@@ -8,7 +8,7 @@ metadata:
     ar: بالورلد
     en: Palworld
   description:
-    ar: سيرفر بالورلد للبقاء في ماب مفتوحة، مع اصطياد Pals، وبناء القواعد، والغارات مع أصحابك. حتى 32 لاعبًا في الماب نفسها.
+    ar: سيرفر بالورلد للبقاء في ماب مفتوح، مع اصطياد Pals، وبناء القواعد، والغارات مع أصحابك. حتى 32 لاعبًا في الماب نفسه.
     en: Palworld dedicated servers for open-world survival, Pal catching, base building and raids with your friends. Up to 32 players in one world.
   tagline:
     ar: اصطد وابنِ وقاتل مع أصحابك، وسيرفرك جاهز خلال دقيقة
@@ -19,6 +19,9 @@ metadata:
   extensions:
     - kind: mods
       sources: []
+
+steam:
+  appId: 2394010
 
 resources:
   minMemoryMb: 8192
