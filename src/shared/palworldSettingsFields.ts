@@ -10,6 +10,8 @@ const UNIT_SEPARATOR = 0x1f;
 
 const DELETE_CHARACTER = 0x7f;
 
+const BACKSLASH = "\\";
+
 const hasControlCharacter = (text: string) => {
 	for (const character of text) {
 		const code = character.codePointAt(0) ?? 0;
@@ -936,6 +938,13 @@ const textOf = (field: Bridge.Field, value: Bridge.Value) => {
 		throw new BridgeUserError({
 			ar: `«${field.label.ar}» يلزم أن يكون سطرًا واحدًا دون رموز مخفية.`,
 			en: `${field.label.en} must be one line, with no line breaks or control characters.`,
+		});
+	}
+
+	if (text.includes(BACKSLASH)) {
+		throw new BridgeUserError({
+			ar: `«${field.label.ar}» لا يقبل الرمز «\\» لأن اللعبة تقرؤه بداية رمز خاص فيتغيّر النص. احذفه واحفظ مرة ثانية.`,
+			en: `${field.label.en} can't contain a backslash (\\). The game reads it as the start of a special character and changes your text. Remove it and save again.`,
 		});
 	}
 

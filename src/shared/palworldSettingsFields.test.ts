@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { BridgeControl, BridgeUserError } from "@serverkgg/bridge";
+import { type Bridge, BridgeControl, BridgeUserError } from "@serverkgg/bridge";
 import { CROSSPLAY_MAC_KEY, CROSSPLAY_PS5_KEY, CROSSPLAY_XBOX_KEY } from "./palworldCrossplay";
 import { SETTINGS_FIELDS, settingsFieldOf, validateSettingsWrite } from "./palworldSettingsFields";
 
@@ -317,6 +317,57 @@ describe("checking a settings write before it reaches the ini", () => {
 
 		expect(text?.ar.length ?? 0).toBeGreaterThan(0);
 		expect(text?.en.length ?? 0).toBeGreaterThan(0);
+	});
+
+	it("refuses a backslash, which the game reads as the start of an escape and changes what follows", () => {
+		const writes: Bridge.Values[] = [
+			{
+				ServerName: "سيرفر الأصحاب \\",
+			},
+			{
+				ServerDescription: "C:\\new",
+			},
+			{
+				ServerPassword: "pa\\ss",
+			},
+			{
+				AdminPassword: "ab\\tcd",
+			},
+			{
+				RandomizerSeed: "seed\\1",
+			},
+		];
+
+		for (const write of writes) {
+			expect(() => {
+				validateSettingsWrite(write);
+			}).toThrow(BridgeUserError);
+		}
+	});
+
+	it("says in both languages that the backslash was refused, naming the field", () => {
+		const text = messageOf(() => {
+			validateSettingsWrite({
+				ServerName: "one\\two",
+			});
+		});
+
+		expect(text).toEqual({
+			ar: "«اسم السيرفر» لا يقبل الرمز «\\» لأن اللعبة تقرؤه بداية رمز خاص فيتغيّر النص. احذفه واحفظ مرة ثانية.",
+			en: "Server name can't contain a backslash (\\). The game reads it as the start of a special character and changes your text. Remove it and save again.",
+		});
+	});
+
+	it("keeps a double quote, because the codec writes it as the escape the game reads back as a quote", () => {
+		expect(
+			validateSettingsWrite({
+				ServerName: 'سيرفر "الأصحاب"',
+				ServerDescription: 'say "hi", (then) build',
+			}),
+		).toEqual({
+			ServerName: 'سيرفر "الأصحاب"',
+			ServerDescription: 'say "hi", (then) build',
+		});
 	});
 
 	it("keeps every ordinary character, arabic and emoji included", () => {
