@@ -1,19 +1,27 @@
 import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { readPendingSettings, writeInstallStamp } from "../shared";
-import { lifecycle } from "./lifecycle";
+import {
+	EDITION_VARIABLE,
+	MOD_SETTINGS_FILE,
+	PalworldEdition,
+	readPendingSettings,
+	WINDOWS_BINARY,
+	writeInstallStamp,
+} from "../shared";
+import { lifecycle, START_WRAPPER } from "./lifecycle";
 
 const GAME_PORT = 8241;
 
 interface Harness {
 	context: Bridge.Context;
 	ini: Bridge.Values;
+	stored: Map<string, string>;
 	logged: string[];
 	reported: Bridge.Activity[];
 }
 
-const harness = (ini: Bridge.Values = {}): Harness => {
+const harness = (ini: Bridge.Values = {}, variables: Record<string, string> = {}): Harness => {
 	const stored = new Map<string, string>();
 	const settings: Bridge.Values = {
 		...ini,
@@ -22,8 +30,8 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 	const reported: Bridge.Activity[] = [];
 
 	const context = {
-		variable() {
-			return null;
+		variable(key: string) {
+			return variables[key] ?? null;
 		},
 		port() {
 			return GAME_PORT;
@@ -37,6 +45,10 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 			},
 			async write(path: string, content: string) {
 				stored.set(path, content);
+			},
+			async ensure() {},
+			async list() {
+				return [];
 			},
 		},
 		codec: {
@@ -64,6 +76,7 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 	return {
 		context,
 		ini: settings,
+		stored,
 		logged,
 		reported,
 	};
@@ -72,6 +85,8 @@ const harness = (ini: Bridge.Values = {}): Harness => {
 const pending = async (context: Bridge.Context, settingsPending: Record<string, string> | null) => {
 	await writeInstallStamp(context, {
 		buildId: "1",
+		edition: PalworldEdition.Linux,
+		mods: [],
 		adminPasswordNext: null,
 		settingsPending,
 		settingsBaseline: null,
@@ -84,6 +99,23 @@ describe("the command that starts the game", () => {
 
 		expect(command[0]).toBe("./PalServer.sh");
 		expect(command).toContain(`-port=${GAME_PORT}`);
+	});
+
+	it("starts the windows edition straight in the proton prefix, so its output reaches the console", async () => {
+		const { context, stored } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		const command = await lifecycle.command(context);
+
+		expect(command[0]).toEqual(START_WRAPPER);
+		expect(command).toContain("runinprefix");
+		expect(command).toContain(WINDOWS_BINARY);
+		expect(command).toContain(`-port=${GAME_PORT}`);
+		expect(stored.get(MOD_SETTINGS_FILE)).toContain("bGlobalEnableMod=false");
 	});
 
 	it("keeps every flag the server needs", async () => {

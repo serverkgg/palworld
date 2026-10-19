@@ -8,6 +8,10 @@ describe("knowing when the palworld server has finished booting", () => {
 		);
 	});
 
+	it("matches the line both editions print once the server listens, since the windows edition prints no minidump line", () => {
+		expect(SERVER_READY.test("Running Palworld dedicated server on :8211")).toBe(true);
+	});
+
 	it("does not match another game's minidump line", () => {
 		expect(SERVER_READY.test("Setting breakpad minidump AppID = 730")).toBe(false);
 	});

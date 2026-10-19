@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { readInstallStamp, stampOf, writeInstallStamp } from "./installStamp";
+import { PalworldEdition } from "./palworldEdition";
 
 const contextWith = (seed: Record<string, string> = {}) => {
 	const stored = new Map(Object.entries(seed));
@@ -31,9 +32,13 @@ describe("reading the stamp that records which steam build was installed", () =>
 		expect(
 			stampOf({
 				buildId: "18234567",
+				edition: PalworldEdition.Linux,
+				mods: [],
 			}),
 		).toEqual({
 			buildId: "18234567",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,
@@ -62,6 +67,8 @@ describe("reading the stamp that records which steam build was installed", () =>
 		expect(
 			stampOf({
 				buildId: "1",
+				edition: PalworldEdition.Linux,
+				mods: [],
 				adminPasswordNext: "rotated",
 			})?.adminPasswordNext,
 		).toBe("rotated");
@@ -71,6 +78,8 @@ describe("reading the stamp that records which steam build was installed", () =>
 		expect(
 			stampOf({
 				buildId: "1",
+				edition: PalworldEdition.Linux,
+				mods: [],
 				settingsPending: {
 					ExpRate: "3",
 					ServerName: "سيرفر الأصحاب",
@@ -147,6 +156,8 @@ describe("round-tripping the stamp through the volume", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: {
 				ExpRate: "3",
@@ -156,6 +167,8 @@ describe("round-tripping the stamp through the volume", () => {
 
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: {
 				ExpRate: "3",
@@ -173,6 +186,8 @@ describe("round-tripping the stamp through the volume", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,

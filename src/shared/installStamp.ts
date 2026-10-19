@@ -1,5 +1,7 @@
 import type { Bridge } from "@serverkgg/bridge";
 import { readStamp, writeStamp } from "@serverkgg/bridge/install";
+import { PalworldEdition } from "./palworldEdition";
+import { modsOf, type PalworldMod } from "./palworldMods";
 
 export interface PendingBaseline {
 	values: Record<string, string>;
@@ -8,6 +10,8 @@ export interface PendingBaseline {
 
 export interface InstallStamp {
 	buildId: string | null;
+	edition: PalworldEdition;
+	mods: PalworldMod[];
 	adminPasswordNext: string | null;
 	settingsPending: Record<string, string> | null;
 	settingsBaseline: PendingBaseline | null;
@@ -73,6 +77,8 @@ export const stampOf = (raw: Record<string, unknown> | null): InstallStamp | nul
 
 	return {
 		buildId: typeof raw.buildId === "string" ? raw.buildId : null,
+		edition: raw.edition === PalworldEdition.Windows ? PalworldEdition.Windows : PalworldEdition.Linux,
+		mods: modsOf(raw.mods),
 		adminPasswordNext:
 			typeof raw.adminPasswordNext === "string" && raw.adminPasswordNext.length > 0 ? raw.adminPasswordNext : null,
 		settingsPending: pendingOf(raw.settingsPending),

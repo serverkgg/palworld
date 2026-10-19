@@ -1,6 +1,7 @@
 import { type Bridge, BridgeControl } from "@serverkgg/bridge";
 import { changedSettingKeys, sameSettingValue } from "@serverkgg/bridge/utils";
 import { type PendingBaseline, readInstallStamp, writeInstallStamp } from "./installStamp";
+import { editionOf } from "./palworldEdition";
 import { settingsFieldOf } from "./palworldSettingsFields";
 
 const textOf = (value: Bridge.Value) => {
@@ -123,6 +124,8 @@ export const recordPendingSettings = async (context: Bridge.Context, values: Bri
 
 	await writeInstallStamp(context, {
 		buildId: stamp?.buildId ?? null,
+		edition: stamp?.edition ?? editionOf(context),
+		mods: stamp?.mods ?? [],
 		adminPasswordNext: stamp?.adminPasswordNext ?? null,
 		settingsPending: pending,
 		settingsBaseline: recordBaseline(stamp?.settingsBaseline ?? emptyBaseline(), alreadyPending, before, values),

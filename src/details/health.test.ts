@@ -157,6 +157,9 @@ const harness = (answering: Answering) => {
 			warn() {},
 			error() {},
 		}),
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 
 	return {

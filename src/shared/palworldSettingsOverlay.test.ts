@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { readInstallStamp, writeInstallStamp } from "./installStamp";
+import { PalworldEdition } from "./palworldEdition";
 import {
 	appliedSettingKeys,
 	clearPendingSettings,
@@ -26,6 +27,9 @@ const contextWith = (seed: Record<string, string> = {}) => {
 				stored.set(path, content);
 			},
 		},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 
 	return {
@@ -39,6 +43,8 @@ const stamped = async (settingsPending: Record<string, string> | null) => {
 
 	await writeInstallStamp(context, {
 		buildId: "1",
+		edition: PalworldEdition.Linux,
+		mods: [],
 		adminPasswordNext: null,
 		settingsPending,
 		settingsBaseline: null,
@@ -140,6 +146,8 @@ describe("recording a settings write the game will overwrite on shutdown", () =>
 
 		await writeInstallStamp(context, {
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: null,
 			settingsBaseline: null,
@@ -200,6 +208,8 @@ describe("clearing the pending settings once they were replayed", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: {
 				ExpRate: "3",
@@ -211,6 +221,8 @@ describe("clearing the pending settings once they were replayed", () => {
 
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: null,
 			settingsBaseline: null,
@@ -247,6 +259,8 @@ describe("forgetting a pending write the owner has since made while the game was
 
 		await writeInstallStamp(context, {
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: {
 				ExpRate: "3",
@@ -260,6 +274,8 @@ describe("forgetting a pending write the owner has since made while the game was
 
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "4711",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: null,
 			settingsBaseline: null,

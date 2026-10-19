@@ -239,6 +239,9 @@ const contextWith = (port: number, logged: string[], emitted: Emitted[], reporte
 		log: (message: string) => {
 			logged.push(message);
 		},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 };
 

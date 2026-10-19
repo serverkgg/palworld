@@ -36,7 +36,7 @@ container:
     platform: linux
     installBudgetMinutes: 20
     bootBudgetMinutes: 12
-    shmMb: 64
+    shmMb: 256
     pidsLimit: 512
   ports:
     - key: game
@@ -76,6 +76,10 @@ backup:
   only:
     - Pal/Saved/**
     - Pal/Content/Paks/~mods/**
+    - Mods/PalModSettings.ini
+    - Mods/Workshop/**
+    - Mods/PalSchemaMods/**
+    - Mods/UE4SSMods/**
   except:
     - Pal/Saved/**/backup/**
     - Pal/Saved/Logs/**
@@ -100,6 +104,9 @@ reset:
     - Manifest_*.txt
     - DefaultPalWorldSettings.ini
     - PalServer.sh
+    - PalServer.exe
+    - .proton
+    - .serverk-wine.json
     - Engine
     - Pal/Binaries
     - Pal/Plugins
@@ -130,8 +137,10 @@ presence:
 files:
   protected:
     - .serverk-install.json
+    - .serverk-wine.json
+    - .serverk-mods.json
   notable:
-    - match: Pal/Saved/Config/LinuxServer/PalWorldSettings.ini
+    - match: Pal/Saved/Config/*Server/PalWorldSettings.ini
       label:
         ar: إعدادات
         en: Settings
@@ -193,3 +202,15 @@ guides:
     bodyPath:
       ar: guides/getting-started/ar.md
       en: guides/getting-started/en.md
+  - id: mods
+    title:
+      ar: المودات
+      en: Mods
+    summary:
+      ar: شغّل مودات السيرفر على ويندوز، واعرف ما يتغير عند التبديل من لينكس.
+      en: Run server mods on Windows, and learn what changes when you switch from Linux.
+    surfaces:
+      - overview
+    bodyPath:
+      ar: guides/mods/ar.md
+      en: guides/mods/en.md

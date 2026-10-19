@@ -45,6 +45,9 @@ const act = async (action: string, args: Bridge.Values = {}): Promise<Recorded> 
 			},
 		},
 		log() {},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 
 	const run = live.actions[action];

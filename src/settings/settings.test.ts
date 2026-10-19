@@ -3,7 +3,7 @@ import type { Bridge } from "@serverkgg/bridge";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { lifecycle } from "../lifecycle";
-import { readPendingSettings, writeInstallStamp } from "../shared";
+import { PalworldEdition, readPendingSettings, writeInstallStamp } from "../shared";
 import { settings } from "./settings";
 
 interface Harness {
@@ -77,6 +77,8 @@ const harness = (options: { running: boolean; ini?: Bridge.Values }): Harness =>
 const stamped = async (context: Bridge.Context) => {
 	await writeInstallStamp(context, {
 		buildId: "1",
+		edition: PalworldEdition.Linux,
+		mods: [],
 		adminPasswordNext: null,
 		settingsPending: null,
 		settingsBaseline: null,
@@ -431,6 +433,8 @@ describe("telling the owner which settings a restart applied", () => {
 			INSTALL_STAMP_FILE,
 			JSON.stringify({
 				buildId: "1",
+				edition: PalworldEdition.Linux,
+				mods: [],
 				adminPasswordNext: null,
 				settingsPending: {
 					ExpRate: "1",
@@ -458,6 +462,8 @@ describe("telling the owner which settings a restart applied", () => {
 			INSTALL_STAMP_FILE,
 			JSON.stringify({
 				buildId: "1",
+				edition: PalworldEdition.Linux,
+				mods: [],
 				settingsPending: {
 					ExpRate: "2",
 				},

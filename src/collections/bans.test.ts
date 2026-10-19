@@ -79,6 +79,9 @@ const act = async (
 			},
 		},
 		log() {},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 
 	try {

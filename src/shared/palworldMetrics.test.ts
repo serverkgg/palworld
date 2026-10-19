@@ -159,6 +159,9 @@ const samplerContext = (port: number, emitted: Emitted[], warned: string[]) => {
 				warned.push(message);
 			},
 		},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 };
 

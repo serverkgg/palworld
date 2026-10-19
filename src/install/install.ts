@@ -1,14 +1,20 @@
 import { type Bridge, BridgeKind, BridgeUserError } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { createSteamcmd, installedBuildId, missingGameRoots } from "@serverkgg/bridge/steam";
+import { prepareWinePrefix } from "@serverkgg/bridge/wine";
 import {
-	GAME_ROOTS,
+	EDITION_LAYOUTS,
+	editionOf,
 	installedActivity,
+	MOD_ROOTS,
+	PalworldEdition,
+	PalworldModKind,
 	readInstallStamp,
 	STEAM_APP_ID,
 	updatedActivity,
 	writeInstallStamp,
 } from "../shared";
+import { settleEdition } from "./editionSwitch";
 import { seedSettings } from "./seedSettings";
 
 const MISSING_FILES: Bridge.Text = {
@@ -16,10 +22,11 @@ const MISSING_FILES: Bridge.Text = {
 	en: "The download finished but the game files are missing. Try the install again.",
 };
 
-const steamcmdOf = (context: Bridge.Context) => {
+const steamcmdOf = (context: Bridge.Context, edition: PalworldEdition) => {
 	return createSteamcmd(context, {
 		appId: STEAM_APP_ID,
 		label: "palworld",
+		platform: EDITION_LAYOUTS[edition].platform,
 	});
 };
 
@@ -27,8 +34,13 @@ export const install: Bridge.Install = {
 	kind: BridgeKind.Install,
 	async run(context) {
 		const stamp = await readInstallStamp(context);
-		const missing = await missingGameRoots(context, GAME_ROOTS);
-		const steamcmd = steamcmdOf(context);
+		const edition = editionOf(context);
+		const roots = EDITION_LAYOUTS[edition].roots;
+
+		const switching = await settleEdition(context, stamp, edition);
+
+		const missing = await missingGameRoots(context, roots);
+		const steamcmd = steamcmdOf(context, edition);
 
 		await steamcmd.prepare();
 
@@ -44,10 +56,10 @@ export const install: Bridge.Install = {
 		}
 
 		await steamcmd.update({
-			validate: missing.length > 0,
+			validate: switching || missing.length > 0,
 		});
 
-		const unrepaired = await missingGameRoots(context, GAME_ROOTS);
+		const unrepaired = await missingGameRoots(context, roots);
 
 		if (unrepaired.length > 0) {
 			throw new BridgeUserError(MISSING_FILES, {
@@ -55,7 +67,17 @@ export const install: Bridge.Install = {
 			});
 		}
 
-		await steamcmd.linkSteamClient();
+		if (edition === PalworldEdition.Windows) {
+			await prepareWinePrefix(context, {
+				appId: STEAM_APP_ID,
+				proton: true,
+			});
+
+			await context.files.ensure(MOD_ROOTS[PalworldModKind.Workshop]);
+		} else {
+			await steamcmd.linkSteamClient();
+		}
+
 		await seedSettings(context);
 
 		const buildId = await steamcmd.buildId();
@@ -74,16 +96,21 @@ export const install: Bridge.Install = {
 			context.activity.report(updatedActivity(previous, buildId));
 		}
 
+		const fresh = await readInstallStamp(context);
+
 		await writeInstallStamp(context, {
 			buildId: buildId ?? previous,
-			adminPasswordNext: stamp?.adminPasswordNext ?? null,
-			settingsPending: stamp?.settingsPending ?? null,
-			settingsBaseline: stamp?.settingsBaseline ?? null,
+			edition,
+			mods: fresh?.mods ?? [],
+			adminPasswordNext: fresh?.adminPasswordNext ?? null,
+			settingsPending: fresh?.settingsPending ?? null,
+			settingsBaseline: fresh?.settingsBaseline ?? null,
 		});
 
 		context.log("install complete", {
 			app: STEAM_APP_ID,
 			build: buildId,
+			edition,
 		});
 
 		if (stamp === null) {
@@ -95,7 +122,7 @@ export const install: Bridge.Install = {
 
 		return {
 			version: stamp?.buildId ?? (await installedBuildId(context, STEAM_APP_ID)),
-			variant: null,
+			variant: stamp?.edition === PalworldEdition.Windows ? PalworldEdition.Windows : null,
 			build: null,
 		};
 	},

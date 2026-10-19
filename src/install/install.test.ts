@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { INSTALL_STAMP_FILE } from "@serverkgg/bridge/install";
 import { STEAM_DIRECTORY, STEAMCMD_DIRECTORY } from "@serverkgg/bridge/steam";
 import { compileGlobs, matchesAny } from "@serverkgg/bridge/utils";
-import { GAME_ROOTS } from "../shared";
+import { EDITION_LAYOUTS } from "../shared";
 
 interface Manifest {
 	reset: {
@@ -59,8 +59,10 @@ describe("the manifest guarding the steam install against a reset", () => {
 	});
 
 	it("keeps every root the installer checks, so a reset never re-downloads the game", () => {
-		for (const root of GAME_ROOTS) {
-			expect(survivesReset(root), `${root} must survive a reset`).toBe(true);
+		for (const layout of Object.values(EDITION_LAYOUTS)) {
+			for (const root of layout.roots) {
+				expect(survivesReset(root), `${root} must survive a reset`).toBe(true);
+			}
 		}
 	});
 

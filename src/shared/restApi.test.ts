@@ -99,6 +99,9 @@ const contextOn = (port: number) => {
 				}),
 			},
 		},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 };
 

@@ -51,6 +51,9 @@ const act = async (action: Bridge.RowAction, row: Bridge.Row): Promise<Recorded>
 			},
 		},
 		log() {},
+		variable() {
+			return null;
+		},
 	} as unknown as Bridge.Context;
 
 	try {

@@ -327,11 +327,12 @@ describe("assembling the palworld driver", () => {
 		expect(driver.panel).toBeDefined();
 	});
 
-	it("registers the settings, players, bans, health, live and remote access modules the tabs reference", () => {
+	it("registers the settings, players, bans, mods, health, live and remote access modules the tabs reference", () => {
 		expect(Object.keys(modules)).toEqual([
 			"settings",
 			"players",
 			"bans",
+			"mods",
 			"health",
 			"live",
 			RCON_ACCESS_MODULE,

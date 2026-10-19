@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import { RCON_ACCESS_ROTATE } from "@serverkgg/bridge/rcon";
-import { readInstallStamp, writeInstallStamp } from "../shared";
+import { PalworldEdition, readInstallStamp, writeInstallStamp } from "../shared";
 import { rconAccess } from "./rconAccess";
 
 const ADMIN_PASSWORD = "admin-s3cret";
@@ -67,6 +67,8 @@ describe("telling the owner the remote access password was rotated", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,
@@ -91,6 +93,8 @@ describe("telling the owner the remote access password was rotated", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,

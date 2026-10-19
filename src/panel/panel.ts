@@ -6,12 +6,17 @@ import {
 	BridgeIcon,
 	BridgeLayout,
 	BridgePlace,
+	BridgeUploadMode,
 } from "@serverkgg/bridge";
 import { rconAccessSections } from "@serverkgg/bridge/rcon";
 import {
 	ANNOUNCE_MESSAGE_LENGTH,
 	BASES_FIELDS,
 	COMMUNITY_FIELDS,
+	EDITION_VARIABLE,
+	MOD_STAGING,
+	MOD_UPLOAD_EXTENSIONS,
+	PalworldEdition,
 	RATES_FIELDS,
 	RULES_FIELDS,
 	WORLD_FIELDS,
@@ -325,10 +330,147 @@ const controlsTab: Bridge.Tab = {
 	],
 };
 
+const EDITION_SECTION = "edition";
+
+const modsTab: Bridge.Tab = {
+	id: "mods",
+	title: {
+		ar: "المودات",
+		en: "Mods",
+	},
+	icon: BridgeIcon.Puzzle,
+	sections: [
+		{
+			layout: BridgeLayout.Form,
+			id: EDITION_SECTION,
+			title: {
+				ar: "لينكس أو ويندوز؟",
+				en: "Linux or Windows?",
+			},
+			help: {
+				ar: "يشغّل بالورلد مودات السيرفر، مثل UE4SS و PalSchema، على ويندوز فقط. على ويندوز يبدأ كل لاعب بشخصية جديدة، ولذلك يناسب ويندوز الماب الجديد أكثر.",
+				en: "Palworld runs server mods, such as UE4SS and PalSchema, only on Windows. On Windows every player starts a new character, so Windows suits a new world best.",
+			},
+			target: BridgeFormTarget.Variables,
+			reinstall: true,
+			confirm: BridgeConfirm.Normal,
+			confirmText: {
+				ar: "تبديل نظام التشغيل ينزّل ملفات اللعبة من Steam من جديد، ويتوقف السيرفر حتى ينتهي التنزيل. يبقى الماب والإعدادات كما هي، لكن على ويندوز يبدأ كل لاعب بشخصية جديدة، لأن سيرفر بالورلد على ويندوز يتعرف على اللاعبين بطريقة مختلفة. شخصيات لينكس محفوظة وتعود عند العودة إلى لينكس، ونأخذ نسخة احتياطية قبل التبديل.",
+				en: "Switching downloads the game files from Steam again, and the server is down until the download finishes. Your world and settings stay, but on Windows every player starts a new character, because Palworld's Windows server identifies players differently. Your Linux characters are kept and come back when you switch back to Linux, and we take a backup before the switch.",
+			},
+			fields: [
+				{
+					key: EDITION_VARIABLE,
+					control: BridgeControl.Select,
+					label: {
+						ar: "نظام التشغيل",
+						en: "Operating system",
+					},
+					options: [
+						{
+							value: PalworldEdition.Linux,
+							label: {
+								ar: "لينكس، بدون مودات سيرفر",
+								en: "Linux, no server mods",
+							},
+						},
+						{
+							value: PalworldEdition.Windows,
+							label: {
+								ar: "ويندوز، مع مودات السيرفر",
+								en: "Windows, with server mods",
+							},
+						},
+					],
+				},
+			],
+		},
+		{
+			layout: BridgeLayout.Table,
+			id: "installed",
+			title: {
+				ar: "مودات سيرفرك",
+				en: "Your mods",
+			},
+			help: {
+				ar: "ارفع ملف zip للمود كما نزّلته، سواء كان من Steam Workshop أو مود PalSchema أو مود UE4SS، ويشتغل بعد الريستارت. نوفر UE4SS و PalSchema بإصدارين متوافقين، فلا يلزم رفعهما. يلزم أن تكون المودات نفسها عند كل اللاعبين.",
+				en: "Upload the mod's zip as you downloaded it, whether it's a Steam Workshop, PalSchema or UE4SS mod, and it runs after a restart. We include matching versions of UE4SS and PalSchema, so you don't need to upload them. Every player needs the same mods.",
+			},
+			module: "mods",
+			restartHint: true,
+			columns: [
+				{
+					key: "title",
+					label: {
+						ar: "المود",
+						en: "Mod",
+					},
+				},
+				{
+					key: "type",
+					label: {
+						ar: "النوع",
+						en: "Type",
+					},
+				},
+				{
+					key: "version",
+					label: {
+						ar: "الإصدار",
+						en: "Version",
+					},
+				},
+				{
+					key: "state",
+					label: {
+						ar: "الحالة",
+						en: "State",
+					},
+				},
+			],
+			upload: {
+				label: {
+					ar: "ارفع مودًا",
+					en: "Upload a mod",
+				},
+				extensions: MOD_UPLOAD_EXTENSIONS,
+				staging: MOD_STAGING,
+				mode: BridgeUploadMode.Archive,
+			},
+			actions: [
+				{
+					id: "toggle",
+					label: {
+						ar: "فعّل أو وقّف",
+						en: "Turn on or off",
+					},
+				},
+				{
+					id: "remove",
+					confirm: BridgeConfirm.Normal,
+					confirmText: {
+						ar: "تُحذف ملفات المود من السيرفر، فلا يشتغل من التشغيل القادم، وقد يختفي من الماب أي شيء يعتمد عليه.",
+						en: "The mod's files are deleted from your server, so it doesn't run from the next start. Anything in your world that depends on it may disappear.",
+					},
+					label: {
+						ar: "احذف",
+						en: "Delete",
+					},
+				},
+			],
+			empty: {
+				ar: "لا توجد مودات بعد. ارفع ملف zip لمود ليظهر هنا.",
+				en: "No mods yet. Upload a mod's zip to add it here.",
+			},
+		},
+	],
+};
+
 export const panel: Bridge.Panel = {
 	tabs: [
 		settingsTab,
 		playersTab,
 		controlsTab,
+		modsTab,
 	],
 };

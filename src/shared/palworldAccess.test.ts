@@ -10,6 +10,7 @@ import {
 	RCON_PORT,
 	rotateAdminPassword,
 } from "./palworldAccess";
+import { PalworldEdition } from "./palworldEdition";
 
 interface Harness {
 	context: Bridge.Context;
@@ -126,6 +127,8 @@ describe("applying remote access at every start", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: null,
 			settingsBaseline: null,
@@ -146,6 +149,8 @@ describe("applying remote access at every start", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,
@@ -155,6 +160,8 @@ describe("applying remote access at every start", () => {
 
 		expect(await readInstallStamp(context)).toEqual({
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,
@@ -192,6 +199,8 @@ describe("what the remote access card shows", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "rotated",
 			settingsPending: null,
 			settingsBaseline: null,
@@ -218,6 +227,8 @@ describe("rotating the admin password", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: null,
 			settingsPending: null,
 			settingsBaseline: null,
@@ -238,6 +249,8 @@ describe("rotating the admin password", () => {
 
 		await writeInstallStamp(context, {
 			buildId: "1",
+			edition: PalworldEdition.Linux,
+			mods: [],
 			adminPasswordNext: "first",
 			settingsPending: null,
 			settingsBaseline: null,
