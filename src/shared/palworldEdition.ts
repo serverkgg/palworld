@@ -26,6 +26,30 @@ export const WINDOWS_BINARY = `${WINDOWS_BINARY_DIRECTORY}/PalServer-Win64-Shipp
 
 export const STEAM_APP_MANIFEST = `steamapps/appmanifest_${STEAM_APP_ID}.acf`;
 
+export const WINDOWS_STEAM_CLIENTS = [
+	"steamclient64.dll",
+	"steamclient.dll",
+	`${WINDOWS_BINARY_DIRECTORY}/steamclient64.dll`,
+	`${WINDOWS_BINARY_DIRECTORY}/steamclient.dll`,
+];
+
+export const removeSteamClients = async (context: Bridge.Context) => {
+	const removed: string[] = [];
+
+	for (const path of WINDOWS_STEAM_CLIENTS) {
+		if (await context.files.exists(path)) {
+			await context.files.remove(path);
+			removed.push(path);
+		}
+	}
+
+	if (removed.length > 0) {
+		context.log("removed the steam client, which loops forever under wine with no steam to reach", {
+			files: removed.join(", "),
+		});
+	}
+};
+
 export const EDITION_LAYOUTS: Record<PalworldEdition, EditionLayout> = {
 	[PalworldEdition.Linux]: {
 		platform: SteamcmdPlatform.Linux,

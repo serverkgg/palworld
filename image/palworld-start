@@ -1,7 +1,17 @@
-#!/bin/sh
-set -eu
+#!/bin/bash
+set -euo pipefail
 
 mkdir -p /tmp/serverk-xdg
 chmod 0700 /tmp/serverk-xdg
 
-exec xvfb-run -a "$@"
+WINE_NOISE=(
+  -e 's#flock /sys/devices/virtual/dmi/id/[a-z_]+ LOCK_SH failed\. errno = [0-9]+##g'
+  -e '/^ProtonFixes\[[0-9]+\] WARN: Skipping fix execution/d'
+  -e '/^fsync: up and running\.$/d'
+  -e '/^Wine cannot find the FreeType font library/d'
+  -e '/^use TrueType fonts please install a version of FreeType/d'
+  -e '/^or equal to 2\.0\.5\.$/d'
+  -e '/^http:\/\/www\.freetype\.org$/d'
+)
+
+exec xvfb-run -a "$@" > >(sed -u -E "${WINE_NOISE[@]}") 2> >(sed -u -E "${WINE_NOISE[@]}" >&2)

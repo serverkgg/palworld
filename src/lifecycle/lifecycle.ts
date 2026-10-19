@@ -17,6 +17,7 @@ import {
 	readInstallStamp,
 	readPendingBaseline,
 	readPendingSettings,
+	removeSteamClients,
 	roster,
 	SERVER_READY,
 	SHUTDOWN_DELAY_SECONDS,
@@ -85,6 +86,8 @@ export const lifecycle: Bridge.Lifecycle = {
 				...args.slice(1),
 			];
 		}
+
+		await removeSteamClients(context);
 
 		const listed = (await readInstallStamp(context))?.mods ?? [];
 		const installed = await installedMods(context);
