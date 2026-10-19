@@ -106,7 +106,10 @@ export const lifecycle: Bridge.Lifecycle = {
 			...(await protonCommand(context, {
 				appId: STEAM_APP_ID,
 				exe: WINDOWS_BINARY,
-				args,
+				args: [
+					...args.slice(0, 2),
+					"-nosteam",
+				],
 				environment: WINDOWS_ENVIRONMENT,
 				verb: ProtonVerb.RunInPrefix,
 			})),

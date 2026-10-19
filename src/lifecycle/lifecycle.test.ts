@@ -118,6 +118,27 @@ describe("the command that starts the game", () => {
 		expect(stored.get(MOD_SETTINGS_FILE)).toContain("bGlobalEnableMod=false");
 	});
 
+	it("starts the windows edition without steam, so the steam client cannot spin the cpu under wine", async () => {
+		const { context } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		const command = await lifecycle.command(context);
+
+		expect(command).toContain("-nosteam");
+
+		for (const flag of [
+			"-useperfthreads",
+			"-NoAsyncLoadingThread",
+			"-UseMultithreadForDS",
+		]) {
+			expect(command).not.toContain(flag);
+		}
+	});
+
 	it("keeps every flag the server needs", async () => {
 		const command = await lifecycle.command(harness().context);
 
