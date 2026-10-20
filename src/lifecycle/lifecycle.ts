@@ -1,6 +1,6 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { ProtonVerb, protonCommand } from "@serverkgg/bridge/wine";
+import { CONTAINER_HOME, ProtonVerb, protonCommand } from "@serverkgg/bridge/wine";
 import {
 	appliedSettingKeys,
 	applyAccess,
@@ -17,7 +17,6 @@ import {
 	readInstallStamp,
 	readPendingBaseline,
 	readPendingSettings,
-	removeSteamClients,
 	roster,
 	SERVER_READY,
 	SHUTDOWN_DELAY_SECONDS,
@@ -26,6 +25,7 @@ import {
 	sendShutdown,
 	settingsAppliedActivity,
 	WINDOWS_BINARY,
+	WINDOWS_BINARY_DIRECTORY,
 	writeDeployedMods,
 	writeModSettings,
 } from "../shared";
@@ -87,8 +87,6 @@ export const lifecycle: Bridge.Lifecycle = {
 			];
 		}
 
-		await removeSteamClients(context);
-
 		const listed = (await readInstallStamp(context))?.mods ?? [];
 		const installed = await installedMods(context);
 		const packages = await writeModSettings(context, installed, listed);
@@ -106,9 +104,10 @@ export const lifecycle: Bridge.Lifecycle = {
 
 		return [
 			START_WRAPPER,
+			`${CONTAINER_HOME}/${WINDOWS_BINARY_DIRECTORY}`,
 			...(await protonCommand(context, {
 				appId: STEAM_APP_ID,
-				exe: WINDOWS_BINARY,
+				exe: `${CONTAINER_HOME}/${WINDOWS_BINARY}`,
 				args: [
 					...args.slice(0, 2),
 					"-nosteam",

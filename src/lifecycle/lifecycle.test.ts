@@ -7,7 +7,6 @@ import {
 	PalworldEdition,
 	readPendingSettings,
 	WINDOWS_BINARY,
-	WINDOWS_STEAM_CLIENTS,
 	writeInstallStamp,
 } from "../shared";
 import { lifecycle, START_WRAPPER } from "./lifecycle";
@@ -115,32 +114,25 @@ describe("the command that starts the game", () => {
 
 		const command = await lifecycle.command(context);
 
-		expect(command[0]).toEqual(START_WRAPPER);
+		expect(command.slice(0, 2)).toEqual([
+			START_WRAPPER,
+			"/home/container/Pal/Binaries/Win64",
+		]);
 		expect(command).toContain("runinprefix");
-		expect(command).toContain(WINDOWS_BINARY);
+		expect(command).toContain(`/home/container/${WINDOWS_BINARY}`);
 		expect(command).toContain(`-port=${GAME_PORT}`);
 		expect(stored.get(MOD_SETTINGS_FILE)).toContain("bGlobalEnableMod=false");
 	});
 
-	it("starts the windows edition without steam, so the steam client cannot spin the cpu under wine", async () => {
-		const { context, stored } = harness(
+	it("starts the windows edition without steam, from its binary folder so the steam client cannot spin the cpu under wine", async () => {
+		const { context } = harness(
 			{},
 			{
 				[EDITION_VARIABLE]: PalworldEdition.Windows,
 			},
 		);
 
-		for (const path of [
-			...WINDOWS_STEAM_CLIENTS,
-			"Pal/Binaries/Win64/steam_api64.dll",
-		]) {
-			stored.set(path, "");
-		}
-
 		const command = await lifecycle.command(context);
-
-		expect(WINDOWS_STEAM_CLIENTS.filter((path) => stored.has(path))).toEqual([]);
-		expect(stored.has("Pal/Binaries/Win64/steam_api64.dll")).toEqual(true);
 
 		expect(command).toContain("-nosteam");
 

@@ -14,4 +14,7 @@ WINE_NOISE=(
   -e '/^http:\/\/www\.freetype\.org$/d'
 )
 
+cd "$1"
+shift
+
 exec xvfb-run -a "$@" > >(sed -u -E "${WINE_NOISE[@]}") 2> >(sed -u -E "${WINE_NOISE[@]}" >&2)
