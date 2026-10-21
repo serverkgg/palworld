@@ -1,42 +1,52 @@
+![Palworld](assets/banner.webp)
+
 # بالورلد (Palworld)
 
-حزمة بالورلد على منصة سيرفرك (`serverk.gg`). هذا المستودع فيه كل شيء اللعبة تحتاجه عشان تشتغل على المنصة: ملف التعريف `serverk.yml`، الـ driver اللي يدير السيرفر، صورة الدوكر، والشروحات.
+يضم هذا الريبو كل ما تحتاجه منصة سيرفرك لتشغيل سيرفرات بالورلد. سيرفر بالورلد للبقاء في ماب مفتوح، مع اصطياد Pals، وبناء القواعد، والغارات مع أصحابك. حتى 32 لاعبًا في الماب نفسه. اصطد وابنِ وقاتل مع أصحابك، وسيرفرك جاهز خلال دقيقة. صفحة اللعبة: [serverk.gg/games/palworld](https://serverk.gg/games/palworld)
 
-The Palworld game package for the Serverk platform (`serverk.gg`). This repo holds everything the game needs to run on the platform: the `serverk.yml` manifest, the driver that manages the server, the Docker image, and the guides.
+This repository holds everything Serverk needs to run Palworld servers. Palworld dedicated servers for open-world survival, Pal catching, base building and raids with your friends. Up to 32 players in one world. Catch, build and fight with your friends, on a server ready in a minute. Game page: [serverk.gg/games/palworld](https://serverk.gg/games/palworld)
 
 ## Layout
 
-- `serverk.yml` — the game manifest: metadata, resources, ports, backup rules, guides.
-- `src/` — the bridge driver: install (SteamCMD), lifecycle, query, backup, and the panel modules. The panel controls the server over Palworld's REST API on loopback with `AdminPassword`; the same password is the RCON password the remote-access card shows, so a rotation waits in the install stamp until the next start writes it into the ini and RCON only listens while the panel toggle is on.
-- `image/Dockerfile` — the runtime image; the compiled bridge binary is its entrypoint.
-- `assets/` — logo and banner (webp).
-- `guides/` — player guides in Arabic and English.
+- `serverk.yml`: the game manifest with its metadata, resources, ports, backup and reset rules, and the guide list.
+- `serverk.schema.json`: the JSON Schema of `serverk.yml` for the editor, written by `serverk-bridge schema`.
+- `src/`: the driver, built on `@serverkgg/bridge`; `src/driver.ts` exports it and `src/main.ts` serves it.
+- `image/Dockerfile`: the container image, with the compiled bridge as its entrypoint.
+- `assets/`: the logo and the banner the site and the panel show.
+- `guides/<id>/ar.md` and `en.md`: the guide bodies; each guide's title, summary and tags live in `serverk.yml`.
+
+## Guides
+
+- [البدء بسيرفرك · Getting started](https://serverk.gg/games/palworld/guides/getting-started)
+- [المودات · Mods](https://serverk.gg/games/palworld/guides/mods)
 
 ## Develop
 
-Everything runs on [Bun](https://bun.sh):
+Everything runs on [Bun](https://bun.sh).
 
-```sh
-bun install
-bun run check
-bun run tsc
-bun run test
-bun run validate
-bun run compile
-```
+- `bun install`: installs the dependencies, points Git at the hooks in `.githooks/` and writes `.claude/rules/package.md` from the bridge.
+- `bun run check`: checks lint and formatting with Biome; `bun run fix` applies the fixes.
+- `bun run tsc`: type-checks the code.
+- `bun run test`: runs the tests.
+- `bun run validate`: runs the checks the platform runs at publish, and fails while this README is out of date.
+- `bun run compile`: builds `dist/bridge`, the linux/amd64 binary the image starts.
 
-`validate` checks the manifest, assets, and driver wiring with the exact validation the platform runs at publish. `compile` produces `dist/bridge`, an amd64 binary — serverk publishes game images for `linux/amd64` only.
+`.githooks/pre-commit` runs `bun run fix`, `bun run tsc`, `bun run test`, `bun run validate` and `bunx serverk-bridge schema --check` before every commit. There is no CI: a commit that passes the hook is ready.
 
-The `.githooks/pre-commit` hook is the gate: it runs `fix`, `tsc`, `test`, `validate`, and `serverk-bridge schema --check` on every commit. `bun install` wires it up through the `prepare` script.
-
-The driver is built on [`@serverkgg/bridge`](https://www.npmjs.com/package/@serverkgg/bridge). When the `serverk` repository is cloned beside this one, the `postinstall` script (`serverk-bridge link`) points `node_modules/@serverkgg/bridge` at `../serverk/modules/bridge` without touching `package.json` or `bun.lock`; it does nothing in CI or when the checkout is absent. `bunx serverk-bridge link --check` shows which bridge is installed, and `bunx serverk-bridge link --unlink` followed by `bun install` restores the registry package. `package.json` keeps the published version pinned — never commit a `file:` dependency.
+`bun install` runs `serverk-bridge link`, which links `@serverkgg/bridge` to a sibling `serverk` checkout at `../serverk/modules/bridge` when one exists. Never commit a `file:` or `link:` dependency.
 
 ## Contribute
 
-- افتح issue لأي مشكلة أو اقتراح — بالعربي أو بالإنجليزي، كلها مرحّب فيها.
-- Run `bun run check`, `bun run tsc`, `bun run test` and `bun run validate` before you open a pull request — the same checks the pre-commit hook runs.
-- Releases are done by the Serverk team through the platform's central release pipeline; merged changes ride the next release.
+افتح issue لأي مشكلة أو اقتراح، بالعربية أو بالإنجليزية. ينشر فريق سيرفرك هذا الريبو من ريبو `serverk` بالأمر `bunx outdo package --prod --name palworld`، ويصل كل تغيير مدموج مع النشر التالي. العربية هي لغة المصدر: يُكتب كل نص يقرؤه العميل بالعربية أولًا، بلغة رسمية مع لمسة خليجية خفيفة، ثم بالإنجليزية. أبقِ أسماء الملفات والأوامر والمفاتيح بالحروف اللاتينية.
 
-## Arabic copy
+Open an issue for any problem or suggestion, in Arabic or English. Serverk releases this repository from `serverk` with `bunx outdo package --prod --name palworld`; merged changes ride the next release. Arabic is the source language: every string a customer reads is written in Arabic first, formal with a light Gulf touch, then in English. Keep file names, commands and config keys in Latin script.
 
-Arabic is the source language of the platform. Player-facing strings in `serverk.yml` and the guides use Gulf gaming Arabic — the game's Arabic name is always «بالورلد», written solid.
+## License
+
+الكود متاح للقراءة، وجميع الحقوق محفوظة لمنصة سيرفرك، ولا يُمنح أي ترخيص.
+
+The code is public to read. All rights are reserved by Serverk, and no license is granted.
+
+يُنشأ هذا الملف بالأمر `serverk-bridge readme` من `serverk.yml`، فعدّل ملف التعريف لا هذا الملف.
+
+Generated by `serverk-bridge readme` from `serverk.yml`; edit the manifest, not this file.
