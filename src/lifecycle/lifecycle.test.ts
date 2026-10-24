@@ -2,16 +2,22 @@ import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
+	DEFAULT_SETTINGS_FILE,
 	EDITION_VARIABLE,
 	MOD_SETTINGS_FILE,
 	PalworldEdition,
 	readPendingSettings,
+	WINDOWS_BAN_LIST_URL,
 	WINDOWS_BINARY,
 	writeInstallStamp,
 } from "../shared";
 import { lifecycle, START_WRAPPER } from "./lifecycle";
 
 const GAME_PORT = 8241;
+
+const GLOBAL_BAN_LIST_URL = "https://b.palworldgame.com/api/banlist.txt";
+
+const OWNER_BAN_LIST_URL = "https://bans.example.com/banlist.txt";
 
 interface Harness {
 	context: Bridge.Context;
@@ -21,7 +27,11 @@ interface Harness {
 	reported: Bridge.Activity[];
 }
 
-const harness = (ini: Bridge.Values = {}, variables: Record<string, string> = {}): Harness => {
+const harness = (
+	ini: Bridge.Values = {},
+	variables: Record<string, string> = {},
+	shipped: Bridge.Values = {},
+): Harness => {
 	const stored = new Map<string, string>();
 	const settings: Bridge.Values = {
 		...ini,
@@ -56,8 +66,8 @@ const harness = (ini: Bridge.Values = {}, variables: Record<string, string> = {}
 		},
 		codec: {
 			ueIni: {
-				async read() {
-					return settings;
+				async read(path: string) {
+					return path === DEFAULT_SETTINGS_FILE ? shipped : settings;
 				},
 				async merge(_path: string, values: Bridge.Values) {
 					for (const [key, value] of Object.entries(values)) {
@@ -155,6 +165,122 @@ describe("the command that starts the game", () => {
 		]) {
 			expect(command).toContain(flag);
 		}
+	});
+});
+
+describe("keeping pocketpair's global ban list off the windows edition", () => {
+	it("swaps the ban list address before the windows edition starts, because its steam ids never match a no-steam player", async () => {
+		const { context, ini } = harness(
+			{
+				BanListURL: GLOBAL_BAN_LIST_URL,
+			},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(WINDOWS_BAN_LIST_URL);
+	});
+
+	it("never writes an empty address, which crashes the windows server at boot", () => {
+		expect(WINDOWS_BAN_LIST_URL.length).toBeGreaterThan(0);
+		expect(WINDOWS_BAN_LIST_URL).not.toBe(GLOBAL_BAN_LIST_URL);
+	});
+
+	it("swaps it again on every start, after the game wrote it back on shutdown", async () => {
+		const { context, ini } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		await lifecycle.command(context);
+
+		ini.BanListURL = GLOBAL_BAN_LIST_URL;
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(WINDOWS_BAN_LIST_URL);
+	});
+
+	it("swaps it after the replay, so a replayed address cannot bring the global list back", async () => {
+		const { context, ini } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		await pending(context, {
+			BanListURL: GLOBAL_BAN_LIST_URL,
+		});
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(WINDOWS_BAN_LIST_URL);
+	});
+
+	it("leaves the owner's ban list address alone on the linux edition", async () => {
+		const { context, ini } = harness({
+			BanListURL: GLOBAL_BAN_LIST_URL,
+		});
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
+	});
+
+	it("puts the shipped ban list back when the server switches from windows to linux", async () => {
+		const variables = {
+			[EDITION_VARIABLE]: PalworldEdition.Windows,
+		};
+		const { context, ini, logged } = harness(
+			{
+				BanListURL: GLOBAL_BAN_LIST_URL,
+			},
+			variables,
+			{
+				BanListURL: GLOBAL_BAN_LIST_URL,
+			},
+		);
+
+		await lifecycle.command(context);
+
+		variables[EDITION_VARIABLE] = PalworldEdition.Linux;
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
+		expect(logged).toContain("restored the shipped ban list the windows edition had turned off");
+	});
+
+	it("keeps a ban list the owner set themselves on linux, even when the shipped one differs", async () => {
+		const { context, ini } = harness(
+			{
+				BanListURL: OWNER_BAN_LIST_URL,
+			},
+			{},
+			{
+				BanListURL: GLOBAL_BAN_LIST_URL,
+			},
+		);
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(OWNER_BAN_LIST_URL);
+	});
+
+	it("leaves the windows address on linux when the shipped settings name no ban list", async () => {
+		const { context, ini } = harness({
+			BanListURL: WINDOWS_BAN_LIST_URL,
+		});
+
+		await lifecycle.command(context);
+
+		expect(ini.BanListURL).toBe(WINDOWS_BAN_LIST_URL);
 	});
 });
 

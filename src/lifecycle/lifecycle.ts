@@ -17,6 +17,7 @@ import {
 	readInstallStamp,
 	readPendingBaseline,
 	readPendingSettings,
+	restoreShippedBanList,
 	roster,
 	SERVER_READY,
 	SHUTDOWN_DELAY_SECONDS,
@@ -24,6 +25,7 @@ import {
 	STEAM_APP_ID,
 	sendShutdown,
 	settingsAppliedActivity,
+	WINDOWS_BAN_LIST,
 	WINDOWS_BINARY,
 	WINDOWS_BINARY_DIRECTORY,
 	writeDeployedMods,
@@ -81,11 +83,15 @@ export const lifecycle: Bridge.Lifecycle = {
 		const args = startArgs(context.port("game"));
 
 		if (editionOf(context) === PalworldEdition.Linux) {
+			await restoreShippedBanList(context);
+
 			return [
 				`./${LINUX_SCRIPT}`,
 				...args.slice(1),
 			];
 		}
+
+		await mergeSettings(context, WINDOWS_BAN_LIST);
 
 		const listed = (await readInstallStamp(context))?.mods ?? [];
 		const installed = await installedMods(context);

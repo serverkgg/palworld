@@ -1,6 +1,8 @@
 import type { Bridge } from "@serverkgg/bridge";
 import { editionLayoutOf, SETTINGS_FILE_NAME } from "./palworldEdition";
 
+export const DEFAULT_SETTINGS_FILE = "DefaultPalWorldSettings.ini";
+
 export const settingsDirectoryOf = (context: Bridge.Context) => {
 	return editionLayoutOf(context).configDirectory;
 };
@@ -16,6 +18,10 @@ const CODEC_OPTIONS = {
 
 export const readSettings = async (context: Bridge.Context) => {
 	return await context.codec.ueIni.read(settingsFileOf(context), CODEC_OPTIONS);
+};
+
+export const readDefaultSettings = async (context: Bridge.Context) => {
+	return await context.codec.ueIni.read(DEFAULT_SETTINGS_FILE, CODEC_OPTIONS);
 };
 
 export const mergeSettings = async (context: Bridge.Context, values: Bridge.Values) => {

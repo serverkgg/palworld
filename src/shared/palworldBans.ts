@@ -1,6 +1,31 @@
 import { type Bridge, BridgeUserError } from "@serverkgg/bridge";
+import { mergeSettings, readDefaultSettings, readSettings } from "./palworldSettings";
 
 export const BAN_LIST_FILE = "Pal/Saved/SaveGames/banlist.txt";
+
+export const WINDOWS_BAN_LIST_URL = "http://127.0.0.1:9/banlist.txt";
+
+export const WINDOWS_BAN_LIST: Bridge.Values = {
+	BanListURL: WINDOWS_BAN_LIST_URL,
+};
+
+export const restoreShippedBanList = async (context: Bridge.Context) => {
+	if ((await readSettings(context)).BanListURL !== WINDOWS_BAN_LIST_URL) {
+		return;
+	}
+
+	const shipped = (await readDefaultSettings(context)).BanListURL;
+
+	if (shipped === undefined) {
+		return;
+	}
+
+	await mergeSettings(context, {
+		BanListURL: shipped,
+	});
+
+	context.log("restored the shipped ban list the windows edition had turned off");
+};
 
 export const USER_ID_PATTERN = /^[a-z0-9]{1,15}_[A-Za-z0-9]{1,48}$/;
 

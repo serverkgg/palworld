@@ -3,14 +3,13 @@ import { RCON_PASSWORD_LENGTH, rconExposed } from "@serverkgg/bridge/rcon";
 import { generateToken } from "@serverkgg/bridge/utils";
 import {
 	accessPatch,
+	DEFAULT_SETTINGS_FILE,
 	mergeSettings,
 	REST_API_PORT,
 	readSettings,
 	settingsDirectoryOf,
 	settingsFileOf,
 } from "../shared";
-
-const DEFAULT_SETTINGS_FILE = "DefaultPalWorldSettings.ini";
 
 export const needsAdminPassword = (settings: Bridge.Values) => {
 	return String(settings.AdminPassword ?? "").length === 0;
