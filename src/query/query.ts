@@ -26,6 +26,7 @@ export const query: Bridge.Query = {
 		return {
 			online: current?.currentplayernum ?? null,
 			max: current?.maxplayernum ?? null,
+			tick: current?.serverframetime ?? null,
 		};
 	},
 };
