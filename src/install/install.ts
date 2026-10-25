@@ -67,6 +67,8 @@ export const install: Bridge.Install = {
 			});
 		}
 
+		await steamcmd.linkSteamClient();
+
 		if (edition === PalworldEdition.Windows) {
 			await prepareWinePrefix(context, {
 				appId: STEAM_APP_ID,
@@ -74,8 +76,6 @@ export const install: Bridge.Install = {
 			});
 
 			await context.files.ensure(MOD_ROOTS[PalworldModKind.Workshop]);
-		} else {
-			await steamcmd.linkSteamClient();
 		}
 
 		await seedSettings(context);

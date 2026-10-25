@@ -18,7 +18,8 @@ metadata:
   banner: assets/banner.webp
   extensions:
     - kind: mods
-      sources: []
+      sources:
+        - workshop
 
 steam:
   appId: 2394010
@@ -76,10 +77,7 @@ backup:
   only:
     - Pal/Saved/**
     - Pal/Content/Paks/~mods/**
-    - Mods/PalModSettings.ini
-    - Mods/Workshop/**
-    - Mods/PalSchemaMods/**
-    - Mods/UE4SSMods/**
+    - Mods/**
   except:
     - Pal/Saved/**/backup/**
     - Pal/Saved/Logs/**
@@ -101,6 +99,10 @@ reset:
     - linux64
     - steamclient.so
     - libsteamwebrtc.so
+    - steamclient*.dll
+    - tier0_s*.dll
+    - vstdlib_s*.dll
+    - steamwebrtc*.dll
     - Manifest_*.txt
     - DefaultPalWorldSettings.ini
     - PalServer.sh
@@ -176,8 +178,8 @@ files:
       color: "#c77dff"
       restart: true
       note:
-        ar: مجلد المودات. ضع ملفات pak هنا، وتشتغل بعد الريستارت، ويلزم أن تكون المودات نفسها عند كل اللاعبين.
-        en: Your mods folder. Drop pak files here and restart to load them. Every player needs the same mods.
+        ar: مجلد ملفات pak التي تضيفها بنفسك. ضعها هنا وتشتغل بعد الريستارت، ولا تظهر في تبويب المودات. المجلدات التي تحمل أسماء مودات تبويب المودات نديرها نحن ونعيد إنشاءها في كل تشغيل. يلزم أن تكون المودات نفسها عند كل اللاعبين.
+        en: The folder for pak files you add by hand. Drop them here and restart to load them. They don't show in the Mods tab. We manage the folders named after the mods in the Mods tab and rebuild them at every start. Every player needs the same mods.
 
 guideTags:
   - id: start
@@ -207,8 +209,8 @@ guides:
       ar: المودات
       en: Mods
     summary:
-      ar: شغّل مودات السيرفر على ويندوز، واعرف ما يتغير عند التبديل من لينكس.
-      en: Run server mods on Windows, and learn what changes when you switch from Linux.
+      ar: ثبّت مودات السيرفر من Steam Workshop على ويندوز، واعرف ما يتغير عند التبديل من لينكس.
+      en: Install server mods from the Steam Workshop on Windows, and learn what changes when you switch from Linux.
     surfaces:
       - overview
     bodyPath:

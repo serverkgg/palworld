@@ -195,7 +195,7 @@ const CROSSPLAY_VIRTUALS = [
 ];
 
 const settingsSections = (panel.tabs.find((tab) => tab.id === "settings")?.sections ?? []).flatMap((section) => {
-	return section.layout === BridgeLayout.Form
+	return section.layout === BridgeLayout.Form && section.target === BridgeFormTarget.Settings
 		? [
 				section,
 			]

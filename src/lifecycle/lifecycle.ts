@@ -4,17 +4,13 @@ import { CONTAINER_HOME, ProtonVerb, protonCommand } from "@serverkgg/bridge/win
 import {
 	appliedSettingKeys,
 	applyAccess,
-	classicMods,
 	clearPendingSettings,
-	deployedModIds,
-	deployUe4ss,
 	editionOf,
-	installedMods,
 	LINUX_SCRIPT,
 	mergeSettings,
 	metrics,
+	modNameOf,
 	PalworldEdition,
-	readInstallStamp,
 	readPendingBaseline,
 	readPendingSettings,
 	restoreShippedBanList,
@@ -25,12 +21,13 @@ import {
 	STEAM_APP_ID,
 	sendShutdown,
 	settingsAppliedActivity,
+	settleSteamClient,
 	WINDOWS_BAN_LIST,
 	WINDOWS_BINARY,
 	WINDOWS_BINARY_DIRECTORY,
-	writeDeployedMods,
-	writeModSettings,
+	windowsSteamOf,
 } from "../shared";
+import { deployMods } from "./modDeploy";
 
 const STOP_TIMEOUT_SECONDS = 90;
 
@@ -80,31 +77,29 @@ export const lifecycle: Bridge.Lifecycle = {
 
 		await applyAccess(context);
 
+		const steam = editionOf(context) === PalworldEdition.Linux || windowsSteamOf(context);
+
+		if (steam) {
+			await restoreShippedBanList(context);
+		} else {
+			await mergeSettings(context, WINDOWS_BAN_LIST);
+		}
+
+		const placed = await deployMods(context);
 		const args = startArgs(context.port("game"));
 
 		if (editionOf(context) === PalworldEdition.Linux) {
-			await restoreShippedBanList(context);
-
 			return [
 				`./${LINUX_SCRIPT}`,
 				...args.slice(1),
 			];
 		}
 
-		await mergeSettings(context, WINDOWS_BAN_LIST);
+		await settleSteamClient(context);
 
-		const listed = (await readInstallStamp(context))?.mods ?? [];
-		const installed = await installedMods(context);
-		const packages = await writeModSettings(context, installed, listed);
-		const classic = classicMods(installed, listed);
-
-		await deployUe4ss(context, classic);
-		await writeDeployedMods(context, deployedModIds(installed, listed));
-
-		if (packages.length > 0 || classic.length > 0) {
+		if (placed.length > 0) {
 			context.log("loading the mods", {
-				workshop: packages.join(", "),
-				ue4ss: classic.map((mod) => mod.folder).join(", "),
+				mods: placed.map(modNameOf).join(", "),
 			});
 		}
 
@@ -114,10 +109,12 @@ export const lifecycle: Bridge.Lifecycle = {
 			...(await protonCommand(context, {
 				appId: STEAM_APP_ID,
 				exe: `${CONTAINER_HOME}/${WINDOWS_BINARY}`,
-				args: [
-					...args.slice(0, 2),
-					"-nosteam",
-				],
+				args: steam
+					? args.slice(0, 2)
+					: [
+							...args.slice(0, 2),
+							"-nosteam",
+						],
 				environment: WINDOWS_ENVIRONMENT,
 				verb: ProtonVerb.RunInPrefix,
 			})),

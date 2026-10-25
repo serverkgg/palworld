@@ -1,13 +1,23 @@
 import { describe, expect, it } from "bun:test";
-import { BridgeControl, BridgeFormTarget, BridgeKind, BridgeLayout, BridgeSetupStepKind } from "@serverkgg/bridge";
+import {
+	BridgeControl,
+	BridgeFormTarget,
+	BridgeKind,
+	BridgeLayout,
+	BridgeSetupStepKind,
+	BridgeUploadMode,
+} from "@serverkgg/bridge";
 import { GuideOpenTab } from "@serverkgg/bridge/guides";
 import { PRESENCE_FIELDS_LIMIT, presencePlaceholders } from "@serverkgg/bridge/manifest";
-import { isBridgeEventName } from "@serverkgg/bridge/protocol";
+import { BridgeCatalogSourceKind, isBridgeEventName } from "@serverkgg/bridge/protocol";
 import { RCON_ACCESS_MODULE, RCON_ACCESS_PORT, RCON_ACCESS_VARIABLE } from "@serverkgg/bridge/rcon";
 import { banRow } from "./collections";
 import { driver } from "./driver";
 import {
 	CROSSPLAY_KEY,
+	EDITION_VARIABLE,
+	MOD_STAGING,
+	PalworldEdition,
 	presenceOf,
 	RCON_PORT,
 	REST_API_PORT,
@@ -17,6 +27,12 @@ import {
 } from "./shared";
 
 interface Manifest {
+	metadata: {
+		extensions: {
+			kind: string;
+			sources: string[];
+		}[];
+	};
 	container: {
 		ports: {
 			key: string;
@@ -435,5 +451,104 @@ describe("binding every settings form to the module that guards its writes", () 
 				});
 			}).toThrow();
 		}
+	});
+});
+
+const modsTab = (driver.panel?.tabs ?? []).find((tab) => tab.id === "mods");
+
+const modsCatalog = modsTab?.sections.find((section) => section.layout === BridgeLayout.Catalog);
+
+describe("wiring the mods tab to the steam workshop catalog", () => {
+	it("declares the workshop source the platform serves, its page of 20, and the frameworks the image ships as provided", () => {
+		const module = modules.mods;
+
+		expect(module?.kind).toBe(BridgeKind.Catalog);
+		expect(module?.kind === BridgeKind.Catalog ? module.pageSize : null).toBe(20);
+		expect(module?.kind === BridgeKind.Catalog ? module.source : null).toEqual({
+			kind: BridgeCatalogSourceKind.Workshop,
+			appId: 1_623_730,
+			provided: [
+				"UE4SSExperimentalPW",
+				"PalSchema",
+			],
+		});
+	});
+
+	it("leaves search, preview and releases to the platform", () => {
+		const module = modules.mods;
+
+		expect(
+			module?.kind === BridgeKind.Catalog
+				? [
+						module.search,
+						module.preview,
+						module.releases,
+					]
+				: null,
+		).toEqual([
+			undefined,
+			undefined,
+			undefined,
+		]);
+	});
+
+	it("claims the workshop as the mods source on the public pages", () => {
+		expect(manifest.metadata.extensions).toEqual([
+			{
+				kind: "mods",
+				sources: [
+					"workshop",
+				],
+			},
+		]);
+	});
+
+	it("puts the catalog after the edition form, bound to the mods module", () => {
+		expect(
+			modsTab?.sections.map((section) => [
+				section.layout,
+				section.id,
+			]),
+		).toEqual([
+			[
+				BridgeLayout.Form,
+				"edition",
+			],
+			[
+				BridgeLayout.Catalog,
+				"mods",
+			],
+		]);
+		expect(modsCatalog?.layout === BridgeLayout.Catalog ? modsCatalog.module : null).toBe("mods");
+	});
+
+	it("shows the catalog only on the windows edition, the one that runs server mods", () => {
+		expect(modsCatalog?.visibleWhen).toEqual({
+			variable: EDITION_VARIABLE,
+			values: [
+				PalworldEdition.Windows,
+			],
+		});
+	});
+
+	it("takes zip uploads into the staging folder the module installs them from", () => {
+		const module = modules.mods;
+
+		expect(modsCatalog?.layout === BridgeLayout.Catalog ? modsCatalog.upload : null).toEqual({
+			label: {
+				ar: "ارفع مودًا",
+				en: "Upload a mod",
+			},
+			extensions: [
+				"zip",
+			],
+			staging: MOD_STAGING,
+			mode: BridgeUploadMode.Archive,
+		});
+		expect(module?.kind === BridgeKind.Catalog ? typeof module.add : null).toBe("function");
+	});
+
+	it("tells the customer a restart loads an installed mod", () => {
+		expect(modsCatalog?.layout === BridgeLayout.Catalog ? modsCatalog.restartHint : null).toBe(true);
 	});
 });

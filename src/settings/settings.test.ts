@@ -50,6 +50,12 @@ const harness = (options: { running: boolean; ini?: Bridge.Values }): Harness =>
 			async write(path: string, content: string) {
 				stored.set(path, content);
 			},
+			async remove(path: string) {
+				stored.delete(path);
+			},
+			async list() {
+				return [];
+			},
 		},
 		codec: {
 			ueIni: {

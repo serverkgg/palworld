@@ -21,6 +21,7 @@ import {
 	RULES_FIELDS,
 	WORLD_FIELDS,
 } from "../shared";
+import { steamSection } from "./steamSection";
 
 const settingsTab: Bridge.Tab = {
 	id: "settings",
@@ -110,6 +111,7 @@ const settingsTab: Bridge.Tab = {
 			restartHint: true,
 			fields: BASES_FIELDS,
 		},
+		steamSection,
 	],
 };
 
@@ -386,48 +388,18 @@ const modsTab: Bridge.Tab = {
 			],
 		},
 		{
-			layout: BridgeLayout.Table,
-			id: "installed",
+			layout: BridgeLayout.Catalog,
+			id: "mods",
 			title: {
 				ar: "مودات سيرفرك",
 				en: "Your mods",
 			},
 			help: {
-				ar: "ارفع ملف zip للمود كما نزّلته، سواء كان من Steam Workshop أو مود PalSchema أو مود UE4SS، ويشتغل بعد الريستارت. نوفر UE4SS و PalSchema بإصدارين متوافقين، فلا يلزم رفعهما. يلزم أن تكون المودات نفسها عند كل اللاعبين.",
-				en: "Upload the mod's zip as you downloaded it, whether it's a Steam Workshop, PalSchema or UE4SS mod, and it runs after a restart. We include matching versions of UE4SS and PalSchema, so you don't need to upload them. Every player needs the same mods.",
+				ar: "يعرض الكتالوج مودات Steam Workshop التي يشغّلها السيرفر، ونثبّت مع كل مود ما يعتمد عليه. يلزم أن تكون المودات نفسها عند كل لاعب. وإذا كان المود من Nexus Mods أو CurseForge، فارفع ملف zip كما نزّلته.",
+				en: "The catalog lists the Steam Workshop mods that run on servers, and we install each one with what it depends on. Every player needs the same mods in their own game. For a mod from Nexus Mods or CurseForge, upload its zip as you downloaded it.",
 			},
 			module: "mods",
 			restartHint: true,
-			columns: [
-				{
-					key: "title",
-					label: {
-						ar: "المود",
-						en: "Mod",
-					},
-				},
-				{
-					key: "type",
-					label: {
-						ar: "النوع",
-						en: "Type",
-					},
-				},
-				{
-					key: "version",
-					label: {
-						ar: "الإصدار",
-						en: "Version",
-					},
-				},
-				{
-					key: "state",
-					label: {
-						ar: "الحالة",
-						en: "State",
-					},
-				},
-			],
 			upload: {
 				label: {
 					ar: "ارفع مودًا",
@@ -437,30 +409,15 @@ const modsTab: Bridge.Tab = {
 				staging: MOD_STAGING,
 				mode: BridgeUploadMode.Archive,
 			},
-			actions: [
-				{
-					id: "toggle",
-					label: {
-						ar: "فعّل أو وقّف",
-						en: "Turn on or off",
-					},
-				},
-				{
-					id: "remove",
-					confirm: BridgeConfirm.Normal,
-					confirmText: {
-						ar: "تُحذف ملفات المود من السيرفر، فلا يشتغل من التشغيل القادم، وقد يختفي من الماب أي شيء يعتمد عليه.",
-						en: "The mod's files are deleted from your server, so it doesn't run from the next start. Anything in your world that depends on it may disappear.",
-					},
-					label: {
-						ar: "احذف",
-						en: "Delete",
-					},
-				},
-			],
 			empty: {
-				ar: "لا توجد مودات بعد. ارفع ملف zip لمود ليظهر هنا.",
-				en: "No mods yet. Upload a mod's zip to add it here.",
+				ar: "لا توجد مودات مثبّتة. ابحث عن مود وثبّته، أو ارفع ملف zip لمود.",
+				en: "No mods installed. Search for one and install it, or upload a mod's zip.",
+			},
+			visibleWhen: {
+				variable: EDITION_VARIABLE,
+				values: [
+					PalworldEdition.Windows,
+				],
 			},
 		},
 	],

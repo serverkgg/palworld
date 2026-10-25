@@ -1,6 +1,7 @@
 import type { Bridge } from "@serverkgg/bridge";
 import { readStamp, writeStamp } from "@serverkgg/bridge/install";
 import { PalworldEdition } from "./palworldEdition";
+import { isRecord } from "./palworldModRules";
 import { modsOf, type PalworldMod } from "./palworldMods";
 
 export interface PendingBaseline {
@@ -16,10 +17,6 @@ export interface InstallStamp {
 	settingsPending: Record<string, string> | null;
 	settingsBaseline: PendingBaseline | null;
 }
-
-const isRecord = (raw: unknown): raw is Record<string, unknown> => {
-	return typeof raw === "object" && raw !== null && !Array.isArray(raw);
-};
 
 const textsOf = (raw: unknown): Record<string, string> => {
 	const values: Record<string, string> = {};

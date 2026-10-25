@@ -101,10 +101,13 @@ describe("leaveEdition", () => {
 		]);
 	});
 
-	it("removes the windows binaries and keeps the uploaded mods when moving back to linux", async () => {
+	it("removes the windows binaries and the windows steam sdk, and keeps the uploaded mods when moving back to linux", async () => {
 		const { context, stored } = contextWith([
 			"PalServer.exe",
+			"steamclient64.dll",
+			"tier0_s64.dll",
 			"Pal/Binaries/Win64/PalServer-Win64-Shipping-Cmd.exe",
+			"Pal/Binaries/Win64/steamclient64.dll",
 			"Mods/Workshop/123/Info.json",
 			WORLD,
 		]);

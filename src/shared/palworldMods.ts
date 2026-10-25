@@ -1,63 +1,47 @@
 import type { Bridge } from "@serverkgg/bridge";
-import { WINDOWS_BINARY_DIRECTORY } from "./palworldEdition";
+import {
+	isPackageName,
+	isRecord,
+	type ModRule,
+	modInfoOf,
+	type PalworldModInfo,
+	rulesOf,
+	textOf,
+} from "./palworldModRules";
 
 export enum PalworldModKind {
 	Workshop = "workshop",
 	PalSchema = "palschema",
-	Ue4ss = "ue4ss",
+	Lua = "ue4ss",
+	Paks = "paks",
 }
 
 export const MOD_ROOTS: Record<PalworldModKind, string> = {
 	[PalworldModKind.Workshop]: "Mods/Workshop",
 	[PalworldModKind.PalSchema]: "Mods/PalSchemaMods",
-	[PalworldModKind.Ue4ss]: "Mods/UE4SSMods",
+	[PalworldModKind.Lua]: "Mods/UE4SSMods",
+	[PalworldModKind.Paks]: "Mods/PakMods",
 };
-
-export const MOD_SETTINGS_FILE = "Mods/PalModSettings.ini";
 
 export const MOD_INFO_FILE = "Info.json";
 
 export const MOD_STAGING = ".serverk-staging/mod-upload";
 
+export const WORKSHOP_APP_ID = 1_623_730;
+
+export const WORKSHOP_ITEM_ID = /^\d{1,20}$/;
+
 export const MOD_UPLOAD_EXTENSIONS = [
 	"zip",
 ];
 
-const UE4SS_SOURCE = "/opt/serverk/ue4ss";
-
-export const UE4SS_LOADER = `${WINDOWS_BINARY_DIRECTORY}/dwmapi.dll`;
-
-export const UE4SS_DIRECTORY = `${WINDOWS_BINARY_DIRECTORY}/ue4ss`;
-
-export const UE4SS_MODS = `${UE4SS_DIRECTORY}/Mods`;
-
-export const PALSCHEMA_MODS = `${UE4SS_MODS}/PalSchema/mods`;
-
-export const UE4SS_ENABLED_FILE = "enabled.txt";
-
-export const PALSCHEMA_FOLDERS = [
-	"appearance",
-	"blueprints",
-	"buildings",
-	"enums",
-	"helpguide",
-	"items",
-	"pals",
-	"raw",
-	"skins",
-	"spawns",
-	"translations",
-];
-
-export const UE4SS_MARKERS = [
-	"Scripts/main.lua",
-	"scripts/main.lua",
-	"dlls/main.dll",
-];
-
-export const BUNDLED_MODS = [
+export const BUNDLED_PACKAGES = [
+	"UE4SSExperimentalPW",
 	"PalSchema",
-	"UE4SS",
+];
+
+const PINNED_MOD_NAMES = [
+	...BUNDLED_PACKAGES,
 	"BPModLoaderMod",
 	"BPML_GenericFunctions",
 	"CheatManagerEnablerMod",
@@ -67,46 +51,38 @@ export const BUNDLED_MODS = [
 	"LineTraceMod",
 	"SplitScreenMod",
 	"shared",
+	"mods.txt",
 ];
 
-export const BUNDLED_FILES = [
-	"dwmapi.dll",
-	"UE4SS.dll",
-];
-
-export const WINDOWS_HOME = "Z:\\home\\container";
+export const MOD_LISTING_LIMIT = /exceeded its (result|scan) limit/;
 
 const MOD_FOLDER = /^[A-Za-z0-9 _.()-]{1,128}$/;
-
-const PACKAGE_NAME = /^[A-Za-z0-9_.-]{1,128}$/;
 
 export interface PalworldMod {
 	id: string;
 	enabled: boolean;
+	itemId?: string;
+	packageName?: string;
+	version?: string;
 }
 
-export interface PalworldModInfo {
-	packageName: string | null;
-	name: string | null;
-	version: string | null;
-	server: boolean;
-}
-
-export interface InstalledMod {
+export interface ModPackage {
 	kind: PalworldModKind;
 	folder: string;
+	path: string;
 	info: PalworldModInfo;
+	rules: ModRule[];
+	files: string[];
+	sizeBytes: number;
+	oversized: boolean;
+}
+
+interface PackageFiles {
+	files: string[];
+	sizeBytes: number;
 }
 
 const KINDS = Object.values(PalworldModKind);
-
-const isRecord = (raw: unknown): raw is Record<string, unknown> => {
-	return typeof raw === "object" && raw !== null && !Array.isArray(raw);
-};
-
-const textOf = (raw: unknown) => {
-	return typeof raw === "string" && raw.length > 0 ? raw : null;
-};
 
 export const isModFolder = (name: string) => {
 	return MOD_FOLDER.test(name) && name !== "." && name !== "..";
@@ -136,6 +112,20 @@ export const parseModId = (
 	};
 };
 
+export const isPinnedName = (name: string) => {
+	const lower = name.toLowerCase();
+
+	return PINNED_MOD_NAMES.some((pinned) => pinned.toLowerCase() === lower);
+};
+
+export const modNameOf = (mod: Pick<ModPackage, "folder" | "info">) => {
+	return mod.info.packageName ?? mod.folder;
+};
+
+export const modEnabled = (records: PalworldMod[], id: string) => {
+	return records.find((record) => record.id === id)?.enabled ?? true;
+};
+
 export const modsOf = (raw: unknown): PalworldMod[] => {
 	if (!Array.isArray(raw)) {
 		return [];
@@ -146,56 +136,50 @@ export const modsOf = (raw: unknown): PalworldMod[] => {
 			return [];
 		}
 
+		const mod: PalworldMod = {
+			id: entry.id,
+			enabled: entry.enabled !== false,
+		};
+		const itemId = textOf(entry.itemId);
+		const packageName = textOf(entry.packageName);
+		const version = textOf(entry.version);
+
+		if (itemId !== null && WORKSHOP_ITEM_ID.test(itemId)) {
+			mod.itemId = itemId;
+		}
+
+		if (packageName !== null && isPackageName(packageName)) {
+			mod.packageName = packageName;
+		}
+
+		if (version !== null) {
+			mod.version = version;
+		}
+
 		return [
-			{
-				id: entry.id,
-				enabled: entry.enabled !== false,
-			},
+			mod,
 		];
 	});
 };
 
-export const modInfoOf = (raw: unknown): PalworldModInfo => {
-	if (!isRecord(raw)) {
+const listedPackageOf = async (context: Bridge.Context, path: string): Promise<PackageFiles | null> => {
+	try {
+		const entries = (await context.files.list(`${path}/**`)).filter((entry) => !entry.directory);
+
 		return {
-			packageName: null,
-			name: null,
-			version: null,
-			server: false,
+			files: entries.map((entry) => entry.path.slice(path.length + 1)),
+			sizeBytes: entries.reduce((total, entry) => total + entry.sizeBytes, 0),
 		};
+	} catch (error) {
+		if (error instanceof Error && MOD_LISTING_LIMIT.test(error.message)) {
+			return null;
+		}
+
+		throw error;
 	}
-
-	const packageName = textOf(raw.PackageName);
-	const rules = Array.isArray(raw.InstallRule) ? raw.InstallRule : [];
-
-	return {
-		packageName: packageName !== null && PACKAGE_NAME.test(packageName) ? packageName : null,
-		name: textOf(raw.ModName),
-		version: textOf(raw.Version),
-		server: rules.some((rule) => isRecord(rule) && rule.IsServer === true),
-	};
 };
 
-export const windowsPathOf = (path: string) => {
-	return `${WINDOWS_HOME}\\${path.split("/").join("\\")}`;
-};
-
-export const modSettingsOf = (packages: string[]) => {
-	return [
-		"[PalModSettings]",
-		`bGlobalEnableMod=${packages.length > 0 ? "true" : "false"}`,
-		`WorkshopRootDir=${windowsPathOf(MOD_ROOTS[PalworldModKind.Workshop])}`,
-		"ConfigVersion=1.0",
-		...packages.map((name) => `ActiveModList=${name}`),
-		"",
-	].join("\n");
-};
-
-export const modEnabled = (mods: PalworldMod[], id: string) => {
-	return mods.find((mod) => mod.id === id)?.enabled ?? true;
-};
-
-export const readModInfo = async (context: Bridge.Context, path: string): Promise<PalworldModInfo> => {
+const readModInfo = async (context: Bridge.Context, path: string): Promise<PalworldModInfo> => {
 	try {
 		return modInfoOf(JSON.parse(await context.files.read(path)));
 	} catch {
@@ -203,215 +187,70 @@ export const readModInfo = async (context: Bridge.Context, path: string): Promis
 	}
 };
 
-const folderInfo = (folder: string): PalworldModInfo => {
+export const readModPackage = async (
+	context: Bridge.Context,
+	kind: PalworldModKind,
+	folder: string,
+	path: string,
+): Promise<ModPackage> => {
+	const listed = await listedPackageOf(context, path);
+	const info = await readModInfo(context, `${path}/${MOD_INFO_FILE}`);
+	const files = listed?.files ?? [];
+
 	return {
-		packageName: null,
-		name: folder,
-		version: null,
-		server: true,
+		kind,
+		folder,
+		path,
+		info,
+		rules: rulesOf(info, files),
+		files,
+		sizeBytes: listed?.sizeBytes ?? 0,
+		oversized: listed === null,
 	};
 };
 
-export const foldersOf = (paths: string[], root: string) => {
-	const folders = new Set<string>();
-
-	for (const path of paths) {
-		const folder = path.startsWith(`${root}/`) ? path.slice(root.length + 1).split("/")[0] : "";
-
-		if (folder && path.length > root.length + folder.length + 1 && isModFolder(folder)) {
-			folders.add(folder);
-		}
+const modFoldersOf = async (context: Bridge.Context, root: string) => {
+	if (!(await context.files.exists(root))) {
+		return [];
 	}
 
-	return [
-		...folders,
-	].sort();
-};
-
-const foldersIn = async (context: Bridge.Context, root: string) => {
-	const files = (await context.files.list(`${root}/**`)).filter((entry) => !entry.directory);
-
-	return foldersOf(
-		files.map((entry) => entry.path),
+	const result = await context.exec([
+		"find",
 		root,
-	);
-};
+		"-mindepth",
+		"1",
+		"-maxdepth",
+		"1",
+		"-type",
+		"d",
+		"-printf",
+		"%f\\n",
+	]);
 
-export const installedMods = async (context: Bridge.Context): Promise<InstalledMod[]> => {
-	const mods: InstalledMod[] = [];
-	const workshop = MOD_ROOTS[PalworldModKind.Workshop];
-
-	for (const entry of await context.files.list(`${workshop}/*/${MOD_INFO_FILE}`)) {
-		const folder = entry.path.split("/").at(-2) ?? "";
-
-		if (!entry.directory && isModFolder(folder)) {
-			mods.push({
-				kind: PalworldModKind.Workshop,
-				folder,
-				info: await readModInfo(context, entry.path),
-			});
-		}
+	if (result.code !== 0) {
+		throw new Error(`could not list the mod folders in ${root}`);
 	}
 
-	for (const kind of [
-		PalworldModKind.PalSchema,
-		PalworldModKind.Ue4ss,
-	]) {
-		for (const folder of await foldersIn(context, MOD_ROOTS[kind])) {
-			mods.push({
-				kind,
-				folder,
-				info: folderInfo(folder),
-			});
+	return result.stdout
+		.split("\n")
+		.filter(isModFolder)
+		.sort((left, right) => left.localeCompare(right));
+};
+
+export const installedMods = async (context: Bridge.Context): Promise<ModPackage[]> => {
+	const mods: ModPackage[] = [];
+
+	for (const kind of KINDS) {
+		const root = MOD_ROOTS[kind];
+
+		for (const folder of await modFoldersOf(context, root)) {
+			const mod = await readModPackage(context, kind, folder, `${root}/${folder}`);
+
+			if (mod.oversized || mod.files.length > 0) {
+				mods.push(mod);
+			}
 		}
 	}
 
 	return mods;
-};
-
-export const activePackages = (installed: InstalledMod[], mods: PalworldMod[]) => {
-	const packages: string[] = [];
-
-	for (const mod of installed) {
-		const name = mod.info.packageName;
-
-		if (
-			mod.kind === PalworldModKind.Workshop
-			&& mod.info.server
-			&& name !== null
-			&& modEnabled(mods, modIdOf(mod.kind, mod.folder))
-			&& !packages.includes(name)
-		) {
-			packages.push(name);
-		}
-	}
-
-	return packages;
-};
-
-export const classicMods = (installed: InstalledMod[], mods: PalworldMod[]) => {
-	return installed.filter(
-		(mod) => mod.kind !== PalworldModKind.Workshop && modEnabled(mods, modIdOf(mod.kind, mod.folder)),
-	);
-};
-
-export const writeModSettings = async (context: Bridge.Context, installed: InstalledMod[], mods: PalworldMod[]) => {
-	const packages = activePackages(installed, mods);
-
-	await context.files.ensure(MOD_ROOTS[PalworldModKind.Workshop]);
-	await context.files.write(MOD_SETTINGS_FILE, modSettingsOf(packages));
-
-	return packages;
-};
-
-const copyTree = async (context: Bridge.Context, from: string, to: string) => {
-	const result = await context.exec([
-		"cp",
-		"-a",
-		`${from}/.`,
-		to,
-	]);
-
-	if (result.code !== 0) {
-		throw new Error(`could not copy ${from} into ${to}`);
-	}
-};
-
-const removeIfPresent = async (context: Bridge.Context, path: string) => {
-	if (await context.files.exists(path)) {
-		await context.files.remove(path);
-	}
-};
-
-export const deployUe4ss = async (context: Bridge.Context, enabled: InstalledMod[]) => {
-	await removeIfPresent(context, UE4SS_LOADER);
-	await removeIfPresent(context, UE4SS_DIRECTORY);
-
-	if (enabled.length === 0) {
-		return;
-	}
-
-	await copyTree(context, UE4SS_SOURCE, WINDOWS_BINARY_DIRECTORY);
-
-	for (const mod of enabled) {
-		const target =
-			mod.kind === PalworldModKind.PalSchema ? `${PALSCHEMA_MODS}/${mod.folder}` : `${UE4SS_MODS}/${mod.folder}`;
-
-		await context.files.ensure(target);
-		await copyTree(context, `${MOD_ROOTS[mod.kind]}/${mod.folder}`, target);
-
-		if (mod.kind === PalworldModKind.Ue4ss) {
-			await context.files.write(`${target}/${UE4SS_ENABLED_FILE}`, "");
-		}
-	}
-};
-
-export const MOD_DEPLOY_FILE = ".serverk-mods.json";
-
-export const UE4SS_LOG = `${UE4SS_DIRECTORY}/UE4SS.log`;
-
-export const MANAGED_MODS = "Mods/ManagedMods";
-
-const PALSCHEMA_LOADED = /\[PalSchema\] Loading mod: (.+?)\s*$/gm;
-
-const UE4SS_STARTED = /Mod '(.+?)' has enabled\.txt, starting mod\./g;
-
-export interface ModLoads {
-	log: boolean;
-	palschema: Set<string>;
-	ue4ss: Set<string>;
-}
-
-export const modLoadsOf = (log: string | null): ModLoads => {
-	return {
-		log: log !== null,
-		palschema: new Set(
-			[
-				...(log ?? "").matchAll(PALSCHEMA_LOADED),
-			].map((match) => match[1] ?? ""),
-		),
-		ue4ss: new Set(
-			[
-				...(log ?? "").matchAll(UE4SS_STARTED),
-			].map((match) => match[1] ?? ""),
-		),
-	};
-};
-
-export const readModLoads = async (context: Bridge.Context) => {
-	return modLoadsOf((await context.files.exists(UE4SS_LOG)) ? await context.files.read(UE4SS_LOG) : null);
-};
-
-export const readDeployedMods = async (context: Bridge.Context) => {
-	try {
-		const raw: unknown = JSON.parse(await context.files.read(MOD_DEPLOY_FILE));
-
-		return new Set(Array.isArray(raw) ? raw.filter((entry): entry is string => typeof entry === "string") : []);
-	} catch {
-		return new Set<string>();
-	}
-};
-
-export const writeDeployedMods = async (context: Bridge.Context, ids: string[]) => {
-	await context.files.write(MOD_DEPLOY_FILE, JSON.stringify(ids));
-};
-
-export const workshopDeployed = async (context: Bridge.Context, mod: InstalledMod) => {
-	const name = mod.info.packageName;
-
-	return name !== null && (await context.files.exists(`${MANAGED_MODS}/${name}/InstallManifest.json`));
-};
-
-export const modLoaded = (mod: InstalledMod, loads: ModLoads) => {
-	if (mod.kind === PalworldModKind.PalSchema) {
-		return loads.palschema.has(mod.folder);
-	}
-
-	return loads.ue4ss.has(mod.folder);
-};
-
-export const deployedModIds = (installed: InstalledMod[], mods: PalworldMod[]) => {
-	return installed
-		.filter((mod) => mod.info.server && modEnabled(mods, modIdOf(mod.kind, mod.folder)))
-		.map((mod) => modIdOf(mod.kind, mod.folder));
 };

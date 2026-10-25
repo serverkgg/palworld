@@ -4,14 +4,16 @@ import { BridgeEventName } from "@serverkgg/bridge/protocol";
 import {
 	DEFAULT_SETTINGS_FILE,
 	EDITION_VARIABLE,
-	MOD_SETTINGS_FILE,
+	MOD_DEPLOY_FILE,
 	PalworldEdition,
 	readPendingSettings,
 	WINDOWS_BAN_LIST_URL,
 	WINDOWS_BINARY,
+	WINDOWS_STEAM_VARIABLE,
 	writeInstallStamp,
 } from "../shared";
 import { lifecycle, START_WRAPPER } from "./lifecycle";
+import { MOD_SETTINGS, MOD_SETTINGS_FILE } from "./modDeploy";
 
 const GAME_PORT = 8241;
 
@@ -25,6 +27,7 @@ interface Harness {
 	stored: Map<string, string>;
 	logged: string[];
 	reported: Bridge.Activity[];
+	ran: string[][];
 }
 
 const harness = (
@@ -38,6 +41,7 @@ const harness = (
 	};
 	const logged: string[] = [];
 	const reported: Bridge.Activity[] = [];
+	const ran: string[][] = [];
 
 	const context = {
 		variable(key: string) {
@@ -81,6 +85,15 @@ const harness = (
 				reported.push(entry);
 			},
 		},
+		async exec(argv: string[]) {
+			ran.push(argv);
+
+			return {
+				code: 0,
+				stdout: "",
+				stderr: "",
+			};
+		},
 		log(message: string) {
 			logged.push(message);
 		},
@@ -92,6 +105,7 @@ const harness = (
 		stored,
 		logged,
 		reported,
+		ran,
 	};
 };
 
@@ -114,7 +128,7 @@ describe("the command that starts the game", () => {
 		expect(command).toContain(`-port=${GAME_PORT}`);
 	});
 
-	it("starts the windows edition straight in the proton prefix, so its output reaches the console", async () => {
+	it("starts the windows edition straight in the proton prefix from its binary folder, so its output reaches the console", async () => {
 		const { context, stored } = harness(
 			{},
 			{
@@ -129,12 +143,13 @@ describe("the command that starts the game", () => {
 			"/home/container/Pal/Binaries/Win64",
 		]);
 		expect(command).toContain("runinprefix");
+		expect(command).not.toContain("run");
 		expect(command).toContain(`/home/container/${WINDOWS_BINARY}`);
 		expect(command).toContain(`-port=${GAME_PORT}`);
-		expect(stored.get(MOD_SETTINGS_FILE)).toContain("bGlobalEnableMod=false");
+		expect(stored.get(MOD_SETTINGS_FILE)).toBe(MOD_SETTINGS);
 	});
 
-	it("starts the windows edition without steam, from its binary folder so the steam client cannot spin the cpu under wine", async () => {
+	it("starts the windows edition without steam by default, so existing worlds keep their no-steam characters", async () => {
 		const { context } = harness(
 			{},
 			{
@@ -142,9 +157,27 @@ describe("the command that starts the game", () => {
 			},
 		);
 
+		expect(await lifecycle.command(context)).toContain("-nosteam");
+	});
+
+	it("starts the windows edition with steam once the owner turns it on, so players keep their steam ids", async () => {
+		const { context, ran } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+				[WINDOWS_STEAM_VARIABLE]: "true",
+			},
+		);
+
 		const command = await lifecycle.command(context);
 
-		expect(command).toContain("-nosteam");
+		expect(command).not.toContain("-nosteam");
+		expect(ran).toContainEqual([
+			"cp",
+			"-f",
+			"steamclient64.dll",
+			"Pal/Binaries/Win64/steamclient64.dll",
+		]);
 
 		for (const flag of [
 			"-useperfthreads",
@@ -153,6 +186,29 @@ describe("the command that starts the game", () => {
 		]) {
 			expect(command).not.toContain(flag);
 		}
+	});
+
+	it("takes back what an earlier windows start placed when the server starts on linux", async () => {
+		const { context, stored } = harness();
+
+		stored.set(
+			MOD_DEPLOY_FILE,
+			JSON.stringify([
+				{
+					id: "paks:ExpandedBaseRadius",
+					paths: [
+						"Pal/Content/Paks/~mods/ExpandedBaseRadius",
+					],
+				},
+			]),
+		);
+		stored.set("Pal/Content/Paks/~mods/ExpandedBaseRadius", "pak");
+
+		await lifecycle.command(context);
+
+		expect(stored.has("Pal/Content/Paks/~mods/ExpandedBaseRadius")).toBe(false);
+		expect(stored.get(MOD_DEPLOY_FILE)).toBe("[]");
+		expect(stored.has(MOD_SETTINGS_FILE)).toBe(false);
 	});
 
 	it("keeps every flag the server needs", async () => {
@@ -168,15 +224,22 @@ describe("the command that starts the game", () => {
 	});
 });
 
-describe("keeping pocketpair's global ban list off the windows edition", () => {
+const WINDOWS_WITHOUT_STEAM = {
+	[EDITION_VARIABLE]: PalworldEdition.Windows,
+};
+
+const WINDOWS_WITH_STEAM = {
+	[EDITION_VARIABLE]: PalworldEdition.Windows,
+	[WINDOWS_STEAM_VARIABLE]: "true",
+};
+
+describe("keeping pocketpair's global ban list off the windows edition without steam", () => {
 	it("swaps the ban list address before the windows edition starts, because its steam ids never match a no-steam player", async () => {
 		const { context, ini } = harness(
 			{
 				BanListURL: GLOBAL_BAN_LIST_URL,
 			},
-			{
-				[EDITION_VARIABLE]: PalworldEdition.Windows,
-			},
+			WINDOWS_WITHOUT_STEAM,
 		);
 
 		await lifecycle.command(context);
@@ -190,12 +253,7 @@ describe("keeping pocketpair's global ban list off the windows edition", () => {
 	});
 
 	it("swaps it again on every start, after the game wrote it back on shutdown", async () => {
-		const { context, ini } = harness(
-			{},
-			{
-				[EDITION_VARIABLE]: PalworldEdition.Windows,
-			},
-		);
+		const { context, ini } = harness({}, WINDOWS_WITHOUT_STEAM);
 
 		await lifecycle.command(context);
 
@@ -207,12 +265,7 @@ describe("keeping pocketpair's global ban list off the windows edition", () => {
 	});
 
 	it("swaps it after the replay, so a replayed address cannot bring the global list back", async () => {
-		const { context, ini } = harness(
-			{},
-			{
-				[EDITION_VARIABLE]: PalworldEdition.Windows,
-			},
-		);
+		const { context, ini } = harness({}, WINDOWS_WITHOUT_STEAM);
 
 		await pending(context, {
 			BanListURL: GLOBAL_BAN_LIST_URL,
@@ -222,22 +275,73 @@ describe("keeping pocketpair's global ban list off the windows edition", () => {
 
 		expect(ini.BanListURL).toBe(WINDOWS_BAN_LIST_URL);
 	});
+});
 
-	it("leaves the owner's ban list address alone on the linux edition", async () => {
-		const { context, ini } = harness({
-			BanListURL: GLOBAL_BAN_LIST_URL,
+describe("pocketpair's global ban list wherever steam runs", () => {
+	const editions = [
+		{
+			name: "linux",
+			variables: {},
+		},
+		{
+			name: "windows with steam",
+			variables: WINDOWS_WITH_STEAM,
+		},
+	];
+
+	for (const { name, variables } of editions) {
+		it(`leaves the owner's ban list address alone on ${name}`, async () => {
+			const { context, ini } = harness(
+				{
+					BanListURL: GLOBAL_BAN_LIST_URL,
+				},
+				variables,
+			);
+
+			await lifecycle.command(context);
+
+			expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
 		});
 
-		await lifecycle.command(context);
+		it(`puts the shipped ban list back on ${name} over the unreachable windows address`, async () => {
+			const { context, ini, logged } = harness(
+				{
+					BanListURL: WINDOWS_BAN_LIST_URL,
+				},
+				variables,
+				{
+					BanListURL: GLOBAL_BAN_LIST_URL,
+				},
+			);
 
-		expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
-	});
+			await lifecycle.command(context);
 
-	it("puts the shipped ban list back when the server switches from windows to linux", async () => {
-		const variables = {
-			[EDITION_VARIABLE]: PalworldEdition.Windows,
+			expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
+			expect(logged).toContain("restored the shipped ban list the windows edition had turned off");
+		});
+
+		it(`keeps a ban list the owner set themselves on ${name}, even when the shipped one differs`, async () => {
+			const { context, ini } = harness(
+				{
+					BanListURL: OWNER_BAN_LIST_URL,
+				},
+				variables,
+				{
+					BanListURL: GLOBAL_BAN_LIST_URL,
+				},
+			);
+
+			await lifecycle.command(context);
+
+			expect(ini.BanListURL).toBe(OWNER_BAN_LIST_URL);
+		});
+	}
+
+	it("puts the shipped ban list back when the windows edition turns steam on", async () => {
+		const variables: Record<string, string> = {
+			...WINDOWS_WITHOUT_STEAM,
 		};
-		const { context, ini, logged } = harness(
+		const { context, ini } = harness(
 			{
 				BanListURL: GLOBAL_BAN_LIST_URL,
 			},
@@ -249,31 +353,14 @@ describe("keeping pocketpair's global ban list off the windows edition", () => {
 
 		await lifecycle.command(context);
 
-		variables[EDITION_VARIABLE] = PalworldEdition.Linux;
+		variables[WINDOWS_STEAM_VARIABLE] = "true";
 
 		await lifecycle.command(context);
 
 		expect(ini.BanListURL).toBe(GLOBAL_BAN_LIST_URL);
-		expect(logged).toContain("restored the shipped ban list the windows edition had turned off");
 	});
 
-	it("keeps a ban list the owner set themselves on linux, even when the shipped one differs", async () => {
-		const { context, ini } = harness(
-			{
-				BanListURL: OWNER_BAN_LIST_URL,
-			},
-			{},
-			{
-				BanListURL: GLOBAL_BAN_LIST_URL,
-			},
-		);
-
-		await lifecycle.command(context);
-
-		expect(ini.BanListURL).toBe(OWNER_BAN_LIST_URL);
-	});
-
-	it("leaves the windows address on linux when the shipped settings name no ban list", async () => {
+	it("leaves the unreachable address when the shipped settings name no ban list", async () => {
 		const { context, ini } = harness({
 			BanListURL: WINDOWS_BAN_LIST_URL,
 		});

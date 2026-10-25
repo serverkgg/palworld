@@ -4,6 +4,8 @@ import { STEAM_APP_ID } from "./steamApp";
 
 export const EDITION_VARIABLE = "EDITION";
 
+export const WINDOWS_STEAM_VARIABLE = "WINDOWS_STEAM";
+
 export enum PalworldEdition {
 	Linux = "linux",
 	Windows = "windows",
@@ -25,6 +27,19 @@ export const WINDOWS_BINARY_DIRECTORY = "Pal/Binaries/Win64";
 export const WINDOWS_BINARY = `${WINDOWS_BINARY_DIRECTORY}/PalServer-Win64-Shipping-Cmd.exe`;
 
 export const STEAM_APP_MANIFEST = `steamapps/appmanifest_${STEAM_APP_ID}.acf`;
+
+export const WINDOWS_STEAM_CLIENT = "steamclient64.dll";
+
+export const WINDOWS_STEAM_SDK = [
+	WINDOWS_STEAM_CLIENT,
+	"steamclient.dll",
+	"tier0_s64.dll",
+	"tier0_s.dll",
+	"vstdlib_s64.dll",
+	"vstdlib_s.dll",
+	"steamwebrtc64.dll",
+	"steamwebrtc.dll",
+];
 
 export const EDITION_LAYOUTS: Record<PalworldEdition, EditionLayout> = {
 	[PalworldEdition.Linux]: {
@@ -51,11 +66,13 @@ export const EDITION_LAYOUTS: Record<PalworldEdition, EditionLayout> = {
 		configDirectory: "Pal/Saved/Config/WindowsServer",
 		roots: [
 			WINDOWS_BINARY,
+			WINDOWS_STEAM_CLIENT,
 			"Pal/Content",
 			"Engine",
 		],
 		owned: [
 			"PalServer.exe",
+			...WINDOWS_STEAM_SDK,
 			WINDOWS_BINARY_DIRECTORY,
 			"Pal/Content/Paks/Pal-WindowsServer.pak",
 			"Engine/Binaries/Win64",
@@ -76,6 +93,10 @@ export const editionOf = (context: Bridge.Context) => {
 	return context.variable(EDITION_VARIABLE) === PalworldEdition.Windows
 		? PalworldEdition.Windows
 		: PalworldEdition.Linux;
+};
+
+export const windowsSteamOf = (context: Bridge.Context) => {
+	return context.variable(WINDOWS_STEAM_VARIABLE) === "true";
 };
 
 export const editionLayoutOf = (context: Bridge.Context) => {
