@@ -1,6 +1,6 @@
 import { type Bridge, BridgeKind } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
-import { CONTAINER_HOME, ProtonVerb, protonCommand } from "@serverkgg/bridge/wine";
+import { CONTAINER_HOME, PROTON_HEADLESS_ENVIRONMENT, ProtonVerb, protonCommand } from "@serverkgg/bridge/wine";
 import {
 	appliedSettingKeys,
 	applyAccess,
@@ -33,13 +33,9 @@ const STOP_TIMEOUT_SECONDS = 90;
 
 export const START_WRAPPER = "/opt/serverk/palworld-start";
 
-const WINDOWS_ENVIRONMENT: Record<string, string> = {
-	PROTON_USE_XALIA: "0",
+export const WINDOWS_ENVIRONMENT: Record<string, string> = {
+	...PROTON_HEADLESS_ENVIRONMENT,
 	WINEDLLOVERRIDES: "dwmapi=n,b",
-	SDL_AUDIODRIVER: "dummy",
-	SDL_VIDEODRIVER: "dummy",
-	XDG_SESSION_TYPE: "headless",
-	XDG_RUNTIME_DIR: "/tmp/serverk-xdg",
 };
 
 export const startArgs = (port: number) => {

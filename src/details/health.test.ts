@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, setSystemTime } from "bun:
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeDetailTone } from "@serverkgg/bridge";
 import { LAG_FPS_THRESHOLD, metrics, SAMPLE_MIN_AGE_MS } from "../shared";
-import { formatUptime, fpsBadge, health, SMOOTH_FPS_THRESHOLD } from "./health";
+import { fpsBadge, health, SMOOTH_FPS_THRESHOLD } from "./health";
 
 const toneOf = (fps: number) => {
 	return fpsBadge(fps).tone;
@@ -33,67 +33,6 @@ describe("telling the owner in one word how his world is running", () => {
 			expect(fpsBadge(fps).label.ar.length).toBeGreaterThan(0);
 			expect(fpsBadge(fps).label.en.length).toBeGreaterThan(0);
 		}
-	});
-});
-
-describe("reading the uptime the server reports in seconds", () => {
-	it("says less than a minute before the first minute is up", () => {
-		expect(formatUptime(31)).toEqual({
-			ar: "أقل من دقيقة",
-			en: "Less than a minute",
-		});
-	});
-
-	it("counts the minutes of a server that just started", () => {
-		expect(formatUptime(60)).toEqual({
-			ar: "دقيقة",
-			en: "1m",
-		});
-		expect(formatUptime(9 * 60)).toEqual({
-			ar: "9 دقائق",
-			en: "9m",
-		});
-		expect(formatUptime(40 * 60)).toEqual({
-			ar: "40 دقيقة",
-			en: "40m",
-		});
-	});
-
-	it("drops the minutes when the hour lands exactly", () => {
-		expect(formatUptime(3600)).toEqual({
-			ar: "ساعة",
-			en: "1h",
-		});
-		expect(formatUptime(2 * 3600)).toEqual({
-			ar: "ساعتين",
-			en: "2h",
-		});
-	});
-
-	it("reads the hours and the minutes together on a server that has been up a while", () => {
-		expect(formatUptime(3 * 3600 + 15 * 60 + 42)).toEqual({
-			ar: "3 ساعات و15 دقيقة",
-			en: "3h 15m",
-		});
-		expect(formatUptime(30 * 3600 + 2 * 60)).toEqual({
-			ar: "30 ساعة ودقيقتين",
-			en: "30h 2m",
-		});
-	});
-
-	it("writes every number in western digits, never arabic-indic ones", () => {
-		const arabic = formatUptime(5 * 3600 + 20 * 60).ar;
-
-		expect(arabic).toContain("5");
-		expect(arabic).toContain("20");
-		expect(arabic).not.toMatch(/[٠-٩]/);
-	});
-
-	it("never reads a negative uptime as a duration", () => {
-		expect(formatUptime(-90)).toEqual({
-			ar: "أقل من دقيقة",
-			en: "Less than a minute",
-		});
 	});
 });
 

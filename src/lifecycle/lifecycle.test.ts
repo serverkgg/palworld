@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import type { Bridge } from "@serverkgg/bridge";
 import { BridgeEventName } from "@serverkgg/bridge/protocol";
+import { PROTON_HEADLESS_ENVIRONMENT } from "@serverkgg/bridge/wine";
 import {
 	DEFAULT_SETTINGS_FILE,
 	EDITION_VARIABLE,
@@ -12,7 +13,7 @@ import {
 	WINDOWS_STEAM_VARIABLE,
 	writeInstallStamp,
 } from "../shared";
-import { lifecycle, START_WRAPPER } from "./lifecycle";
+import { lifecycle, START_WRAPPER, WINDOWS_ENVIRONMENT } from "./lifecycle";
 import { MOD_SETTINGS, MOD_SETTINGS_FILE } from "./modDeploy";
 
 const GAME_PORT = 8241;
@@ -147,6 +148,23 @@ describe("the command that starts the game", () => {
 		expect(command).toContain(`/home/container/${WINDOWS_BINARY}`);
 		expect(command).toContain(`-port=${GAME_PORT}`);
 		expect(stored.get(MOD_SETTINGS_FILE)).toBe(MOD_SETTINGS);
+	});
+
+	it("runs the windows edition headless under proton with dwmapi loaded native first", async () => {
+		const { context } = harness(
+			{},
+			{
+				[EDITION_VARIABLE]: PalworldEdition.Windows,
+			},
+		);
+
+		expect(WINDOWS_ENVIRONMENT).toEqual({
+			...PROTON_HEADLESS_ENVIRONMENT,
+			WINEDLLOVERRIDES: "dwmapi=n,b",
+		});
+		expect(await lifecycle.command(context)).toEqual(
+			expect.arrayContaining(Object.entries(WINDOWS_ENVIRONMENT).map(([key, value]) => `${key}=${value}`)),
+		);
 	});
 
 	it("starts the windows edition without steam by default, so existing worlds keep their no-steam characters", async () => {
