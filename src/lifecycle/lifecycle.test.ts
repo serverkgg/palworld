@@ -167,7 +167,7 @@ describe("the command that starts the game", () => {
 		);
 	});
 
-	it("starts the windows edition without steam by default, so existing worlds keep their no-steam characters", async () => {
+	it("starts the windows edition with -nosteam when the steam setting is unset in the harness", async () => {
 		const { context } = harness(
 			{},
 			{

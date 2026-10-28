@@ -2,14 +2,14 @@
 
 Palworld runs server mods only on Windows. That limit comes from the game itself. Your server runs on Linux by default. If you want mods that run on the server, such as mods built on UE4SS or PalSchema, switch it to Windows.
 
-> [!warning] On Windows every player starts a new character, because Palworld's Windows server identifies players differently from Linux. Your world stays as it is, and your Linux characters are kept and come back when you switch back to Linux. That's why Windows suits a new world best.
+> [!warning] On Windows, players keep their characters as on Linux while **Use Steam** in the **Settings** tab is on, as it is by default. With it off, every player starts a new character, because Palworld's Windows server then identifies players differently. Turning it on or off changes every player's ID, so decide before players start building. Your world stays as it is either way.
 
 ## Switch to Windows
 
 1. Open the **Mods** tab
 2. Under **Operating system**, choose **Windows, with server mods**, then save
 
-We take a backup before the switch. Then your server downloads the game files from Steam again, and it's down until the download finishes. Your world and settings stay, and every player starts a new character.
+We take a backup before the switch. Then your server downloads the game files from Steam again, and it's down until the download finishes. Your world and settings stay, and players keep their characters while **Use Steam** is on.
 
 ## Install a mod from the Steam Workshop
 
